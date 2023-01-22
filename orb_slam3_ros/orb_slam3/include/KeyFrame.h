@@ -54,7 +54,7 @@ class KeyFrame
     friend class boost::serialization::access;
 
     template<class Archive>
-    void serialize(Archive& ar, const unsigned int vers)
+    void serialize(Archive& ar, const unsigned int version)
     {
         ar & mnId;
         ar & const_cast<long unsigned int&>(mnFrameId);
@@ -117,20 +117,20 @@ class KeyFrame
         ar & const_cast<float&>(mbf);
         ar & const_cast<float&>(mb);
         ar & const_cast<float&>(mThDepth);
-        serializeMatrix(ar, mDistCoef, vers);
+        serializeMatrix(ar, mDistCoef, version);
         // Number of Keypoints
         ar & const_cast<int&>(N);
         // KeyPoints
-        serializeVectorKeyPoints<Archive>(ar, mvKeys, vers);
-        serializeVectorKeyPoints<Archive>(ar, mvKeysUn, vers);
+        serializeVectorKeyPoints<Archive>(ar, mvKeys, version);
+        serializeVectorKeyPoints<Archive>(ar, mvKeysUn, version);
         ar & const_cast<vector<float>& >(mvuRight);
         ar & const_cast<vector<float>& >(mvDepth);
-        serializeMatrix<Archive>(ar,mDescriptors,vers);
+        serializeMatrix<Archive>(ar,mDescriptors,version);
         // BOW
         ar & mBowVec;
         ar & mFeatVec;
         // Pose relative to parent
-        serializeSophusSE3<Archive>(ar, mTcp, vers);
+        serializeSophusSE3<Archive>(ar, mTcp, version);
         // Scale
         ar & const_cast<int&>(mnScaleLevels);
         ar & const_cast<float&>(mfScaleFactor);
@@ -145,7 +145,7 @@ class KeyFrame
         ar & const_cast<int&>(mnMaxY);
         ar & boost::serialization::make_array(mK_.data(), mK_.size());
         // Pose
-        serializeSophusSE3<Archive>(ar, mTcw, vers);
+        serializeSophusSE3<Archive>(ar, mTcw, version);
         // MapPointsId associated to keypoints
         ar & mvBackupMapPointsId;
         // Grid
@@ -176,8 +176,8 @@ class KeyFrame
         ar & mvRightToLeftMatch;
         ar & const_cast<int&>(NLeft);
         ar & const_cast<int&>(NRight);
-        serializeSophusSE3<Archive>(ar, mTlr, vers);
-        serializeVectorKeyPoints<Archive>(ar, mvKeysRight, vers);
+        serializeSophusSE3<Archive>(ar, mTlr, version);
+        serializeVectorKeyPoints<Archive>(ar, mvKeysRight, version);
         ar & mGridRight;
 
         // Inertial variables

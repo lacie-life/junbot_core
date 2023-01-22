@@ -43,7 +43,7 @@ namespace ORB_SLAM3
 
 Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer, Atlas *pAtlas, boost::shared_ptr<PointCloudMapping> pPointCloud, KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, Settings* settings, const string &_nameSeq):
     mState(NO_IMAGES_YET), mSensor(sensor), mTrackedFr(0), mbStep(false),
-    mbOnlyTracking(false), mbMapUpdated(false), mbVO(false), mpORBVocabulary(pVoc), /*mpPointCloudMapping(pPointCloud),*/ mpKeyFrameDB(pKFDB),
+    mbOnlyTracking(false), mbMapUpdated(false), mbVO(false), mpORBVocabulary(pVoc), mpPointCloudMapping(pPointCloud), mpKeyFrameDB(pKFDB),
     mbReadyToInitializate(false), mpSystem(pSys), mpViewer(NULL), bStepByStep(false),
     mpFrameDrawer(pFrameDrawer), mpMapDrawer(pMapDrawer), mpAtlas(pAtlas), mnLastRelocFrameId(0), time_recently_lost(5.0),
     mnInitialFrameId(0), mbCreatedMap(false), mnFirstFrameId(0), mpCamera2(nullptr), mpLastKeyFrame(static_cast<KeyFrame*>(NULL))
@@ -1539,7 +1539,7 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
     }
 
     if((fabs(mDepthMapFactor-1.0f)>1e-5) || mImDepth.type()!=CV_32F)
-        imDepth.convertTo(mImDepth,CV_32F,mDepthMapFactor);
+        mImDepth.convertTo(mImDepth,CV_32F,mDepthMapFactor);
 
     if (mSensor == System::RGBD)
         mCurrentFrame = Frame(mImGray,mImDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera);
@@ -3332,12 +3332,12 @@ void Tracking::CreateNewKeyFrame()
 
     mpLocalMapper->SetNotStop(false);
 
-        double minT, maxT;
+    double minT, maxT;
     cv::minMaxIdx(mImDepth, &minT, &maxT);
 
     cout << "Depth mat type " << mImDepth.type() << endl;
-    cout << "DepthMapFactor" << mDepthMapFactor << endl;  
-    cout << "BEFORE +++ (" << minT << ", " << maxT << ") "; 
+    cout << "DepthMapFactor " << mDepthMapFactor << endl;  
+    cout << "BEFORE +++ (" << minT << ", " << maxT << ") \n"; 
 
     cv::minMaxIdx(this->mImRGB, &minT, &maxT);
 
@@ -3345,10 +3345,10 @@ void Tracking::CreateNewKeyFrame()
     cout << "Color mat type " << mImRGB.type() << endl;
     cout << "Color mat size " << mImRGB.size() << endl;
     cout << "Color mat channels " << mImRGB.channels() << endl;
-    cout << "Color +++ (" << minT << ", " << maxT << ") "; 
+    cout << "Color +++ (" << minT << ", " << maxT << ") \n"; 
 
 	// insert Key Frame into point cloud viewer
-    // mpPointCloudMapping->insertKeyFrame( pKF, this->mImRGB, this->mImDepth);
+    mpPointCloudMapping->insertKeyFrame(pKF, this->mImRGB, this->mImDepth);
 
     mnLastKeyFrameId = mCurrentFrame.mnId;
     mpLastKeyFrame = pKF;

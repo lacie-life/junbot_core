@@ -34,7 +34,7 @@ namespace ORB_SLAM3
 {
 
 template <class Archive>
-void serializeSophusSE3(Archive &ar, Sophus::SE3f &T, const unsigned int vers)
+void serializeSophusSE3(Archive &ar, Sophus::SE3f &T, const unsigned int version)
 {
     Eigen::Vector4f quat;
     Eigen::Vector3f transl;
@@ -74,7 +74,7 @@ void serializeDiagonalMatrix(Archive &ar, Eigen::DiagonalMatrix<float, dim> &D, 
 }*/
 
 template<class Archive>
-void serializeMatrix(Archive& ar, cv::Mat& mat, const unsigned int vers)
+void serializeMatrix(Archive& ar, cv::Mat& mat, const unsigned int version)
 {
     int cols, rows, type;
     bool continuous;
@@ -101,11 +101,11 @@ void serializeMatrix(Archive& ar, cv::Mat& mat, const unsigned int vers)
 }
 
 template<class Archive>
-void serializeMatrix(Archive& ar, const cv::Mat& mat, const unsigned int vers)
+void serializeMatrix(Archive& ar, const cv::Mat& mat, const unsigned int version)
 {
     cv::Mat matAux = mat;
 
-    serializeMatrix(ar, matAux,vers);
+    serializeMatrix(ar, matAux,version);
 
     if (Archive::is_loading::value)
     {
@@ -116,7 +116,7 @@ void serializeMatrix(Archive& ar, const cv::Mat& mat, const unsigned int vers)
 }
 
 template<class Archive>
-void serializeVectorKeyPoints(Archive& ar, const std::vector<cv::KeyPoint>& vKP, const unsigned int vers)
+void serializeVectorKeyPoints(Archive& ar, const std::vector<cv::KeyPoint>& vKP, const unsigned int version)
 {
     int NumEl;
 

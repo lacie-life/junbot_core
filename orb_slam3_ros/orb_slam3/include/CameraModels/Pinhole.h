@@ -31,7 +31,7 @@ namespace ORB_SLAM3 {
     friend class boost::serialization::access;
 
     template<class Archive>
-    void serialize(Archive& ar, const unsigned int vers)
+    void serialize(Archive& ar, const unsigned int version)
     {
         ar & boost::serialization::base_object<GeometricCamera>(*this);
     }

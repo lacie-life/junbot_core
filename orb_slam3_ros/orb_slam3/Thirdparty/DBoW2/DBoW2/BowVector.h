@@ -61,7 +61,7 @@ class BowVector:
 {
     friend class boost::serialization::access;
     template<class Archive>
-    void serialize(Archive& ar, const int vers)
+    void serialize(Archive& ar, const int version)
     {
         ar & boost::serialization::base_object<std::map<WordId, WordValue> >(*this);
     }

@@ -26,7 +26,7 @@ class FeatureVector:
 {
     friend class boost::serialization::access;
     template<class Archive>
-    void serialize(Archive& ar, const int vers)
+    void serialize(Archive& ar, const int version)
     {
         ar & boost::serialization::base_object<std::map<NodeId, std::vector<unsigned int> > >(*this);
     }

@@ -63,7 +63,7 @@ class Bias
 {
     friend class boost::serialization::access;
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int vers)
+    void serialize(Archive & ar, const unsigned int version)
     {
         ar & bax;
         ar & bay;
@@ -93,10 +93,10 @@ class Calib
 {
     friend class boost::serialization::access;
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int vers)
+    void serialize(Archive & ar, const unsigned int version)
     {
-        serializeSophusSE3(ar,mTcb,vers);
-        serializeSophusSE3(ar,mTbc,vers);
+        serializeSophusSE3(ar,mTcb,version);
+        serializeSophusSE3(ar,mTbc,version);
 
         ar & boost::serialization::make_array(Cov.diagonal().data(), Cov.diagonal().size());
         ar & boost::serialization::make_array(CovWalk.diagonal().data(), CovWalk.diagonal().size());
@@ -144,7 +144,7 @@ class Preintegrated
 {
     friend class boost::serialization::access;
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int vers)
+    void serialize(Archive & ar, const unsigned int version)
     {
         ar & dT;
         ar & boost::serialization::make_array(C.data(), C.size());
@@ -231,7 +231,7 @@ private:
     struct integrable
     {
         template<class Archive>
-        void serialize(Archive & ar, const unsigned int vers)
+        void serialize(Archive & ar, const unsigned int version)
         {
             ar & boost::serialization::make_array(a.data(), a.size());
             ar & boost::serialization::make_array(w.data(), w.size());

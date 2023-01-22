@@ -64,6 +64,10 @@ add_definitions(${PCL_DEFINITIONS})
 include_directories(${PCL_INCLUDE_DIRS})
 message("PCL Include Directory: ${PCL_INCLUDE_DIRS}")
 
+find_package(Boost COMPONENTS system filesystem serialization REQUIRED)
+include_directories(${Boost_INCLUDE_DIR})
+link_directories(${Boost_LIBRARY_DIR})
+
 add_service_files(
   FILES
   SaveMap.srv
@@ -169,7 +173,6 @@ target_link_libraries(${PROJECT_NAME}
   ${PCL_LIBRARIES}
   ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/DBoW2/lib/libDBoW2.so
   ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/g2o/lib/libg2o.so
-  -lboost_system
   -lboost_serialization
   -lcrypto
 )
@@ -230,6 +233,15 @@ add_executable(ros_rgbd_inertial
   src/common.cc
 )
 target_link_libraries(ros_rgbd_inertial
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+)
+
+## ROS node
+add_executable(simple_rgbd_node
+  src/simple_rgbd_node.cpp
+)
+target_link_libraries(simple_rgbd_node
   ${PROJECT_NAME}
   ${catkin_LIBRARIES}
 )

@@ -81,7 +81,10 @@ void PointCloudMapping::shutdown()
 
 void PointCloudMapping::insertKeyFrame(KeyFrame *kf, cv::Mat &color, cv::Mat &depth)
 {
+    std::cout << "There? \n";
+
     unique_lock<mutex> lck(keyframeMutex);
+    
     keyframes.push_back(kf);
     colorImgs.push_back(color.clone());
     depthImgs.push_back(depth.clone());
@@ -93,13 +96,6 @@ pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePoint
 {
     
     PointCloud::Ptr tmp(new PointCloud());
-
-    if(kf->GetPose().log() == Sophus::SE3f().log())
-    {
-        globalMap->clear();
-        globalMap->reserve(0);
-        return tmp;
-    }
 
     // point cloud is null ptr
     for (int m = 0; m < depth.rows; m++)
@@ -123,7 +119,7 @@ pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePoint
         }
     }
 
-    std::cout << tmp->size() << std::endl;
+    std::cout << "Size: " << tmp->size() << std::endl;
 
     tmp->is_dense = false;
 
@@ -136,7 +132,10 @@ void PointCloudMapping::generateAndPublishPointCloud(size_t N)
     {
         PointCloud::Ptr p = generatePointCloud(keyframes[i], colorImgs[i], depthImgs[i]);
         PointCloud::Ptr tmp1(new PointCloud());
+
         tmp1->resize(p->size());
+
+
         voxel.setInputCloud(p);
         voxel.filter(*tmp1);
         p->swap(*tmp1);
@@ -144,7 +143,7 @@ void PointCloudMapping::generateAndPublishPointCloud(size_t N)
         pcl::toROSMsg(*p, pclPoint);
         pclPoint.header.frame_id = "/pointCloudFrame";
         Eigen::Isometry3d T = Converter::toSE3Quat(keyframes[i]->GetPose());
-        broadcastTranformMat(T.inverse());
+        broadcastTransformMat(T.inverse());
 
         pclPub.publish(pclPoint);
     }
@@ -152,8 +151,9 @@ void PointCloudMapping::generateAndPublishPointCloud(size_t N)
     lastKeyframeSize = N;
 }
 
-void PointCloudMapping::broadcastTranformMat(Eigen::Isometry3d cameraPose)
+void PointCloudMapping::broadcastTransformMat(Eigen::Isometry3d cameraPose)
 {
+    // TODO: Need to check transform
     static tf::TransformBroadcaster transformBroadcaster;
 
     Eigen::Matrix4d m;
@@ -188,7 +188,7 @@ void PointCloudMapping::broadcastTranformMat(Eigen::Isometry3d cameraPose)
 void PointCloudMapping::viewer()
 {
     ros::NodeHandlePtr n = boost::make_shared<ros::NodeHandle>();
-    pclPub = n->advertise<sensor_msgs::PointCloud2>("/slam_pointclouds", 100000);s
+    pclPub = n->advertise<sensor_msgs::PointCloud2>("/slam_pointclouds", 100000);
 
     while (ros::ok())
     {

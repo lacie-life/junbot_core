@@ -46,7 +46,7 @@ class MapPoint
 
     friend class boost::serialization::access;
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int vers)
+    void serialize(Archive & ar, const unsigned int version)
     {
         ar & mnId;
         ar & mnFirstKFid;
@@ -89,7 +89,7 @@ class MapPoint
         //ar & mObservations;
         ar & mBackupObservationsId1;
         ar & mBackupObservationsId2;
-        serializeMatrix(ar,mDescriptor,vers);
+        serializeMatrix(ar,mDescriptor,version);
         ar & mBackupRefKFId;
         //ar & mnVisible;
         //ar & mnFound;
