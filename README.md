@@ -2,7 +2,7 @@
 
 # TODO List:
 
-- [ ] Create point cloud by ORB-SLAM3 (Pending release code)
+- [x] Create point cloud by ORB-SLAM3 (Pending release code)
 - [ ] Publish point cloud to ROS
 - [ ] Explore enviroment
   - [ ] Option 1: Segment point cloud by PointNet++ => get 3D bounding box of object (office enviroment) [Ref](https://github.com/sc19aas/3D-object-detection)
