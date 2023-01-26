@@ -1523,6 +1523,20 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
     mImDepth = imD;
     mImRGB = imRGB;
 
+    if (mpSystem->isYoloDetection)
+    {
+        // Yolo
+        cv::Mat InputImage;
+        InputImage = imRGB.clone();
+        mpDetector->GetImage(InputImage);
+        mpDetector->Detect();
+        mpORBextractorLeft->mvDynamicArea = mpDetector->mvDynamicArea;
+        {
+            std::unique_lock<std::mutex> lock(mpViewer->mMutexPAFinsh);
+            mpViewer->mmDetectMap = mpDetector->mmDetectMap;
+        }
+    }
+
     if(mImGray.channels()==3)
     {
         if(mbRGB)
@@ -1545,6 +1559,13 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
         mCurrentFrame = Frame(mImGray,mImDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera);
     else if(mSensor == System::IMU_RGBD)
         mCurrentFrame = Frame(mImGray,mImDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,&mLastFrame,*mpImuCalib);
+
+    if(mpSystem->isYoloDetection)
+    {
+        mCurrentFrame.mvDynamicArea = mpDetector->mvDynamicArea;
+        mpDetector->mmDetectMap.clear();
+        mpDetector->mvDynamicArea.clear();
+    }
 
     mCurrentFrame.mNameFile = filename;
     mCurrentFrame.mnDataset = mnNumDataset;
@@ -4155,6 +4176,12 @@ void Tracking::Release()
     mbStopped = false;
     mbStopRequested = false;
 }
+
+void Tracking::SetDetector(YoloDetection* pDetector)
+{
+    mpDetector = pDetector;
+}
+
 #endif
 
 } //namespace ORB_SLAM

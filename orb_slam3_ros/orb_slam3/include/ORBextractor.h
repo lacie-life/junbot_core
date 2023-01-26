@@ -44,7 +44,10 @@ class ORBextractor
 {
 public:
     
-    enum {HARRIS_SCORE=0, FAST_SCORE=1 };
+    enum {
+        HARRIS_SCORE=0, 
+        FAST_SCORE=1 
+    };
 
     ORBextractor(int nfeatures, float scaleFactor, int nlevels,
                  int iniThFAST, int minThFAST);
@@ -81,6 +84,7 @@ public:
     }
 
     std::vector<cv::Mat> mvImagePyramid;
+    std::vector<cv::Rect2i> mvDynamicArea;
 
 protected:
 

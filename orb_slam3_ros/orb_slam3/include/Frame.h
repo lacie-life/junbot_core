@@ -162,7 +162,7 @@ public:
         return mbHasVelocity;
     }
 
-
+    std::vector<cv::Rect2i> mvDynamicArea;
 
 private:
     //Sophus/Eigen migration

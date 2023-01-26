@@ -421,6 +421,8 @@ public:
     std::vector <KeyFrame*> mvpLoopCandKFs;
     std::vector <KeyFrame*> mvpMergeCandKFs;
 
+    std::vector<cv::Rect2i> mvDynamicArea;
+
     //bool mbHasHessian;
     //cv::Mat mHessianPose;
 

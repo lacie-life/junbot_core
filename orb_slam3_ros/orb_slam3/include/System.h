@@ -39,6 +39,8 @@
 #include "Viewer.h"
 #include "ImuTypes.h"
 #include "Settings.h"
+
+#include "YoloDetection.h"
 #include "PointCloudMapping.h"
 
 class PointCloudMapping;
@@ -271,6 +273,7 @@ private:
     string mStrSaveAtlasToFile;
 
     string mStrVocabularyFilePath;
+    YoloDetection* mpDetector;
 
     Settings* settings_;
 

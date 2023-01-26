@@ -106,6 +106,20 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     }
 
     float resolution = fsSettings["PointCloudMapping.Resolution"];
+    int model = fsSettings["Semantic.Model"];
+
+    // Yolo
+    if(model == 0)
+    {
+        cout << "Using YoLo detector \n";
+        isYoloDetection = true;
+        mpDetector = new YoloDetection();
+    }
+    else{
+        cout << "Defaut: YoLo detector \n";
+        isYoloDetection = true;
+        mpDetector = new YoloDetection();
+    }
 
     node = fsSettings["loopClosing"];
     bool activeLC = true;
@@ -183,6 +197,11 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     cout << "Seq. Name: " << strSequence << endl;
     mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer,
                              mpAtlas, mpPointCloudMapping, mpKeyFrameDatabase, strSettingsFile, mSensor, settings_, strSequence);
+
+    if(isYoloDetection)
+    {
+        mpTracker->SetDetector(mpDetector);
+    }
 
     //Initialize the Local Mapping thread and launch
     mpLocalMapper = new LocalMapping(this, mpAtlas, mSensor==MONOCULAR || mSensor==IMU_MONOCULAR,

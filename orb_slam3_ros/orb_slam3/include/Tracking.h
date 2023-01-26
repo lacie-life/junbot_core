@@ -36,6 +36,8 @@
 #include "System.h"
 #include "ImuTypes.h"
 #include "Settings.h"
+
+#include "YoloDetection.h"
 #include "PointCloudMapping.h"
 
 #include "GeometricCamera.h"
@@ -84,6 +86,7 @@ public:
     void SetLocalMapper(LocalMapping* pLocalMapper);
     void SetLoopClosing(LoopClosing* pLoopClosing);
     void SetViewer(Viewer* pViewer);
+    void SetDetector(YoloDetection* pDetector);
     void SetStepByStep(bool bSet);
     bool GetStepByStep();
 
@@ -350,6 +353,7 @@ protected:
 
     // For point cloud viewing
     boost::shared_ptr<PointCloudMapping> mpPointCloudMapping;
+    YoloDetection* mpDetector;
 
     list<MapPoint*> mlpTemporalPoints;
 
