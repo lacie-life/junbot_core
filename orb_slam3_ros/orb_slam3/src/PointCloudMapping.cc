@@ -57,7 +57,6 @@
 using namespace std;
 
 ros::Publisher pclPub;
-ros::Subscriber maskSub;
 sensor_msgs::PointCloud2 pclPoint;
 
 PointCloudMapping::PointCloudMapping(double resolution_)
@@ -103,7 +102,7 @@ pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePoint
         for (int n = 0; n < depth.cols; n++)
         {
             float d = depth.ptr<float>(m)[n];
-            if (d < 0.01 || d>10)
+            if (d < 0.01 || d > MAX_POINTCLOUD_DEPTH)
                 continue;
 
             PointT _p;
@@ -141,7 +140,7 @@ void PointCloudMapping::generateAndPublishPointCloud(size_t N)
         p->swap(*tmp1);
 
         pcl::toROSMsg(*p, pclPoint);
-        pclPoint.header.frame_id = "/pointCloudFrame";
+        pclPoint.header.frame_id = "pointCloudFrame";
         Eigen::Isometry3d T = Converter::toSE3Quat(keyframes[i]->GetPose());
         broadcastTransformMat(T.inverse());
 
@@ -181,8 +180,10 @@ void PointCloudMapping::broadcastTransformMat(Eigen::Isometry3d cameraPose)
     transform.setOrigin(translationMat);
     transform.setBasis(rotationMat);
 
-    // Publish the transfrom with the parent frame = /cameraToRobot and create a new child frame /pointCloudFrame
-    transformBroadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "/cameraToRobot", "/pointCloudFrame"));
+    std::cout << "Transform: " << finalTransform.matrix() << "\n"; 
+
+    // Publish the transfrom with the parent frame = /cameraToRobot and create a new child frame pointCloudFrame
+    transformBroadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "cameraToRobot", "pointCloudFrame"));
 }
 
 void PointCloudMapping::viewer()

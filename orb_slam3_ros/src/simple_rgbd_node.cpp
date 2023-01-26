@@ -33,7 +33,7 @@ void LoadImages(const string &strAssociationFilenameDepth, const string &strAsso
 int main(int argc, char **argv)
 {
 
-    ros::init(argc, argv, "RGBD");
+    ros::init(argc, argv, "simple_rgbd_node");
     ros::start();
 
     if(argc != 6)
