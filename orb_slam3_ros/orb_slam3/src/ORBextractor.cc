@@ -868,8 +868,46 @@ namespace ORB_SLAM3
                         }
                     }
 
+                    // Delete kp
+                    float scale = mvScaleFactor[level];
+                    for (auto vit = vToDistributeKeys.begin(); vit != vToDistributeKeys.end(); vit++)
+                    {
+                        vit->pt.x += minBorderX;
+                        vit->pt.y += minBorderY;
+                        vit->pt *= scale;
+                    }
+
+                    bool Find = false;
+                    for (auto vit_kp = vToDistributeKeys.begin(); vit_kp != vToDistributeKeys.end();)
+                    {
+                        for (auto vit_area = mvDynamicArea.begin(); vit_area != mvDynamicArea.end(); vit_area++)
+                        {
+                            Find = false;
+                            if (vit_area->contains(vit_kp->pt))
+                            {
+                                Find = true;
+                                vit_kp = vToDistributeKeys.erase(vit_kp);
+                                break;
+                            }
+                        }
+
+                        if (!Find)
+                        {
+                            ++vit_kp;
+                            Find = false;
+                        }
+                    }
+
+                    float scale_inverse = 1 / scale;
+                    for (auto vit = vToDistributeKeys.begin(); vit != vToDistributeKeys.end(); vit++)
+                    {
+                        vit->pt *= scale_inverse;
+                        vit->pt.x -= minBorderX;
+                        vit->pt.y -= minBorderY;
+                    }
+
                 }
-            }
+            } 
 
             vector<KeyPoint> & keypoints = allKeypoints[level];
             keypoints.reserve(nfeatures);

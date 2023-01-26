@@ -29,6 +29,8 @@
 #include "MLPnPsolver.h"
 #include "GeometricTools.h"
 
+#include "YoloDetection.h"
+
 #include <iostream>
 
 #include <mutex>
@@ -3348,6 +3350,7 @@ void Tracking::CreateNewKeyFrame()
         }
     }
 
+    pKF->mvDynamicArea = mCurrentFrame.mvDynamicArea;
 
     mpLocalMapper->InsertKeyFrame(pKF);
 
@@ -4138,6 +4141,12 @@ bool Tracking::isImuPreintegrated()
     return mCurrentFrame.mpImuPreintegrated;
 }
 
+
+void Tracking::SetDetector(YoloDetection* pDetector)
+{
+    mpDetector = pDetector;
+}
+
 #ifdef REGISTER_LOOP
 void Tracking::RequestStop()
 {
@@ -4175,11 +4184,6 @@ void Tracking::Release()
     unique_lock<mutex> lock(mMutexStop);
     mbStopped = false;
     mbStopRequested = false;
-}
-
-void Tracking::SetDetector(YoloDetection* pDetector)
-{
-    mpDetector = pDetector;
 }
 
 #endif

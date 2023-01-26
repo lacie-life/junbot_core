@@ -141,7 +141,7 @@ void PointCloudMapping::generateAndPublishPointCloud(size_t N)
 
     for (size_t i = lastKeyframeSize; i < N; i++)
     {
-        PointCloud::Ptr p = generatePointCloud(keyframes[i], colorImgs[i], depthImgs[i]);
+        PointCloud::Ptr p = generatePointCloudWithDynamicObject(keyframes[i], colorImgs[i], depthImgs[i]);
         PointCloud::Ptr tmp1(new PointCloud());
 
         tmp1->resize(p->size());
@@ -171,6 +171,47 @@ void PointCloudMapping::generateAndPublishPointCloud(size_t N)
     fullMapPub.publish(fullPCLPoint);
 
     lastKeyframeSize = N;
+}
+
+pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePointCloudWithDynamicObject(KeyFrame* kf, cv::Mat& color, cv::Mat& depth)
+{
+    PointCloud::Ptr pointCloud_temp(new PointCloud);
+
+    for (int v = 0; v < color.rows; v++)
+    {
+        for (int u = 0; u < color.cols; u++)
+        {
+            cv::Point2i pt(u, v);
+            bool IsDynamic = false;
+            for (auto area : kf->mvDynamicArea)
+                if (area.contains(pt)) IsDynamic = true;
+            if (!IsDynamic)
+            {
+                float d = depth.ptr<float>(v)[u];
+                if (d<0.01 || d>10)
+                    continue;
+                PointT p;
+                p.z = d;
+                p.x = ( u - kf->cx) * p.z / kf->fx;
+                p.y = ( v - kf->cy) * p.z / kf->fy;
+
+                p.b = color.ptr<cv::Vec3b>(v)[u][0];
+                p.g = color.ptr<cv::Vec3b>(v)[u][1];
+                p.r = color.ptr<cv::Vec3b>(v)[u][2];
+                pointCloud_temp->push_back(p);
+            }
+        }
+    }
+    std::cout << "Size: " << pointCloud_temp->size() << "\n";
+
+    // Eigen::Isometry3d T = ORB_SLAM3::Converter::toSE3Quat(kf->GetPose());
+    // PointCloud::Ptr pointCloud(new PointCloud);
+    // pointCloud->resize(pointCloud_temp->size());
+    // pcl::transformPointCloud(*pointCloud_temp, *pointCloud, T.inverse().matrix());
+
+    pointCloud_temp->is_dense = false;
+
+    return pointCloud_temp;
 }
 
 void PointCloudMapping::broadcastTransformMat(Eigen::Isometry3d cameraPose)
@@ -245,4 +286,7 @@ void PointCloudMapping::viewer()
         pclThread = boost::make_shared<thread>(boost::bind(&PointCloudMapping::generateAndPublishPointCloud, this, _1), N);
         pclThread->join();
     }
+
+    pcl::io::savePCDFile("result.pcd", *globalMap);
+    std::cout << "Final point cloud saved!!!" << std::endl;
 }

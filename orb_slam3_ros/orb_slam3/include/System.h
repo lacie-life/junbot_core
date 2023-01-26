@@ -22,11 +22,11 @@
 
 
 #include <unistd.h>
-#include<stdio.h>
-#include<stdlib.h>
-#include<string>
-#include<thread>
-#include<opencv2/core/core.hpp>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
+#include <thread>
+#include <opencv2/core/core.hpp>
 
 #include "Tracking.h"
 #include "FrameDrawer.h"
@@ -273,12 +273,16 @@ private:
     string mStrSaveAtlasToFile;
 
     string mStrVocabularyFilePath;
+
     YoloDetection* mpDetector;
 
     Settings* settings_;
 
     // Point cloud mapping
     boost::shared_ptr<PointCloudMapping> mpPointCloudMapping;
+
+public:
+    bool isYoloDetection = true;
 };
 
 }// namespace ORB_SLAM

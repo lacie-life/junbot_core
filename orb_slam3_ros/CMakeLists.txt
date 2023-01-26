@@ -185,66 +185,6 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 ## ROS node
-add_executable(ros_mono
-  src/ros_mono.cc
-  src/common.cc
-)
-target_link_libraries(ros_mono
-  ${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-)
-
-## ROS node
-add_executable(ros_mono_inertial 
-  src/ros_mono_inertial.cc
-  src/common.cc
-)
-target_link_libraries(ros_mono_inertial 
-  ${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-)
-
-## ROS node
-add_executable(ros_stereo 
-  src/ros_stereo.cc
-  src/common.cc
-)
-target_link_libraries(ros_stereo
-  ${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-)
-
-## ROS node
-add_executable(ros_stereo_inertial
-  src/ros_stereo_inertial.cc
-  src/common.cc
-)
-target_link_libraries(ros_stereo_inertial 
-  ${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-)
-
-## ROS node
-add_executable(ros_rgbd
-  src/ros_rgbd.cc
-  src/common.cc
-)
-target_link_libraries(ros_rgbd
-  ${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-)
-
-## ROS node
-add_executable(ros_rgbd_inertial
-  src/ros_rgbd_inertial.cc
-  src/common.cc
-)
-target_link_libraries(ros_rgbd_inertial
-  ${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-)
-
-## ROS node
 add_executable(simple_rgbd_node
   src/simple_rgbd_node.cpp
 )

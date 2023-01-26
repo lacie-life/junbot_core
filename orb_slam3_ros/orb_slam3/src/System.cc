@@ -108,17 +108,21 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     float resolution = fsSettings["PointCloudMapping.Resolution"];
     int model = fsSettings["Semantic.Model"];
 
+    cv::FileNode modelNode = fsSettings["Semantic.ModelPath"];
+    string modelPath = (string)modelNode;
+    std::cout << modelPath << endl;
+
     // Yolo
     if(model == 0)
     {
         cout << "Using YoLo detector \n";
         isYoloDetection = true;
-        mpDetector = new YoloDetection();
+        mpDetector = new YoloDetection(modelPath);
     }
     else{
         cout << "Defaut: YoLo detector \n";
         isYoloDetection = true;
-        mpDetector = new YoloDetection();
+        mpDetector = new YoloDetection(modelPath);
     }
 
     node = fsSettings["loopClosing"];
