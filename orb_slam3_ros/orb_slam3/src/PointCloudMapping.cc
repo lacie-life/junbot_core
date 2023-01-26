@@ -52,12 +52,14 @@
 
 #include <opencv2/core/core.hpp>
 
-#define MAX_POINTCLOUD_DEPTH 2.0 // in meters
+#define MAX_POINTCLOUD_DEPTH 10.0 // in meters
 
 using namespace std;
 
 ros::Publisher pclPub;
+ros::Publisher fullMapPub;
 sensor_msgs::PointCloud2 pclPoint;
+sensor_msgs::PointCloud2 fullPCLPoint;
 
 PointCloudMapping::PointCloudMapping(double resolution_)
 {
@@ -65,6 +67,7 @@ PointCloudMapping::PointCloudMapping(double resolution_)
     voxel.setLeafSize(resolution, resolution, resolution);
     this->sor.setMeanK(100);
     this->sor.setStddevMulThresh(0.1);
+    globalMap = boost::make_shared<PointCloud>();
     viewerThread = boost::make_shared<thread>(bind(&PointCloudMapping::viewer, this));
 }
 
@@ -127,6 +130,15 @@ pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePoint
 
 void PointCloudMapping::generateAndPublishPointCloud(size_t N)
 {
+    Eigen::Matrix4d m;
+
+    m << 0, 0, 1, 0,
+        -1, 0, 0, 0,
+        0, -1, 0, 0,
+        0, 0, 0, 1;
+
+    Eigen::Isometry3d axisTransform(m);
+
     for (size_t i = lastKeyframeSize; i < N; i++)
     {
         PointCloud::Ptr p = generatePointCloud(keyframes[i], colorImgs[i], depthImgs[i]);
@@ -134,18 +146,29 @@ void PointCloudMapping::generateAndPublishPointCloud(size_t N)
 
         tmp1->resize(p->size());
 
-
         voxel.setInputCloud(p);
         voxel.filter(*tmp1);
         p->swap(*tmp1);
 
+        // Convert to sensor_msgs 
         pcl::toROSMsg(*p, pclPoint);
         pclPoint.header.frame_id = "pointCloudFrame";
         Eigen::Isometry3d T = Converter::toSE3Quat(keyframes[i]->GetPose());
         broadcastTransformMat(T.inverse());
 
         pclPub.publish(pclPoint);
+
+        // Merge full map
+        PointCloud::Ptr _p(new PointCloud);
+        _p->resize(p->size());
+        pcl::transformPointCloud(*p, *_p, axisTransform * T.inverse().matrix());
+        _p->is_dense = false;
+        *globalMap += *_p;
     }
+
+    pcl::toROSMsg(*globalMap, fullPCLPoint);
+    fullPCLPoint.header.frame_id = "cameraToRobot";
+    fullMapPub.publish(fullPCLPoint);
 
     lastKeyframeSize = N;
 }
@@ -190,6 +213,7 @@ void PointCloudMapping::viewer()
 {
     ros::NodeHandlePtr n = boost::make_shared<ros::NodeHandle>();
     pclPub = n->advertise<sensor_msgs::PointCloud2>("/slam_pointclouds", 100000);
+    fullMapPub = n->advertise<sensor_msgs::PointCloud2>("/full_slam_pointclouds", 100000);
 
     while (ros::ok())
     {

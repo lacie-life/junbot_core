@@ -78,6 +78,8 @@ public:
 protected:
     PointCloud::Ptr generatePointCloud(KeyFrame *kf, cv::Mat color, cv::Mat depth);
 
+    PointCloud::Ptr globalMap;
+
     boost::shared_ptr<thread> viewerThread;
     boost::shared_ptr<thread> pclThread;
 
