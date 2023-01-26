@@ -68,6 +68,10 @@ find_package(Boost COMPONENTS system filesystem serialization REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIR})
 
+list(APPEND CMAKE_PREFIX_PATH "~/Github/libtorch/")
+find_package(Torch REQUIRED)
+include_directories(${TORCH_INCLUDE_DIRS})
+
 add_service_files(
   FILES
   SaveMap.srv
@@ -131,6 +135,7 @@ add_library(${PROJECT_NAME} SHARED
   orb_slam3/src/GeometricTools.cc
   orb_slam3/src/TwoViewReconstruction.cc
   orb_slam3/src/PointCloudMapping.cc
+  orb_slam3/src/YoloDetection.cpp
   orb_slam3/src/Config.cc
   orb_slam3/src/Settings.cc
   orb_slam3/include/System.h
@@ -164,6 +169,7 @@ add_library(${PROJECT_NAME} SHARED
   orb_slam3/include/Config.h
   orb_slam3/include/Settings.h
   orb_slam3/include/PointCloudMapping.h
+  orb_slam3/include/YoloDetection.h
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -171,6 +177,7 @@ target_link_libraries(${PROJECT_NAME}
   ${EIGEN3_LIBS}
   ${Pangolin_LIBRARIES}
   ${PCL_LIBRARIES}
+  ${TORCH_LIBRARIES}
   ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/DBoW2/lib/libDBoW2.so
   ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/g2o/lib/libg2o.so
   -lboost_serialization
