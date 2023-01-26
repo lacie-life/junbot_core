@@ -72,6 +72,17 @@ list(APPEND CMAKE_PREFIX_PATH "~/Github/libtorch/")
 find_package(Torch REQUIRED)
 include_directories(${TORCH_INCLUDE_DIRS})
 
+# cuda
+find_package(CUDA REQUIRED)
+include_directories(${CUDA_INCLUDE_DIRS})
+link_directories(${CUDA_LIBRARY_DIRS})
+include_directories(/usr/local/cuda/include)
+link_directories(/usr/local/cuda/lib64)
+
+# tensorrt
+include_directories(/usr/include/x86_64-linux-gnu/)
+link_directories(/usr/lib/x86_64-linux-gnu/)
+
 add_service_files(
   FILES
   SaveMap.srv
@@ -178,6 +189,9 @@ target_link_libraries(${PROJECT_NAME}
   ${Pangolin_LIBRARIES}
   ${PCL_LIBRARIES}
   ${TORCH_LIBRARIES}
+  ${TRT_LIBS}
+  ${CUDA_CUDA_LIBRARY}
+  ${CUDA_CUDART_LIBRARY}
   ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/DBoW2/lib/libDBoW2.so
   ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/g2o/lib/libg2o.so
   -lboost_serialization
