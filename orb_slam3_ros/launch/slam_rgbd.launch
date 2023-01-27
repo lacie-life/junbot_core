@@ -9,6 +9,7 @@
 	output="screen"/>
 
 	<include file="$(find orb_slam3_ros)/launch/transform.launch" />
+	<include file="$(find orb_slam3_ros)/launch/octomap.launch" />
 	<node pkg="rviz" name="rviz" type="rviz" /> 
 	
 </launch>
