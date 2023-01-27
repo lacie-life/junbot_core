@@ -1,0 +1,3 @@
+<launch>
+  <include file="$(find junbot_camera)/launch/t265_camera.launch"/>
+</launch>

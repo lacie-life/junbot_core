@@ -1,0 +1,30 @@
+<launch>
+  <!-- Arguments -->
+  <arg name="model" default="waffle" doc="model type [burger, waffle, waffle_pi]"/>
+  <arg name="map_file" default="$(find junbot_navigation)/maps/map.yaml"/>
+  <arg name="open_rviz" default="true"/>
+  <arg name="move_forward_only" default="true"/>
+
+  <!-- Turtlebot3 -->
+  <include file="$(find junbot_bringup)/launch/junbot_remote.launch">
+    <arg name="model" value="jun" />
+  </include>
+
+  <!-- Map server -->
+  <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
+
+  <!-- AMCL -->
+  <include file="$(find junbot_navigation)/launch/amcl.launch"/>
+
+  <!-- move_base -->
+  <include file="$(find junbot_navigation)/launch/move_base.launch">
+    <arg name="model" value="waffle" />
+    <arg name="move_forward_only" value="$(arg move_forward_only)"/>
+  </include>
+
+  <!-- rviz -->
+  <group if="$(arg open_rviz)"> 
+    <node pkg="rviz" type="rviz" name="rviz" required="true"
+          args="-d $(find junbot_navigation)/rviz/junbot_navigation.rviz"/>
+  </group>
+</launch>

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>junbot_teleop</name>
+  <version>1.2.5</version>
+  <description>
+    Provides teleoperation using keyboard for Junbot.
+  </description>
+  <license>BSD</license>
+  <author>Melonee Wise</author>
+  <author email="thlim@robotis.com">Darby Lim</author>
+  <author email="pyo@robotis.com">Pyo</author>
+  <maintainer email="willson@robotis.com">Will Son</maintainer>
+  <maintainer email="00sao00ios00@gmail.com">Life Zero</maintainer>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>rospy</depend>
+  <depend>geometry_msgs</depend>
+</package>

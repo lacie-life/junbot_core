@@ -1,0 +1,8 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/jun/catkin_ws/devel_isolated/turtlebot3_teleop/lib/python2.7/dist-packages",
+        "/home/jun/catkin_ws/install_isolated/lib/python2.7/dist-packages",
+        "/opt/ros/melodic/lib/python2.7/dist-packages",
+        "/usr/local/lib"
+    ]
+}
