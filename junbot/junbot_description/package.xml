@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>junbot_description</name>
+  <version>1.2.5</version>
+  <description>
+    3D models of the Junbot for simulation and visualization
+  </description>
+  <license>Apache 2.0</license>
+  <author email="pyo@robotis.com">Pyo</author>
+  <author email="thlim@robotis.com">Darby Lim</author>
+  <author email="kkjong@robotis.com">Gilbert</author>
+  <maintainer email="willson@robotis.com">Will Son</maintainer>
+  <maintainer email="00sao00ios00@gmail.com">Life Zero</maintainer>
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>urdf</depend>
+  <depend>xacro</depend>
+</package>
