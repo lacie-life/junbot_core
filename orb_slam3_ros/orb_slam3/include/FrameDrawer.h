@@ -24,10 +24,10 @@
 #include "MapPoint.h"
 #include "Atlas.h"
 
-#include<opencv2/core/core.hpp>
-#include<opencv2/features2d/features2d.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/features2d/features2d.hpp>
 
-#include<mutex>
+#include <mutex>
 #include <unordered_set>
 
 
@@ -49,6 +49,7 @@ public:
     // Draw last processed frame.
     cv::Mat DrawFrame(float imageScale=1.f);
     cv::Mat DrawRightFrame(float imageScale=1.f);
+    void generatePC(void);
 
     bool both;
 
@@ -56,8 +57,17 @@ protected:
 
     void DrawTextInfo(cv::Mat &im, int nState, cv::Mat &imText);
 
+    void FillImage(cv::Mat &im, const cv::Mat &mask, cv::Scalar color);
+
+
     // Info of the frame to be drawn
     cv::Mat mIm, mImRight;
+    cv::Mat mDynMask;
+    cv::Mat mImDep;
+    cv::Mat mImRGB;
+    cv::Mat mK;
+    cv::Mat mTcw;
+
     int N;
     vector<cv::KeyPoint> mvCurrentKeys,mvCurrentKeysRight;
     vector<bool> mvbMap, mvbVO;

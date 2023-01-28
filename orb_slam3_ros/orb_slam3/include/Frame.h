@@ -20,7 +20,7 @@
 #ifndef FRAME_H
 #define FRAME_H
 
-#include<vector>
+#include <vector>
 
 #include "Thirdparty/DBoW2/DBoW2/BowVector.h"
 #include "Thirdparty/DBoW2/DBoW2/FeatureVector.h"
@@ -221,6 +221,10 @@ public:
 
     // Number of KeyPoints.
     int N;
+
+    cv::Mat mImDynm_mask;
+    bool mIsKeyFrame;
+    cv::Mat mImDepth;
 
     // Vector of keypoints (original for visualization) and undistorted (actually used by the system).
     // In the stereo case, mvKeysUn is redundant as images must be rectified.
