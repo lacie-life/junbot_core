@@ -12,6 +12,14 @@
 #include <utility>
 #include <time.h>
 
+typedef struct Object
+{
+    cv::Rect_<float> rect;  // frame
+    float prob;             // Confidence
+    std::string object_name;// object class name
+    int class_id;           // category id
+}Object;
+
 using namespace std;
 
 class YoloDetection {
@@ -22,6 +30,10 @@ public:
     void GetImage(cv::Mat& RGB);
     void ClearImage();
     bool Detect();
+
+    bool Detect(const cv::Mat& bgr_img, std::vector<Object>& objects);
+    cv::Mat display(const cv::Mat& bgr_img, std::vector<Object>& objects);
+
     void ClearArea();
 
     vector<cv::Rect2i> mvPersonArea = {};
@@ -36,6 +48,7 @@ public:
     vector<string> mvDynamicNames;
     vector<cv::Rect2i> mvDynamicArea;
     map<string, vector<cv::Rect2i>> mmDetectMap;
+    std::vector<Object> mvObject;
 };
 
 
