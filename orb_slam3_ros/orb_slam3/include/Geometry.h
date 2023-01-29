@@ -46,12 +46,12 @@ namespace ORB_SLAM3
 
         vector<ORB_SLAM3::Frame> GetRefFrames(const ORB_SLAM3::Frame &currentFrame);
 
-//      void CombineMasks(const ORB_SLAM2::Frame &currentFrame, cv::Mat &mask);
+//      void CombineMasks(const ORB_SLAM3::Frame &currentFrame, cv::Mat &mask);
 
 
-//      void FillRGBD(const ORB_SLAM2::Frame &currentFrame,
+//      void FillRGBD(const ORB_SLAM3::Frame &currentFrame,
 //                               cv::Mat &mask,cv::Mat &imGray,cv::Mat &imDepth);
-//      void FillRGBD(const ORB_SLAM2::Frame &currentFrame,
+//      void FillRGBD(const ORB_SLAM3::Frame &currentFrame,
 //                               cv::Mat &mask,cv::Mat &imGray,
 //                               cv::Mat &imDepth,cv::Mat &imRGB);
 
@@ -96,7 +96,7 @@ namespace ORB_SLAM3
         void GeometricModelCorrection(const ORB_SLAM3::Frame &currentFrame,
                                       cv::Mat &imDepth, cv::Mat &mask);
 
-        // void InpaintFrames(const ORB_SLAM2::Frame &currentFrame,
+        // void InpaintFrames(const ORB_SLAM3::Frame &currentFrame,
         //                      cv::Mat &imGray, cv::Mat &imDepth, cv::Mat &imRGB, cv::Mat &mask);
 
         void GeometricModelUpdateDB(const ORB_SLAM3::Frame &mCurrentFrame);

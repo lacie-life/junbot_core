@@ -54,6 +54,8 @@ FrameDrawer::FrameDrawer(Atlas* pAtlas, MapDrawer* pMapDrawer, const string &str
     K.at<float>(0,2) = cx;
     K.at<float>(1,2) = cy;
     K.copyTo(mK);
+
+    std::cout << "FrameDrawer Init \n";
 }
 
 cv::Mat FrameDrawer::DrawFrame(float imageScale)

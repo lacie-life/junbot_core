@@ -63,6 +63,8 @@ namespace ORB_SLAM3 {
 
         bIsLocalization = false;
         mpMerge2d3d = new(MergeSG);
+
+        std::cout << "MapDrawer Init \n";
     }
 
     MapDrawer::~MapDrawer() {

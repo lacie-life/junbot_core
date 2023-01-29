@@ -202,6 +202,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     cout << "Seq. Name: " << strSequence << endl;
     if(isYoloDetection)
     {
+        std::cout << "Here \n";
         mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer,
                                  mpAtlas, mpPointCloudMapping, mpKeyFrameDatabase,
                                  strSettingsFile, mSensor, settings_,

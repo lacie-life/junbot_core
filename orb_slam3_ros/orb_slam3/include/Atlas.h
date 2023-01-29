@@ -66,7 +66,7 @@ class Atlas
         ar & mvpCameras;
         // Need to save/load the static Id from Frame, KeyFrame, MapPoint and Map
         //ar & Map::nNextId;
-        ar & Frame::nNextId;
+        //ar & Frame::nNextId;
         //ar & KeyFrame::nNextId;
         //ar & MapPoint::nNextId;
         ar & GeometricCamera::nNextId;

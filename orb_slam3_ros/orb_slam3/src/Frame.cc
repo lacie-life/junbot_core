@@ -51,7 +51,7 @@ namespace ORB_SLAM3 {
     }
 
 
-//Copy Constructor
+    //Copy Constructor
     Frame::Frame(const Frame &frame)
             : mpcpi(frame.mpcpi), mpORBvocabulary(frame.mpORBvocabulary), mpORBextractorLeft(frame.mpORBextractorLeft),
               mpORBextractorRight(frame.mpORBextractorRight),

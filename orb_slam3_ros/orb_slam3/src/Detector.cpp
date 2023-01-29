@@ -10,6 +10,7 @@ Detector::Detector(std::string modelPath)
     mvKeyframes.clear();
     colorImgs.clear();
     mRunThread = std::make_shared<thread>(bind(&Detector::Run, this));
+    std::cout << "Yolo Detector Init \n";
 }
 Detector::~Detector()
 {
@@ -30,6 +31,7 @@ void Detector::Run(void)
 {
     while(1)
     {
+        std::cout << "Detector Running ... \n";
         {
             unique_lock<mutex> lck_colorImgUpdated( colorImgMutex);
             colorImgUpdated.wait( lck_colorImgUpdated );

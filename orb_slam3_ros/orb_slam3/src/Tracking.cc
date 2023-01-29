@@ -43,7 +43,9 @@ namespace ORB_SLAM3
 {
 
 
-Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer, Atlas *pAtlas, KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, Settings* settings, const string &_nameSeq):
+Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer,
+                   Atlas *pAtlas, KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor,
+                   Settings* settings, const string &_nameSeq):
     mState(NO_IMAGES_YET), mSensor(sensor), mTrackedFr(0), mbStep(false),
     mbOnlyTracking(false), mbMapUpdated(false), mbVO(false), mpORBVocabulary(pVoc), mpKeyFrameDB(pKFDB),
     mbReadyToInitializate(false), mpSystem(pSys), mpViewer(NULL), bStepByStep(false),
@@ -143,6 +145,7 @@ Tracking::Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer,
         mnInitialFrameId(0), mbCreatedMap(false), mnFirstFrameId(0), mpCamera2(nullptr), mpLastKeyFrame(static_cast<KeyFrame*>(NULL)),
         mpDetector(pDetector)
 {
+    std::cout << "Here \n";
     // Load camera parameters from settings file
     if(settings){
         newParameterLoader(settings);
@@ -1670,10 +1673,10 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
 
     cv::Mat mImMask;
     cv::Mat CurrFrameTcw = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(mCurrentFrame.GetPose()));
-    if(!CurrFrameTcw.empty())
-    {
-        mGeometry.GeometricModelCorrection(mCurrentFrame, mImDepth, mImMask);
-    }
+//    if(!CurrFrameTcw.empty())
+//    {
+//        mGeometry.GeometricModelCorrection(mCurrentFrame, mImDepth, mImMask);
+//    }
 
     cv::Mat homo;
     bool flag;
