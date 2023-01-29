@@ -36,6 +36,7 @@ namespace ORB_SLAM3
 
 class Tracking;
 class Viewer;
+class Atlas;
 
 class FrameDrawer
 {

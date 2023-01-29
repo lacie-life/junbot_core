@@ -5,8 +5,8 @@
 #ifndef AG_MAPPING_YOLODETECTION_H
 #define AG_MAPPING_YOLODETECTION_H
 
-#include <opencv2/opencv.hpp>
 #include <torch/script.h>
+#include <opencv2/opencv.hpp>
 #include <algorithm>
 #include <iostream>
 #include <utility>
@@ -18,7 +18,7 @@ typedef struct Object
     float prob;             // Confidence
     std::string object_name;// object class name
     int class_id;           // category id
-}Object;
+} Object;
 
 using namespace std;
 

@@ -20,6 +20,8 @@
 #include "ObjectDatabase.h"
 #include "YoloDetection.h"
 
+using namespace pcl;
+
 struct Cluster;
 class ObjectDatabase;
 

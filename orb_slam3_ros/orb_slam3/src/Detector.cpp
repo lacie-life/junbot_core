@@ -9,7 +9,7 @@ Detector::Detector(std::string modelPath)
     mDetector = new YoloDetection(modelPath);
     mvKeyframes.clear();
     colorImgs.clear();
-    mRunThread = make_shared<thread>( bind(&Detector::Run, this ) );
+    mRunThread = std::make_shared<thread>(bind(&Detector::Run, this));
 }
 Detector::~Detector()
 {

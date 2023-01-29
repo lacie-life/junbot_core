@@ -25,6 +25,9 @@
 #include "GeometricCamera.h"
 #include "Pinhole.h"
 #include "KannalaBrandt8.h"
+#include "Frame.h"
+#include "Viewer.h"
+#include "KeyFrameDatabase.h"
 
 #include <set>
 #include <mutex>
@@ -42,6 +45,7 @@ class KeyFrameDatabase;
 class Frame;
 class KannalaBrandt8;
 class Pinhole;
+class GeometricCamera;
 
 //BOOST_CLASS_EXPORT_GUID(Pinhole, "Pinhole")
 //BOOST_CLASS_EXPORT_GUID(KannalaBrandt8, "KannalaBrandt8")
@@ -61,10 +65,10 @@ class Atlas
         ar & mvpBackupMaps;
         ar & mvpCameras;
         // Need to save/load the static Id from Frame, KeyFrame, MapPoint and Map
-        ar & Map::nNextId;
+        //ar & Map::nNextId;
         ar & Frame::nNextId;
-        ar & KeyFrame::nNextId;
-        ar & MapPoint::nNextId;
+        //ar & KeyFrame::nNextId;
+        //ar & MapPoint::nNextId;
         ar & GeometricCamera::nNextId;
         ar & mnLastInitKFidMap;
     }

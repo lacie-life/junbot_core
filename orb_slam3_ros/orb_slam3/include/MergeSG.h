@@ -31,6 +31,8 @@
 #include "ObjectDatabase.h"
 #include "YoloDetection.h"
 
+using namespace pcl;
+
 typedef pcl::PointXYZRGB PointT;
 typedef pcl::PointCloud<PointT> PointCloudT;
 
@@ -55,13 +57,13 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(PointXYZPixel,                // xyz + pixel x
                                   (uint32_t, pixel_y, pixel_y)  // field pixel y
 )
 
-typedef enum Comparator
+typedef enum NewComparator
 {
     kPlaneCoefficientComparator,            // Plane Coefficient RANSAC Sampling
     kEuclideanPlaneCoefficientComparator,   // Euclidean distance Plane segmentation
     kRGBPlaneCoefficientComparator,         // Color Distance Plane Segmentation
     kEdgeAwarePlaneComaprator               // Edge Plane Segmentation
-} Comparator;
+} NewComparator;
 
 // Test result class
 typedef struct Object3d
@@ -144,7 +146,7 @@ private:
 
     pcl::EuclideanClusterComparator<PointT, pcl::Normal, pcl::Label>::Ptr euclidean_cluster_comparator_;
 
-    Comparator mPlanComparator;
+    NewComparator mPlanComparator;
     double   mPlanNormal_angle_threshold;//  2.0 0.01 45.0
     double   normal_distance_threshold;  //      0.02  0.001  0.1
     int mMin_plane_inliers;// 100 200 500 1000

@@ -50,6 +50,7 @@
 #include <unordered_set>
 
 class PointCloudMapping;
+class Detector;
 
 namespace ORB_SLAM3
 {

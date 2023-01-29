@@ -20,19 +20,6 @@
 #ifndef MAPDRAWER_H
 #define MAPDRAWER_H
 
-#include "Atlas.h"
-#include "MapPoint.h"
-#include "KeyFrame.h"
-#include "Settings.h"
-#include "Converter.h"
-
-#include "YoloDetection.h"
-#include "Detector.h"
-#include "Merge2d3d.h"
-#include "MergeSG.h"
-
-#include <pangolin/pangolin.h>
-
 #include <mutex>
 
 #include <octomap/ColorOcTree.h>
@@ -49,7 +36,19 @@
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/filters/extract_indices.h>
 
-class Merge2d3d;
+#include "Atlas.h"
+#include "MapPoint.h"
+#include "KeyFrame.h"
+#include "Settings.h"
+#include "Converter.h"
+
+#include "Detector.h"
+#include "MergeSG.h"
+
+#include <pangolin/pangolin.h>
+
+using namespace pcl;
+
 class MergeSG;
 
 namespace ORB_SLAM3

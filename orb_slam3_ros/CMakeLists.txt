@@ -61,7 +61,7 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Eigen3 3.1.0 REQUIRED)
 find_package(Pangolin REQUIRED)
 
-find_package(PCL 1.10 REQUIRED)
+find_package(PCL 1.8 REQUIRED)
 add_definitions(${PCL_DEFINITIONS})
 include_directories(${PCL_INCLUDE_DIRS})
 message("PCL Include Directory: ${PCL_INCLUDE_DIRS}")
@@ -125,75 +125,22 @@ include(${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/g2o/CMakeLists.txt)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/orb_slam3/lib)
 
+file(GLOB HEADERS 
+        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/*.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/*.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/CameraModels/*.h)
+
+file(GLOB SOURCES 
+        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/*.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/CameraModels/*.cpp)
+
+source_group("Header Files" FILES ${HEADERS})
+source_group("Source Files" FILES ${SOURCES})
+
 add_library(${PROJECT_NAME} SHARED
-        orb_slam3/src/System.cc
-        orb_slam3/src/Tracking.cc
-        orb_slam3/src/LocalMapping.cc
-        orb_slam3/src/LoopClosing.cc
-        orb_slam3/src/ORBextractor.cc
-        orb_slam3/src/ORBmatcher.cc
-        orb_slam3/src/FrameDrawer.cc
-        orb_slam3/src/Converter.cc
-        orb_slam3/src/MapPoint.cc
-        orb_slam3/src/KeyFrame.cc
-        orb_slam3/src/Atlas.cc
-        orb_slam3/src/Map.cc
-        orb_slam3/src/MapDrawer.cc
-        orb_slam3/src/Optimizer.cc
-        orb_slam3/src/Frame.cc
-        orb_slam3/src/KeyFrameDatabase.cc
-        orb_slam3/src/Sim3Solver.cc
-        orb_slam3/src/Viewer.cc
-        orb_slam3/src/ImuTypes.cc
-        orb_slam3/src/G2oTypes.cc
-        orb_slam3/src/CameraModels/Pinhole.cpp
-        orb_slam3/src/CameraModels/KannalaBrandt8.cpp
-        orb_slam3/src/OptimizableTypes.cpp
-        orb_slam3/src/MLPnPsolver.cpp
-        orb_slam3/src/GeometricTools.cc
-        orb_slam3/src/TwoViewReconstruction.cc
-        orb_slam3/src/PointCloudMapping.cc
-        orb_slam3/src/YoloDetection.cpp
-        orb_slam3/src/Flow.cpp
-        orb_slam3/src/ObjectDatabase.cpp
-        orb_slam3/src/Geometry.cpp
-        orb_slam3/src/Config.cc
-        orb_slam3/src/Settings.cc
-        orb_slam3/include/System.h
-        orb_slam3/include/Tracking.h
-        orb_slam3/include/LocalMapping.h
-        orb_slam3/include/LoopClosing.h
-        orb_slam3/include/ORBextractor.h
-        orb_slam3/include/ORBmatcher.h
-        orb_slam3/include/FrameDrawer.h
-        orb_slam3/include/Converter.h
-        orb_slam3/include/MapPoint.h
-        orb_slam3/include/KeyFrame.h
-        orb_slam3/include/Atlas.h
-        orb_slam3/include/Map.h
-        orb_slam3/include/MapDrawer.h
-        orb_slam3/include/Optimizer.h
-        orb_slam3/include/Frame.h
-        orb_slam3/include/KeyFrameDatabase.h
-        orb_slam3/include/Sim3Solver.h
-        orb_slam3/include/Viewer.h
-        orb_slam3/include/ImuTypes.h
-        orb_slam3/include/G2oTypes.h
-        orb_slam3/include/CameraModels/GeometricCamera.h
-        orb_slam3/include/CameraModels/Pinhole.h
-        orb_slam3/include/CameraModels/KannalaBrandt8.h
-        orb_slam3/include/OptimizableTypes.h
-        orb_slam3/include/MLPnPsolver.h
-        orb_slam3/include/GeometricTools.h
-        orb_slam3/include/TwoViewReconstruction.h
-        orb_slam3/include/SerializationUtils.h
-        orb_slam3/include/Config.h
-        orb_slam3/include/Settings.h
-        orb_slam3/include/PointCloudMapping.h
-        orb_slam3/include/YoloDetection.h
-        orb_slam3/include/Flow.h
-        orb_slam3/include/ObjectDatabase.h
-        orb_slam3/include/Geometry.h)
+        ${HEADERS}
+        ${SOURCES})
 
 SET(TRT_LIBS nvinfer)
 

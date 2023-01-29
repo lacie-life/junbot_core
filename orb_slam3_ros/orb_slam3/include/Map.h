@@ -25,6 +25,7 @@
 #include "Converter.h"
 #include "ORBextractor.h"
 #include "Frame.h"
+#include "Atlas.h"
 
 #include <set>
 #include <pangolin/pangolin.h>
