@@ -190,8 +190,9 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
         mpAtlas->SetInertialSensor();
 
     //Create Drawers. These are used by the Viewer
-    mpFrameDrawer = new FrameDrawer(mpAtlas);
+    // mpFrameDrawer = new FrameDrawer(mpAtlas);
     mpMapDrawer = new MapDrawer(mpAtlas, strSettingsFile, settings_);
+    mpFrameDrawer = new FrameDrawer(mpAtlas, mpMapDrawer, strSettingsFile);
 
     // Initialize pointcloud mapping
     mpPointCloudMapping = boost::make_shared<PointCloudMapping>(resolution);

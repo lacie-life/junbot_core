@@ -18,21 +18,21 @@ namespace ORB_SLAM3
         if(!GrayImg.empty())
         {
             if(BInaryThreshold<40.0) BInaryThreshold=40.0;
-            mask = cv::Mat::ones(GrayImg.rows,GrayImg.cols,CV_8U);// Default 1, static object
-            pyrDown(GrayImg, mImGrayCurrent, Size(GrayImg.cols / 2, GrayImg.rows / 2));
+            mask = cv::Mat::ones(GrayImg.rows,GrayImg.cols, CV_8U);// Default 1, static object
+            pyrDown(GrayImg, mImGrayCurrent, cv::Size(GrayImg.cols / 2, GrayImg.rows / 2));
             // Down-sampling to speed up
             if( mImGrayLast.data )
             {
                 cv::Mat flow,flow2;
                 calcOpticalFlowFarneback(mImGrayLast, mImGrayCurrent, flow, 0.5, 3, 15, 3, 5, 1.2, 0);
                 // Upsample back to original size
-                pyrUp(flow, flow2, Size(flow.cols * 2, flow.rows * 2));
+                pyrUp(flow, flow2, cv::Size(flow.cols * 2, flow.rows * 2));
 
                 for(int y=0; y<flow2.rows; y++) // Every 5th row y+= 5
                 {
                     for(int x=0; x<flow2.cols; x++)
                     {
-                        const Point2f xy = flow2.at<Point2f>(y, x);
+                        const cv::Point2f xy = flow2.at<cv::Point2f>(y, x);
                         float tep2 = xy.x * xy.x + xy.y * xy.y ;
                         // float tep = sqrt(xy.x * xy.x + xy.y * xy.y);
                         // Adjusting this threshold can properly reduce the influence of camera movement,

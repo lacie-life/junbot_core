@@ -10,7 +10,6 @@
 
 #include "Frame.h"
 
-using namespace cv;
 using namespace std;
 
 namespace ORB_SLAM3

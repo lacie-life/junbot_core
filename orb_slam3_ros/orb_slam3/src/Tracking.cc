@@ -4370,7 +4370,7 @@ bool Tracking::Relocalization()
             {
                 // https://github.com/Ewenwan/MVision/blob/master/CNN/Action_Recognition/IDT/IDT/src/DenseTrackStab.cpp
                 // https://github.com/Ewenwan/MVision/blob/master/vSLAM/ch7/pose_estimation_2d2d.cpp
-                homo = findHomography ( points_current, points_last, RANSAC, 3 );// points_last = H * points_current
+                homo = findHomography ( points_current, points_last, cv::RANSAC, 3 );// points_last = H * points_current
 
                 mLastFrame = lastFrameBU;
                 mlpTemporalPoints = lpTemporalPointsBU;

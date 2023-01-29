@@ -34,6 +34,28 @@ FrameDrawer::FrameDrawer(Atlas* pAtlas):both(false),mpAtlas(pAtlas)
     mImRight = cv::Mat(480,640,CV_8UC3, cv::Scalar(0,0,0));
 }
 
+
+FrameDrawer::FrameDrawer(Atlas* pAtlas, MapDrawer* pMapDrawer, const string &strSettingPath):
+                     mpAtlas(pAtlas),
+                     mpMapDrawer(pMapDrawer)
+{
+    mState=Tracking::SYSTEM_NOT_READY;
+    mIm = cv::Mat(480,640,CV_8UC3, cv::Scalar(0,0,0));
+
+    cv::FileStorage fSettings(strSettingPath, cv::FileStorage::READ);
+    float fx = fSettings["Camera.fx"];
+    float fy = fSettings["Camera.fy"];
+    float cx = fSettings["Camera.cx"];
+    float cy = fSettings["Camera.cy"];
+
+    cv::Mat K = cv::Mat::eye(3,3,CV_32F);
+    K.at<float>(0,0) = fx;
+    K.at<float>(1,1) = fy;
+    K.at<float>(0,2) = cx;
+    K.at<float>(1,2) = cy;
+    K.copyTo(mK);
+}
+
 cv::Mat FrameDrawer::DrawFrame(float imageScale)
 {
     cv::Mat im;
@@ -324,6 +346,48 @@ cv::Mat FrameDrawer::DrawRightFrame(float imageScale)
     DrawTextInfo(im,state, imWithInfo);
 
     return imWithInfo;
+}
+
+
+void FrameDrawer::generatePC(void)
+{
+    cv::Mat Depth,ImRGB,Tcw;
+    {
+     unique_lock<mutex> lock(mMutex);
+     mImDep.copyTo(Depth);
+     mImRGB.copyTo(ImRGB);
+     mTcw.copyTo(Tcw); 
+    }
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
+    int n,m;
+    for ( m=0; m < Depth.rows; m+=1 )
+    {
+          for ( n=0; n < Depth.cols; n+=1 )
+          {
+              float d = Depth.ptr<float>(m)[n];
+              if (d < 0.01 || d>2.0)
+                 continue;
+              pcl::PointXYZRGB p;
+              p.z = d;
+              p.x = ( n - mK.at<float>(0,0)) * p.z / mK.at<float>(0,2);
+              p.y = ( m - mK.at<float>(1,1)) * p.z / mK.at<float>(1,2);
+              if(p.y<-3.0 || p.y>3.0) continue; 
+              p.b = ImRGB.ptr<uchar>(m)[n*3+0];
+              p.g = ImRGB.ptr<uchar>(m)[n*3+1];
+              p.r = ImRGB.ptr<uchar>(m)[n*3+2];
+              cloud->points.push_back( p );
+          }
+    }
+
+    pcl::VoxelGrid<pcl::PointXYZRGB> vg;
+    vg.setInputCloud(cloud);
+    vg.setLeafSize(0.01,0.01, 0.01);
+    vg.filter(*cloud);
+
+    Eigen::Isometry3d T = ORB_SLAM3::Converter::toSE3Quat(Tcw);
+    pcl::PointCloud<pcl::PointXYZRGB> temp;
+    pcl::transformPointCloud( *cloud, temp, T.inverse().matrix());
+    mpMapDrawer->RegisterObs(temp);
 }
 
 

@@ -37,12 +37,14 @@ namespace ORB_SLAM3
 class Tracking;
 class Viewer;
 class Atlas;
+class MapDrawer;
 
 class FrameDrawer
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     FrameDrawer(Atlas* pAtlas);
+    FrameDrawer(Atlas* pAtlas, MapDrawer* pMapDrawer, const string &strSettingPath);
 
     // Update info from the last processed frame.
     void Update(Tracking *pTracker);
@@ -81,6 +83,7 @@ protected:
     float mThDepth;
 
     Atlas* mpAtlas;
+    MapDrawer* mpMapDrawer;
 
     std::mutex mMutex;
     vector<pair<cv::Point2f, cv::Point2f> > mvTracks;

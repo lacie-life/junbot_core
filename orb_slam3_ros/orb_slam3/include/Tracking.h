@@ -20,9 +20,6 @@
 #ifndef TRACKING_H
 #define TRACKING_H
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/features2d/features2d.hpp>
-
 #include "Viewer.h"
 #include "FrameDrawer.h"
 #include "Atlas.h"
@@ -45,6 +42,8 @@
 #include "GeometricCamera.h"
 
 #include <boost/make_shared.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/features2d/features2d.hpp>
 
 #include <mutex>
 #include <unordered_set>

@@ -55,6 +55,7 @@ namespace ORB_SLAM3
 {
 
 class Settings;
+class Atlas;
 
 class MapDrawer
 {
