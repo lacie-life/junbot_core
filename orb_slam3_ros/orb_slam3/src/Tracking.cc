@@ -43,12 +43,105 @@ namespace ORB_SLAM3
 {
 
 
-Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer, Atlas *pAtlas, boost::shared_ptr<PointCloudMapping> pPointCloud, KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, Settings* settings, const string &_nameSeq):
+Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer, Atlas *pAtlas, KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, Settings* settings, const string &_nameSeq):
     mState(NO_IMAGES_YET), mSensor(sensor), mTrackedFr(0), mbStep(false),
-    mbOnlyTracking(false), mbMapUpdated(false), mbVO(false), mpORBVocabulary(pVoc), mpPointCloudMapping(pPointCloud), mpKeyFrameDB(pKFDB),
+    mbOnlyTracking(false), mbMapUpdated(false), mbVO(false), mpORBVocabulary(pVoc), mpKeyFrameDB(pKFDB),
     mbReadyToInitializate(false), mpSystem(pSys), mpViewer(NULL), bStepByStep(false),
     mpFrameDrawer(pFrameDrawer), mpMapDrawer(pMapDrawer), mpAtlas(pAtlas), mnLastRelocFrameId(0), time_recently_lost(5.0),
     mnInitialFrameId(0), mbCreatedMap(false), mnFirstFrameId(0), mpCamera2(nullptr), mpLastKeyFrame(static_cast<KeyFrame*>(NULL))
+{
+    // Load camera parameters from settings file
+    if(settings){
+        newParameterLoader(settings);
+    }
+    else{
+        cv::FileStorage fSettings(strSettingPath, cv::FileStorage::READ);
+
+        bool b_parse_cam = ParseCamParamFile(fSettings);
+        if(!b_parse_cam)
+        {
+            std::cout << "*Error with the camera parameters in the config file*" << std::endl;
+        }
+
+        // Load ORB parameters
+        bool b_parse_orb = ParseORBParamFile(fSettings);
+        if(!b_parse_orb)
+        {
+            std::cout << "*Error with the ORB parameters in the config file*" << std::endl;
+        }
+
+        bool b_parse_imu = true;
+        if(sensor==System::IMU_MONOCULAR || sensor==System::IMU_STEREO || sensor==System::IMU_RGBD)
+        {
+            b_parse_imu = ParseIMUParamFile(fSettings);
+            if(!b_parse_imu)
+            {
+                std::cout << "*Error with the IMU parameters in the config file*" << std::endl;
+            }
+
+            mnFramesToResetIMU = mMaxFrames;
+        }
+
+        if(!b_parse_cam || !b_parse_orb || !b_parse_imu)
+        {
+            std::cerr << "**ERROR in the config file, the format is not correct**" << std::endl;
+            try
+            {
+                throw -1;
+            }
+            catch(exception &e)
+            {
+
+            }
+        }
+    }
+
+    initID = 0; lastID = 0;
+    mbInitWith3KFs = false;
+    mnNumDataset = 0;
+
+    vector<GeometricCamera*> vpCams = mpAtlas->GetAllCameras();
+    std::cout << "There are " << vpCams.size() << " cameras in the atlas" << std::endl;
+    for(GeometricCamera* pCam : vpCams)
+    {
+        std::cout << "Camera " << pCam->GetId();
+        if(pCam->GetType() == GeometricCamera::CAM_PINHOLE)
+        {
+            std::cout << " is pinhole" << std::endl;
+        }
+        else if(pCam->GetType() == GeometricCamera::CAM_FISHEYE)
+        {
+            std::cout << " is fisheye" << std::endl;
+        }
+        else
+        {
+            std::cout << " is unknown" << std::endl;
+        }
+    }
+
+#ifdef REGISTER_TIMES
+    vdRectStereo_ms.clear();
+    vdResizeImage_ms.clear();
+    vdORBExtract_ms.clear();
+    vdStereoMatch_ms.clear();
+    vdIMUInteg_ms.clear();
+    vdPosePred_ms.clear();
+    vdLMTrack_ms.clear();
+    vdNewKF_ms.clear();
+    vdTrackTotal_ms.clear();
+#endif
+}
+
+Tracking::Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Atlas* pAtlas,
+            boost::shared_ptr<PointCloudMapping> pPointCloud,
+            KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, Settings* settings, const string &_nameSeq,
+            std::shared_ptr<Detector> pDetector):
+        mState(NO_IMAGES_YET), mSensor(sensor), mTrackedFr(0), mbStep(false),
+        mbOnlyTracking(false), mbMapUpdated(false), mbVO(false), mpORBVocabulary(pVoc), mpPointCloudMapping(pPointCloud), mpKeyFrameDB(pKFDB),
+        mbReadyToInitializate(false), mpSystem(pSys), mpViewer(NULL), bStepByStep(false),
+        mpFrameDrawer(pFrameDrawer), mpMapDrawer(pMapDrawer), mpAtlas(pAtlas), mnLastRelocFrameId(0), time_recently_lost(5.0),
+        mnInitialFrameId(0), mbCreatedMap(false), mnFirstFrameId(0), mpCamera2(nullptr), mpLastKeyFrame(static_cast<KeyFrame*>(NULL)),
+        mpDetector(pDetector)
 {
     // Load camera parameters from settings file
     if(settings){
@@ -616,6 +709,8 @@ void Tracking::newParameterLoader(Settings *settings) {
     mpImuCalib = new IMU::Calib(Tbc,Ng*sf,Na*sf,Ngw/sf,Naw/sf);
 
     mpImuPreintegratedFromLastKF = new IMU::Preintegrated(IMU::Bias(),*mpImuCalib);
+
+    mFlowThreshold = settings->flowThreshold();
 }
 
 bool Tracking::ParseCamParamFile(cv::FileStorage &fSettings)
@@ -1525,19 +1620,19 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
     mImDepth = imD;
     mImRGB = imRGB;
 
-    if (mpSystem->isYoloDetection)
-    {
-        // Yolo
-        cv::Mat InputImage;
-        InputImage = imRGB.clone();
-        mpDetector->GetImage(InputImage);
-        mpDetector->Detect();
-        mpORBextractorLeft->mvDynamicArea = mpDetector->mvDynamicArea;
-        {
-            std::unique_lock<std::mutex> lock(mpViewer->mMutexPAFinsh);
-            mpViewer->mmDetectMap = mpDetector->mmDetectMap;
-        }
-    }
+//    if (mpSystem->isYoloDetection)
+//    {
+//        // Yolo
+//        cv::Mat InputImage;
+//        InputImage = imRGB.clone();
+//        mpDetector->GetImage(InputImage);
+//        mpDetector->Detect();
+//        mpORBextractorLeft->mvDynamicArea = mpDetector->mvDynamicArea;
+//        {
+//            std::unique_lock<std::mutex> lock(mpViewer->mMutexPAFinsh);
+//            mpViewer->mmDetectMap = mpDetector->mmDetectMap;
+//        }
+//    }
 
     if(mImGray.channels()==3)
     {
@@ -1558,15 +1653,50 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
         mImDepth.convertTo(mImDepth,CV_32F,mDepthMapFactor);
 
     if (mSensor == System::RGBD)
-        mCurrentFrame = Frame(mImGray,mImDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera);
-    else if(mSensor == System::IMU_RGBD)
-        mCurrentFrame = Frame(mImGray,mImDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,&mLastFrame,*mpImuCalib);
-
-    if(mpSystem->isYoloDetection)
     {
-        mCurrentFrame.mvDynamicArea = mpDetector->mvDynamicArea;
-        mpDetector->mmDetectMap.clear();
-        mpDetector->mvDynamicArea.clear();
+        mCurrentFrame = Frame(mImGray,mImDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera);
+    }
+    else if(mSensor == System::IMU_RGBD)
+    {
+        mCurrentFrame = Frame(mImGray,mImDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,&mLastFrame,*mpImuCalib);
+    }
+
+//    if(mpSystem->isYoloDetection)
+//    {
+//        mCurrentFrame.mvDynamicArea = mpDetector->mvDynamicArea;
+//        mpDetector->mmDetectMap.clear();
+//        mpDetector->mvDynamicArea.clear();
+//    }
+
+    cv::Mat mImMask;
+    cv::Mat CurrFrameTcw = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(mCurrentFrame.GetPose()));
+    if(!CurrFrameTcw.empty())
+    {
+        mGeometry.GeometricModelCorrection(mCurrentFrame, mImDepth, mImMask);
+    }
+
+    cv::Mat homo;
+    bool flag;
+    float BTh = mFlowThreshold;
+
+    flag = TrackHomo(homo);
+
+    if(flag && !homo.empty())
+    {
+        mFlow.ComputeMask(mImGray, homo, mImMask, BTh);
+    }
+    else
+    {
+        mFlow.ComputeMask(mImGray, mImMask, BTh);
+    }
+
+    if (mSensor == System::RGBD)
+    {
+        mCurrentFrame = Frame(mImGray,mImDepth,mImMask,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera);
+    }
+    else if(mSensor == System::IMU_RGBD)
+    {
+        mCurrentFrame = Frame(mImGray,mImDepth,mImMask,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,&mLastFrame,*mpImuCalib);
     }
 
     mCurrentFrame.mNameFile = filename;
@@ -3240,7 +3370,17 @@ void Tracking::CreateNewKeyFrame()
     if(!mpLocalMapper->SetNotStop(true))
         return;
 
-    KeyFrame* pKF = new KeyFrame(mCurrentFrame,mpAtlas->GetCurrentMap(),mpKeyFrameDB);
+
+    KeyFrame* pKF;
+    if(mSensor == System::RGBD || mSensor == System::IMU_RGBD)
+    {
+        pKF = new KeyFrame(mCurrentFrame,mpAtlas->GetCurrentMap(),mpKeyFrameDB,
+                           this->mImRGB, this->mImDepth);
+    }
+    else
+    {
+        pKF = new KeyFrame(mCurrentFrame,mpAtlas->GetCurrentMap(),mpKeyFrameDB);
+    }
 
     if(mpAtlas->isImuInitialized()) //  || mpLocalMapper->IsInitializing())
         pKF->bImu = true;
@@ -3372,8 +3512,12 @@ void Tracking::CreateNewKeyFrame()
     cout << "Color +++ (" << minT << ", " << maxT << ") \n"; 
 
 	// insert Key Frame into point cloud viewer
-    mpPointCloudMapping->insertKeyFrame(pKF, this->mImRGB, this->mImDepth);
+    // mpPointCloudMapping->insertKeyFrame(pKF, this->mImRGB, this->mImDepth);
 
+    if(mpDetector)
+    {
+        mpDetector->insertKFColorImg(pKF, this->mImRGB);
+    }
     mnLastKeyFrameId = mCurrentFrame.mnId;
     mpLastKeyFrame = pKF;
 }
@@ -4139,12 +4283,6 @@ Eigen::Vector3f Tracking::GetImuVwb()
 bool Tracking::isImuPreintegrated()
 {
     return mCurrentFrame.mpImuPreintegrated;
-}
-
-
-void Tracking::SetDetector(YoloDetection* pDetector)
-{
-    mpDetector = pDetector;
 }
 
 #ifdef REGISTER_LOOP

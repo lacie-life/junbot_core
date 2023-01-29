@@ -37,8 +37,10 @@
 #include "ImuTypes.h"
 #include "Settings.h"
 
-#include "YoloDetection.h"
+#include "Detector.h"
 #include "PointCloudMapping.h"
+#include "Flow.h"
+#include "Geometry.h"
 
 #include "GeometricCamera.h"
 
@@ -66,8 +68,12 @@ class Tracking
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Atlas* pAtlas,
-             boost::shared_ptr<PointCloudMapping> pPointCloud,
              KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, Settings* settings, const string &_nameSeq=std::string());
+
+    Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Atlas* pAtlas,
+             boost::shared_ptr<PointCloudMapping> pPointCloud,
+             KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, Settings* settings, const string &_nameSeq=std::string(),
+             std::shared_ptr<Detector> pDetector = nullptr);
 
     ~Tracking();
 
@@ -86,7 +92,6 @@ public:
     void SetLocalMapper(LocalMapping* pLocalMapper);
     void SetLoopClosing(LoopClosing* pLoopClosing);
     void SetViewer(Viewer* pViewer);
-    void SetDetector(YoloDetection* pDetector);
     void SetStepByStep(bool bSet);
     bool GetStepByStep();
 
@@ -154,7 +159,8 @@ public:
 
     cv::Mat mImGray;
     cv::Mat mImDepth; // added to realize pointcloud view
-    cv::Mat mImRGB; // added for color point map 
+    cv::Mat mImRGB; // added for color point map
+    float mFlowThreshold;
 
     // Initialization Variables (Monocular)
     std::vector<int> mvIniLastMatches;
@@ -212,6 +218,9 @@ protected:
 
     // Main tracking function. It is independent of the input sensor.
     void Track();
+
+    void LightTrack();
+    bool TrackHomo(cv::Mat& homo);
 
     // Map initialization for stereo and RGB-D
     void StereoInitialization();
@@ -353,7 +362,9 @@ protected:
 
     // For point cloud viewing
     boost::shared_ptr<PointCloudMapping> mpPointCloudMapping;
-    YoloDetection* mpDetector;
+    std::shared_ptr<Detector> mpDetector;
+    Geometry mGeometry;
+    Flow mFlow;
 
     list<MapPoint*> mlpTemporalPoints;
 

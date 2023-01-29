@@ -141,7 +141,7 @@ void PointCloudMapping::generateAndPublishPointCloud(size_t N)
 
     for (size_t i = lastKeyframeSize; i < N; i++)
     {
-        PointCloud::Ptr p = generatePointCloudWithDynamicObject(keyframes[i], colorImgs[i], depthImgs[i]);
+        PointCloud::Ptr p = generatePointCloud(keyframes[i], colorImgs[i], depthImgs[i]);
         PointCloud::Ptr tmp1(new PointCloud());
 
         tmp1->resize(p->size());

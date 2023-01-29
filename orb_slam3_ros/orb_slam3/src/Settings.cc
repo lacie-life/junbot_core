@@ -465,6 +465,7 @@ namespace ORB_SLAM3 {
         viewPointF_ = readParameter<float>(fSettings,"Viewer.ViewpointF",found);
         imageViewerScale_ = readParameter<float>(fSettings,"Viewer.imageViewScale",found,false);
         octoMapRes_ = readParameter<float>(fSettings,"octoMap.res",found);
+        flowThreshold_ = readParameter<float>(fSettings,"Dynamic.flow",found);
 
          if(!found)
             imageViewerScale_ = 1.0f;

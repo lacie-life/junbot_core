@@ -13,7 +13,7 @@
 using namespace cv;
 using namespace std;
 
-namespace FlowSLAM
+namespace ORB_SLAM3
 {
     class Flow {
     private:

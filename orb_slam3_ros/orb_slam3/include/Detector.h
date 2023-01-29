@@ -13,8 +13,6 @@
 #include <boost/make_shared.hpp>
 #include <string>
 
-
-class ORB_SLAM3::KeyFrame;
 class YoloDetection;
 
 class Detector {
@@ -39,7 +37,7 @@ protected:
     //mutex  mvvObjectsMutex;
 
 
-    uint16_t          lastKeyframeSize =0;
+    uint16_t  lastKeyframeSize =0;
     YoloDetection* mDetector;
 };
 

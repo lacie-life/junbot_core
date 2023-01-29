@@ -117,12 +117,12 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     {
         cout << "Using YoLo detector \n";
         isYoloDetection = true;
-        mpDetector = new YoloDetection(modelPath);
+        mpDetector = std::make_shared<Detector>(modelPath);
     }
     else{
         cout << "Defaut: YoLo detector \n";
         isYoloDetection = true;
-        mpDetector = new YoloDetection(modelPath);
+        mpDetector = std::make_shared<Detector>(modelPath);
     }
 
     node = fsSettings["loopClosing"];
@@ -199,12 +199,18 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     //Initialize the Tracking thread
     //(it will live in the main thread of execution, the one that called this constructor)
     cout << "Seq. Name: " << strSequence << endl;
-    mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer,
-                             mpAtlas, mpPointCloudMapping, mpKeyFrameDatabase, strSettingsFile, mSensor, settings_, strSequence);
-
     if(isYoloDetection)
     {
-        mpTracker->SetDetector(mpDetector);
+        mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer,
+                                 mpAtlas, mpPointCloudMapping, mpKeyFrameDatabase,
+                                 strSettingsFile, mSensor, settings_,
+                                 strSequence, mpDetector);
+    }
+    else
+    {
+        mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer,
+                                 mpAtlas, mpKeyFrameDatabase,
+                                 strSettingsFile, mSensor, settings_, strSequence);
     }
 
     //Initialize the Local Mapping thread and launch
