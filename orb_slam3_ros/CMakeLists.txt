@@ -66,6 +66,10 @@ add_definitions(${PCL_DEFINITIONS})
 include_directories(${PCL_INCLUDE_DIRS})
 message("PCL Include Directory: ${PCL_INCLUDE_DIRS}")
 
+find_package(octomap REQUIRED)
+include_directories(${OCTOMAP_INCLUDE_DIRS})
+
+
 find_package(Boost COMPONENTS system filesystem serialization REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIR})
@@ -196,6 +200,7 @@ target_link_libraries(${PROJECT_NAME}
         ${EIGEN3_LIBS}
         ${Pangolin_LIBRARIES}
         ${PCL_LIBRARIES}
+        ${OCTOMAP_LIBRARIES}
         ${TORCH_LIBRARIES}
         ${TRT_LIBS}
         ${CUDA_CUDA_LIBRARY}

@@ -120,7 +120,6 @@ protected:
 
     bool CheckNewKeyFrames();
 
-
     //Methods to implement the new place recognition algorithm
     bool NewDetectCommonRegions();
     bool DetectAndReffineSim3FromLastKF(KeyFrame* pCurrentKF, KeyFrame* pMatchedKF, g2o::Sim3 &gScw, int &nNumProjMatches,
@@ -222,10 +221,7 @@ protected:
     // Fix scale in the stereo/RGB-D case
     bool mbFixScale;
 
-
     bool mnFullBAIdx;
-
-
 
     vector<double> vdPR_CurrentTime;
     vector<double> vdPR_MatchedTime;
@@ -235,7 +231,6 @@ protected:
     string mstrFolderSubTraj;
     int mnNumCorrection;
     int mnCorrectionGBA;
-
 
     // To (de)activate LC
     bool mbActiveLC = true;

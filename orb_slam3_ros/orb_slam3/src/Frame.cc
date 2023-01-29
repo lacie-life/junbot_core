@@ -383,6 +383,72 @@ Frame::Frame(const cv::Mat &imGray, const double &timeStamp, ORBextractor* extra
     mpMutexImu = new std::mutex();
 }
 
+void Frame::InitializeScaleLevels()
+{
+    // pyramid scale
+    mnScaleLevels = mpORBextractorLeft->GetLevels();
+    mfScaleFactor = mpORBextractorLeft->GetScaleFactor();
+    mfLogScaleFactor = log(mfScaleFactor);
+    mvScaleFactors = mpORBextractorLeft->GetScaleFactors();
+    mvInvScaleFactors = mpORBextractorLeft->GetInverseScaleFactors();
+    mvLevelSigma2 = mpORBextractorLeft->GetScaleSigmaSquares();
+    mvInvLevelSigma2 = mpORBextractorLeft->GetInverseScaleSigmaSquares();
+}
+
+// Camera parameters can be raised separately to make a class
+void Frame::ComputeImageBounds()
+{
+    int Camera_width=480, Camera_height=640;
+    // if(Camera::DistCoef.at<float>(0)!=0.0)
+    if(mDistCoef.at<float>(0)!=0.0)
+    {
+        cv::Mat mat(4,2,CV_32F);
+        mat.at<float>(0,0)=0.0; mat.at<float>(0,1)=0.0;
+        mat.at<float>(1,0)=Camera_width; mat.at<float>(1,1)=0.0;
+        mat.at<float>(2,0)=0.0; mat.at<float>(2,1)=Camera_height;
+        mat.at<float>(3,0)=Camera_width; mat.at<float>(3,1)=Camera_height;
+
+        // Undistort corners
+        mat=mat.reshape(2);
+        //cv::undistortPoints(mat, mat, Camera::K, Camera::DistCoef, cv::Mat(), Camera::K);
+        cv::undistortPoints(mat, mat, mK, mDistCoef, cv::Mat(), mK);
+        mat=mat.reshape(1);
+
+        Frame::mnMinX = min(mat.at<float>(0,0),mat.at<float>(2,0));
+        Frame::mnMaxX = max(mat.at<float>(1,0),mat.at<float>(3,0));
+        Frame::mnMinY = min(mat.at<float>(0,1),mat.at<float>(1,1));
+        Frame::mnMaxY = max(mat.at<float>(2,1),mat.at<float>(3,1));
+
+    }
+    else
+    {
+        Frame::mnMinX = 0.0f;
+        Frame::mnMaxX = Camera_width;
+        Frame::mnMinY = 0.0f;
+        Frame::mnMaxY = Camera_height;
+    }
+}
+
+void Frame::InitializeClass(cv::Mat K)
+{
+    if(Frame::mbInitialComputations)
+    {
+        cerr << "in Frame::InitializeClass" << endl;
+        ComputeImageBounds();
+        Frame::mfGridElementWidthInv = static_cast<float>(FRAME_GRID_COLS)/
+                (Frame::mnMaxX-Frame::mnMinX);
+        Frame::mfGridElementHeightInv = static_cast<float>(FRAME_GRID_ROWS)/
+                (Frame::mnMaxY-Frame::mnMinY);
+        fx = K.at<float>(0,0);
+        fy = K.at<float>(1,1);
+        cx = K.at<float>(0,2);
+        cy = K.at<float>(1,2);
+        invfx = 1.0f/fx;
+        invfy = 1.0f/fy;
+
+        Frame::mbInitialComputations = false;
+    }
+}
 
 void Frame::AssignFeaturesToGrid()
 {

@@ -4,7 +4,7 @@
 
 #include "Detector.h"
 
-Detector::RunDetect(std::string modelPath)
+Detector::Detector(std::string modelPath)
 {
     mDetector = new YoloDetection(modelPath);
     mvKeyframes.clear();

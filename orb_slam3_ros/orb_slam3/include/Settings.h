@@ -111,6 +111,7 @@ namespace ORB_SLAM3 {
         float viewPointZ() {return viewPointZ_;}
         float viewPointF() {return viewPointF_;}
         float imageViewerScale() {return imageViewerScale_;}
+        float octoMapRes() {return octoMapRes_;}
 
         std::string atlasLoadFile() {return sLoadFrom_;}
         std::string atlasSaveFile() {return sSaveto_;}
@@ -217,6 +218,7 @@ namespace ORB_SLAM3 {
         float cameraLineWidth_;
         float viewPointX_, viewPointY_, viewPointZ_, viewPointF_;
         float imageViewerScale_;
+        float octoMapRes_;
 
         /*
          * Save & load maps

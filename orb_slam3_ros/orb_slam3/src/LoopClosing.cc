@@ -25,8 +25,8 @@
 #include "ORBmatcher.h"
 #include "G2oTypes.h"
 
-#include<mutex>
-#include<thread>
+#include <mutex>
+#include <thread>
 
 
 namespace ORB_SLAM3
@@ -96,7 +96,6 @@ void LoopClosing::Run()
 
         //NEW LOOP AND MERGE DETECTION ALGORITHM
         //----------------------------
-
 
         if(CheckNewKeyFrames())
         {
