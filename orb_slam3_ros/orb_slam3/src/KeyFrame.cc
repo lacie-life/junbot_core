@@ -19,7 +19,7 @@
 #include "KeyFrame.h"
 #include "Converter.h"
 #include "ImuTypes.h"
-#include<mutex>
+#include <mutex>
 
 namespace ORB_SLAM3
 {

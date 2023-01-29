@@ -37,7 +37,7 @@
 #include "G2oTypes.h"
 #include "Converter.h"
 
-#include<mutex>
+#include <mutex>
 
 #include "OptimizableTypes.h"
 

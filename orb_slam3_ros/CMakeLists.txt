@@ -156,6 +156,7 @@ add_library(${PROJECT_NAME} SHARED
         orb_slam3/src/YoloDetection.cpp
         orb_slam3/src/Flow.cpp
         orb_slam3/src/ObjectDatabase.cpp
+        orb_slam3/src/Geometry.cpp
         orb_slam3/src/Config.cc
         orb_slam3/src/Settings.cc
         orb_slam3/include/System.h
@@ -191,7 +192,8 @@ add_library(${PROJECT_NAME} SHARED
         orb_slam3/include/PointCloudMapping.h
         orb_slam3/include/YoloDetection.h
         orb_slam3/include/Flow.h
-        orb_slam3/include/ObjectDatabase.h)
+        orb_slam3/include/ObjectDatabase.h
+        orb_slam3/include/Geometry.h)
 
 SET(TRT_LIBS nvinfer)
 

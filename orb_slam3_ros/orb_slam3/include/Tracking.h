@@ -236,7 +236,10 @@ protected:
     bool TrackWithMotionModel();
     bool PredictStateIMU();
 
+    bool LightTrackWithMotionModel(bool &bVO);
+
     bool Relocalization();
+    bool Relocalization(bool save_change);
 
     void UpdateLocalMap();
     void UpdateLocalPoints();

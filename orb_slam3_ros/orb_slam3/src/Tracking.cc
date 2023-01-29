@@ -3958,6 +3958,433 @@ bool Tracking::Relocalization()
 
 }
 
+    bool Tracking::Relocalization(bool save_change)
+    {
+        Verbose::PrintMess("Starting relocalization", Verbose::VERBOSITY_NORMAL);
+        // Compute Bag of Words Vector
+        mCurrentFrame.ComputeBoW();
+
+        // Relocalization is performed when tracking is lost
+        // Track Lost: Query KeyFrame Database for keyframe candidates for relocalisation
+        vector<KeyFrame*> vpCandidateKFs = mpKeyFrameDB->DetectRelocalizationCandidates(&mCurrentFrame, mpAtlas->GetCurrentMap());
+
+        if(vpCandidateKFs.empty()) {
+            Verbose::PrintMess("There are not candidates", Verbose::VERBOSITY_NORMAL);
+            return false;
+        }
+
+        const int nKFs = vpCandidateKFs.size();
+
+        // We perform first an ORB matching with each candidate
+        // If enough matches are found we setup a PnP solver
+        ORBmatcher matcher(0.75,true);
+
+        vector<MLPnPsolver*> vpMLPnPsolvers;
+        vpMLPnPsolvers.resize(nKFs);
+
+        vector<vector<MapPoint*> > vvpMapPointMatches;
+        vvpMapPointMatches.resize(nKFs);
+
+        vector<bool> vbDiscarded;
+        vbDiscarded.resize(nKFs);
+
+        int nCandidates=0;
+
+        for(int i=0; i<nKFs; i++)
+        {
+            KeyFrame* pKF = vpCandidateKFs[i];
+            if(pKF->isBad())
+                vbDiscarded[i] = true;
+            else
+            {
+                int nmatches = matcher.SearchByBoW(pKF,mCurrentFrame,vvpMapPointMatches[i]);
+                if(nmatches<15)
+                {
+                    vbDiscarded[i] = true;
+                    continue;
+                }
+                else
+                {
+                    MLPnPsolver* pSolver = new MLPnPsolver(mCurrentFrame,vvpMapPointMatches[i]);
+                    pSolver->SetRansacParameters(0.99,10,300,6,0.5,5.991);  //This solver needs at least 6 points
+                    vpMLPnPsolvers[i] = pSolver;
+                    nCandidates++;
+                }
+            }
+        }
+
+        // Alternatively perform some iterations of P4P RANSAC
+        // Until we found a camera pose supported by enough inliers
+        bool bMatch = false;
+        ORBmatcher matcher2(0.9,true);
+
+        while(nCandidates>0 && !bMatch)
+        {
+            for(int i=0; i<nKFs; i++)
+            {
+                if(vbDiscarded[i])
+                    continue;
+
+                // Perform 5 Ransac Iterations
+                vector<bool> vbInliers;
+                int nInliers;
+                bool bNoMore;
+
+                MLPnPsolver* pSolver = vpMLPnPsolvers[i];
+                Eigen::Matrix4f eigTcw;
+                bool bTcw = pSolver->iterate(5,bNoMore,vbInliers,nInliers, eigTcw);
+
+                // If Ransac reachs max. iterations discard keyframe
+                if(bNoMore)
+                {
+                    vbDiscarded[i]=true;
+                    nCandidates--;
+                }
+
+                // If a Camera Pose is computed, optimize
+                if(bTcw)
+                {
+                    Sophus::SE3f Tcw(eigTcw);
+                    mCurrentFrame.SetPose(Tcw);
+                    // Tcw.copyTo(mCurrentFrame.mTcw);
+
+                    set<MapPoint*> sFound;
+
+                    const int np = vbInliers.size();
+
+                    for(int j=0; j<np; j++)
+                    {
+                        if(vbInliers[j])
+                        {
+                            mCurrentFrame.mvpMapPoints[j]=vvpMapPointMatches[i][j];
+                            sFound.insert(vvpMapPointMatches[i][j]);
+                        }
+                        else
+                            mCurrentFrame.mvpMapPoints[j]=NULL;
+                    }
+
+                    int nGood = Optimizer::PoseOptimization(&mCurrentFrame);
+
+                    if(nGood<10)
+                        continue;
+
+                    for(int io =0; io<mCurrentFrame.N; io++)
+                        if(mCurrentFrame.mvbOutlier[io])
+                            mCurrentFrame.mvpMapPoints[io]=static_cast<MapPoint*>(NULL);
+
+                    // If few inliers, search by projection in a coarse window and optimize again
+                    if(nGood<50)
+                    {
+                        int nadditional =matcher2.SearchByProjection(mCurrentFrame,vpCandidateKFs[i],sFound,10,100);
+
+                        if(nadditional+nGood>=50)
+                        {
+                            nGood = Optimizer::PoseOptimization(&mCurrentFrame);
+
+                            // If many inliers but still not enough, search by projection again in a narrower window
+                            // the camera has been already optimized with many points
+                            if(nGood>30 && nGood<50)
+                            {
+                                sFound.clear();
+                                for(int ip =0; ip<mCurrentFrame.N; ip++)
+                                    if(mCurrentFrame.mvpMapPoints[ip])
+                                        sFound.insert(mCurrentFrame.mvpMapPoints[ip]);
+                                nadditional =matcher2.SearchByProjection(mCurrentFrame,vpCandidateKFs[i],sFound,3,64);
+
+                                // Final optimization
+                                if(nGood+nadditional>=50)
+                                {
+                                    nGood = Optimizer::PoseOptimization(&mCurrentFrame);
+
+                                    for(int io =0; io<mCurrentFrame.N; io++)
+                                        if(mCurrentFrame.mvbOutlier[io])
+                                            mCurrentFrame.mvpMapPoints[io]=NULL;
+                                }
+                            }
+                        }
+                    }
+
+
+                    // If the pose is supported by enough inliers stop ransacs and continue
+                    if(nGood>=50)
+                    {
+                        bMatch = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if(!bMatch)
+        {
+            return false;
+        }
+        else
+        {
+            if(save_change)
+                mnLastRelocFrameId = mCurrentFrame.mnId;
+            cout << "Relocalized!!" << endl;
+            return true;
+        }
+    }
+
+    bool Tracking::LightTrackWithMotionModel(bool &bVO)
+    {
+        ORBmatcher matcher(0.9,true);
+
+        // Update last frame pose according to its reference keyframe
+        // Create "visual odometry" points if in Localization Mode
+        Frame lastFrameBU = mLastFrame;
+        list<MapPoint*> lpTemporalPointsBU = mlpTemporalPoints;
+
+
+        UpdateLastFrame(); //TODO: check out!
+
+        mCurrentFrame.SetPose(mVelocity*mLastFrame.GetPose());
+
+
+        fill(mCurrentFrame.mvpMapPoints.begin(),mCurrentFrame.mvpMapPoints.end(),static_cast<MapPoint*>(NULL)); //TODO:Checkout
+
+        // Project points seen in previous frame
+        int th;
+        if(mSensor!=System::STEREO)
+            th=15;
+        else
+            th=7;
+
+        int nmatches = matcher.SearchByProjection(mCurrentFrame,mLastFrame,th,mSensor==System::MONOCULAR);//TODO:Checkout
+
+        // If few matches, uses a wider window search
+        if(nmatches<20)
+        {
+            fill(mCurrentFrame.mvpMapPoints.begin(),mCurrentFrame.mvpMapPoints.end(),static_cast<MapPoint*>(NULL));//TODO:Checkout
+
+            nmatches = matcher.SearchByProjection(mCurrentFrame,mLastFrame,2*th,mSensor==System::MONOCULAR);//TODO:Checkout
+        }
+
+        if(nmatches<20)
+        {
+            mLastFrame = lastFrameBU;
+            mlpTemporalPoints = lpTemporalPointsBU;
+            return false;
+        }
+        // Optimize frame pose with all matches
+        Optimizer::PoseOptimization(&mCurrentFrame);
+
+        // Discard outliers
+        int nmatchesMap = 0;
+        for(int i =0; i<mCurrentFrame.N; i++)
+        {
+            if(mCurrentFrame.mvpMapPoints[i])
+            {
+                if(mCurrentFrame.mvbOutlier[i])
+                {
+                    MapPoint* pMP = mCurrentFrame.mvpMapPoints[i];
+
+                    mCurrentFrame.mvpMapPoints[i]=static_cast<MapPoint*>(NULL);
+                    mCurrentFrame.mvbOutlier[i]=false;
+                    pMP->mbTrackInView = false;
+                    pMP->mnLastFrameSeen = mCurrentFrame.mnId;
+                    nmatches--;
+                }
+                else if(mCurrentFrame.mvpMapPoints[i]->Observations()>0)
+                    nmatchesMap++;
+            }
+        }
+
+        mLastFrame = lastFrameBU;
+        mlpTemporalPoints = lpTemporalPointsBU;
+
+        bVO = nmatchesMap<10;
+        return nmatches>20;
+
+    }
+
+    void Tracking::LightTrack()
+    {
+        Map* pCurrentMap = mpAtlas->GetCurrentMap();
+
+        // Get Map Mutex -> Map cannot be changed
+        unique_lock<mutex> lock(pCurrentMap->mMutexMapUpdate);
+        bool useMotionModel = true; //set true
+
+        if(mState==NOT_INITIALIZED || mState==NO_IMAGES_YET)
+        {
+            cout << "Light Tracking not working because Tracking is not initialized..." << endl;
+            return;
+        }
+        else
+        {
+            // System is initialized. Track Frame.
+            bool bOK;
+            {
+                // Localization Mode:
+                if(mState==LOST)
+                {
+                    bOK = Relocalization(1);// Lost: relocated
+                }
+                else
+                {
+                    if(!mbVO) // There are more points tracked in the previous frame
+                    {
+                        // In last frame we tracked enough MapPoints in the map
+                        cv::Mat mVec = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(mVelocity));
+                        if(!mVec.empty() && useMotionModel)
+                        {
+                            bool _bOK = false;
+                            // Lightweight motion tracking mode
+                            bOK = LightTrackWithMotionModel(_bOK);// TODO: check out!!!
+                        }
+                        else
+                        {
+                            bOK = TrackReferenceKeyFrame();// Tracking Reference Frame
+                        }
+                    }
+                    else
+                    {
+                        // In last frame we tracked mainly "visual odometry" points.
+
+                        // We compute two camera poses, one from motion model and one doing relocalization.
+                        // If relocalization is sucessfull we choose that solution, otherwise we retain
+                        // the "visual odometry" solution.
+
+                        bool bOKMM = false;
+                        bool bOKReloc = false;
+                        vector<MapPoint*> vpMPsMM;
+                        vector<bool> vbOutMM;
+                        Sophus::SE3f TcwMM;
+                        bool lightTracking = false;
+                        bool bVO = false;
+                        // Use motion tracking and relocalization mode to calculate two poses,
+                        // if relocalization is successful, use the pose obtained by relocalization
+                        cv::Mat mVec = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(mVelocity));
+                        if(!mVec.empty() && useMotionModel)
+                        {
+                            lightTracking = true;
+                            bOKMM = LightTrackWithMotionModel(bVO); // TODO: check out!!
+                            vpMPsMM = mCurrentFrame.mvpMapPoints;
+                            vbOutMM = mCurrentFrame.mvbOutlier;
+                            TcwMM = mCurrentFrame.GetPose();
+                        }
+                        bOKReloc = Relocalization(1);// relocation mode
+
+                        if(bOKMM && !bOKReloc)
+                        {
+                            mCurrentFrame.SetPose(TcwMM);
+                            mCurrentFrame.mvpMapPoints = vpMPsMM;
+                            mCurrentFrame.mvbOutlier = vbOutMM;
+
+                            if((lightTracking && bVO) || (!lightTracking && mbVO))
+                            {
+                                for(int i =0; i<mCurrentFrame.N; i++)
+                                {
+                                    if(mCurrentFrame.mvpMapPoints[i] && !mCurrentFrame.mvbOutlier[i])
+                                    {
+                                        mCurrentFrame.mvpMapPoints[i]->IncreaseFound();
+                                    }
+                                }
+                            }
+                        }
+
+                        bOK = bOKReloc || bOKMM;
+                    }
+                }
+            }
+
+            mCurrentFrame.mpReferenceKF = mpReferenceKF;
+
+            if(!bOK)
+            {
+                if(pCurrentMap->KeyFramesInMap()<=5)
+                {
+                    cout << "Light Tracking not working..." << endl;
+                    return;
+                }
+                cout << "Light Tracking field..." << endl;
+            }
+            // else cout << "Light Tracking ok " << endl;
+
+            if(!mCurrentFrame.mpReferenceKF)
+                mCurrentFrame.mpReferenceKF = mpReferenceKF;
+            //
+
+        }
+    }
+
+
+    bool Tracking::TrackHomo(cv::Mat& homo)
+    {
+        Map* pCurrentMap = mpAtlas->GetCurrentMap();
+
+        unique_lock<mutex> lock(pCurrentMap->mMutexMapUpdate);
+        // bool useMotionModel = true; //set true
+
+        if(mState==NOT_INITIALIZED || mState==NO_IMAGES_YET)
+        {
+            cout << "Light Tracking homo not working because Tracking is not initialized..." << endl;
+            return false;
+        }
+        cv::Mat mVec = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(mVelocity));
+        if(mState==OK && !mVec.empty())// Status ok not lost and speed model
+        {
+            Frame lastFrameBU = mLastFrame; // Back up last frame
+            list<MapPoint*> lpTemporalPointsBU = mlpTemporalPoints;// Backup temporary point
+            ORBmatcher matcher(0.9,true);// Match point matcher Minimum distance < 0.9*times short distance match successfully
+            // Update the previous frame map point
+            UpdateLastFrame();//
+
+            mCurrentFrame.SetPose(mVelocity * mLastFrame.GetPose());
+            // The current frame pose mVelocity is the pose transformation between the current frame and the previous frame
+            // initialize null pointer
+            fill(mCurrentFrame.mvpMapPoints.begin(),mCurrentFrame.mvpMapPoints.end(),static_cast<MapPoint*>(NULL));
+
+            // Project points seen in previous frame
+            int th;
+            if(mSensor  != System::STEREO)
+                th=15;// search window
+            else
+                th=7;
+            vector<cv::Point2f> points_last;
+            vector<cv::Point2f> points_current;
+            int nmatches = matcher.SearchByProjection(mCurrentFrame,mLastFrame,th,mSensor==System::MONOCULAR,
+                                                      points_last,points_current);
+
+            // If few matches, uses a wider window search
+            if(nmatches<20)
+            {
+                points_last.clear();
+                points_current.clear();
+                fill(mCurrentFrame.mvpMapPoints.begin(),mCurrentFrame.mvpMapPoints.end(),static_cast<MapPoint*>(NULL));
+                nmatches = matcher.SearchByProjection(mCurrentFrame,mLastFrame,2*th,mSensor==System::MONOCULAR,
+                                                      points_last,points_current);
+            }
+
+            if(nmatches<20)
+            {
+                mLastFrame = lastFrameBU;
+                mlpTemporalPoints = lpTemporalPointsBU;
+                cout << "Tracking homo faild..." << endl;
+                return false;
+            }
+            if(points_current.size() > 50)
+            {
+                // https://github.com/Ewenwan/MVision/blob/master/CNN/Action_Recognition/IDT/IDT/src/DenseTrackStab.cpp
+                // https://github.com/Ewenwan/MVision/blob/master/vSLAM/ch7/pose_estimation_2d2d.cpp
+                homo = findHomography ( points_current, points_last, RANSAC, 3 );// points_last = H * points_current
+
+                mLastFrame = lastFrameBU;
+                mlpTemporalPoints = lpTemporalPointsBU;
+
+                return true;
+            }
+            // Revert to original frame, unchanged
+            mLastFrame = lastFrameBU;
+            mlpTemporalPoints = lpTemporalPointsBU;
+        }
+        cout << "Tracking homo faild..." << endl;
+        return false;
+    }
+
 void Tracking::Reset(bool bLocMap)
 {
     Verbose::PrintMess("System Reseting", Verbose::VERBOSITY_NORMAL);
@@ -3976,7 +4403,6 @@ void Tracking::Reset(bool bLocMap)
         mpLocalMapper->RequestReset();
         Verbose::PrintMess("done", Verbose::VERBOSITY_NORMAL);
     }
-
 
     // Reset Loop Closing
     Verbose::PrintMess("Reseting Loop Closing...", Verbose::VERBOSITY_NORMAL);

@@ -47,7 +47,8 @@ namespace ORB_SLAM3
             cv::Mat &imDepth,
             cv::Mat &mask)
     {
-        if(currentFrame.mTcw.empty()){
+        cv::Mat _Tcw = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(currentFrame.GetPose()));
+        if(_Tcw.empty()){
             std::cout << "Geometry not working." << std::endl;
         }
         else if (mDB.mNumElem >= ELEM_INITIAL_MAP)// >5
@@ -72,20 +73,24 @@ namespace ORB_SLAM3
 
     vector<ORB_SLAM3::Frame> Geometry::GetRefFrames(const ORB_SLAM3::Frame &currentFrame)
     {
-        cv::Mat rot1      = currentFrame.mTcw.rowRange(0,3).colRange(0,3);
+        cv::Mat _Tcw = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(currentFrame.GetPose()));
+
+        cv::Mat rot1      = _Tcw.rowRange(0,3).colRange(0,3);
         cv::Mat eul1      = rotm2euler(rot1);
-        cv::Mat trans1 = currentFrame.mTcw.rowRange(0,3).col(3);
+        cv::Mat trans1 = _Tcw.rowRange(0,3).col(3);
         cv::Mat vDist;
         cv::Mat vRot;
 
         for (int i(0); i < mDB.mNumElem; i++)
         {
-            cv::Mat rot2 = mDB.mvDataBase[i].mTcw.rowRange(0,3).colRange(0,3);
+            cv::Mat _Tcw = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(mDB.mvDataBase[i].GetPose()));
+
+            cv::Mat rot2 = _Tcw.rowRange(0,3).colRange(0,3);
             cv::Mat eul2 = rotm2euler(rot2);
             double distRot = cv::norm(eul2,eul1,cv::NORM_L2);
             vRot.push_back(distRot);
 
-            cv::Mat trans2 = mDB.mvDataBase[i].mTcw.rowRange(0,3).col(3);
+            cv::Mat trans2 = _Tcw.rowRange(0,3).col(3);
             double dist = cv::norm(trans2,trans1,cv::NORM_L2);
             vDist.push_back(dist);
         }
@@ -185,7 +190,10 @@ namespace ORB_SLAM3
             // vconcat（B,C，A）;
             cv::vconcat(vMPRefFrame,matInvDepthRefFrame.t(),vMPRefFrame);
 
-            cv::Mat vMPw = refFrame.mTcw.inv() * vMPRefFrame;
+            cv::Mat _RefTcw = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(refFrame.GetPose()));
+            cv::Mat _CurTcw = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(currentFrame.GetPose()));
+
+            cv::Mat vMPw = _RefTcw.inv() * vMPRefFrame;
 
 
             cv::Mat _vMPw = cv::Mat(4,vMPw.cols,CV_32F);
@@ -201,9 +209,9 @@ namespace ORB_SLAM3
                 mp.at<float>(0,0) = vMPw.at<float>(0,j)/matInvDepthRefFrame.at<float>(0,j);// X
                 mp.at<float>(1,0) = vMPw.at<float>(1,j)/matInvDepthRefFrame.at<float>(0,j);// Y
                 mp.at<float>(2,0) = vMPw.at<float>(2,j)/matInvDepthRefFrame.at<float>(0,j);// Z
-                cv::Mat tRefFrame = refFrame.mTcw.rowRange(0,3).col(3);
+                cv::Mat tRefFrame = _RefTcw.rowRange(0,3).col(3);
 
-                cv::Mat tCurrentFrame = currentFrame.mTcw.rowRange(0,3).col(3);
+                cv::Mat tCurrentFrame = _CurTcw.rowRange(0,3).col(3);
                 cv::Mat nMPRefFrame = mp - tRefFrame;
                 cv::Mat nMPCurrentFrame = mp - tCurrentFrame;
 
@@ -254,7 +262,8 @@ namespace ORB_SLAM3
 
         if (!vAllMPw.empty())
         {
-            cv::Mat vMPCurrentFrame = currentFrame.mTcw * vAllMPw;
+            cv::Mat temp = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(currentFrame.GetPose()));
+            cv::Mat vMPCurrentFrame = temp * vAllMPw;
 
             // Divide by last column   (X/Z，Y/Z，1，1/Z) ----> (X,Y,Z,1)
             for (int i(0); i < vMPCurrentFrame.cols; i++)// 4×M  (X/Z，Y/Z，1，1/Z)
@@ -361,7 +370,7 @@ namespace ORB_SLAM3
                     m++;
                 }
             }
-            cv::Mat matDepthCurrentFrame(matCurrentFrame.rows,1,CV_32F)
+            cv::Mat matDepthCurrentFrame(matCurrentFrame.rows,1,CV_32F);
             cv::Mat _matProjDepth(matCurrentFrame.rows,1,CV_32F);
             cv::Mat _matCurrentFrame(matCurrentFrame.rows,2,CV_32F);
 
