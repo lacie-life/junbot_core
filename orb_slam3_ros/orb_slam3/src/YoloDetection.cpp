@@ -169,9 +169,7 @@ bool YoloDetection::Detect(const cv::Mat &bgr_img, std::vector<Object> &objects)
                     cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 0));
     }
 
-    cv::imshow("image", mRGB);
-
-//    display(objects);
+    // cv::imshow("image", mRGB);
 
     return true;
 }
