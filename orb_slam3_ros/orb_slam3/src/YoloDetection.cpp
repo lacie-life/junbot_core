@@ -143,16 +143,42 @@ bool YoloDetection::Detect(const cv::Mat &bgr_img, std::vector<Object> &objects)
 
 //    std::cout << "Number of objects: " << objects.size() << "\n";
 
-//    if (!bgr_img.empty())
-//    {
-//        display(bgr_img, objects);
-//    }
+    for (size_t i = 0; i < objects.size(); i++)
+    {
+        const Object& obj = objects[i];
+
+        cv::rectangle(mRGB, obj.rect, cv::Scalar(255, 0, 0));
+        char text[256];
+        sprintf(text, "%s %.1f%%", obj.object_name.c_str(), obj.prob * 100);
+
+        int baseLine = 0;
+        cv::Size label_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
+
+        int x = obj.rect.x;
+        int y = obj.rect.y - label_size.height - baseLine;
+        if (y < 0)
+            y = 0;
+        if (x + label_size.width > mRGB.cols)
+            x = mRGB.cols - label_size.width;
+
+        cv::rectangle(mRGB, cv::Rect(cv::Point(x, y),
+                                      cv::Size(label_size.width, label_size.height + baseLine)),
+                      cv::Scalar(255, 255, 255), cv::FILLED);
+
+        cv::putText(mRGB, text, cv::Point(x, y + label_size.height),
+                    cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 0));
+    }
+
+    cv::imshow("image", mRGB);
+
+//    display(objects);
+
     return true;
 }
 
-cv::Mat YoloDetection::display(const cv::Mat &bgr_img, std::vector<Object> &objects) {
+cv::Mat YoloDetection::display(std::vector<Object> &objects) {
 
-    cv::Mat image = bgr_img.clone();
+    cv::Mat image = mRGB.clone();
 
     for (size_t i = 0; i < objects.size(); i++)
     {

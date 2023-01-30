@@ -32,7 +32,7 @@ public:
     bool Detect();
 
     bool Detect(const cv::Mat& bgr_img, std::vector<Object>& objects);
-    cv::Mat display(const cv::Mat& bgr_img, std::vector<Object>& objects);
+    cv::Mat display(std::vector<Object>& objects);
 
     void ClearArea();
 

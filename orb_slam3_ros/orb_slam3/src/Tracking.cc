@@ -3514,7 +3514,7 @@ void Tracking::CreateNewKeyFrame()
 //    cout << "Color +++ (" << minT << ", " << maxT << ") \n";
 
 	// insert Key Frame into point cloud viewer
-    // mpPointCloudMapping->insertKeyFrame(pKF, this->mImRGB, this->mImDepth);
+     mpPointCloudMapping->insertKeyFrame(pKF, this->mImRGB, this->mImDepth);
 
     if(mpDetector)
     {
