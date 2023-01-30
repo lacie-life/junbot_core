@@ -62,7 +62,6 @@ protected:
 
     void FillImage(cv::Mat &im, const cv::Mat &mask, cv::Scalar color);
 
-
     // Info of the frame to be drawn
     cv::Mat mIm, mImRight;
     cv::Mat mDynMask;

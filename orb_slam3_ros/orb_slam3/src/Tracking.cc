@@ -1671,36 +1671,35 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
 //        mpDetector->mvDynamicArea.clear();
 //    }
 
-    cv::Mat mImMask;
     cv::Mat CurrFrameTcw = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(mCurrentFrame.GetPose()));
 //    if(!CurrFrameTcw.empty())
 //    {
 //        mGeometry.GeometricModelCorrection(mCurrentFrame, mImDepth, mImMask);
 //    }
 
-//    cv::Mat homo;
-//    bool flag;
-//    float BTh = mFlowThreshold;
-//
+    cv::Mat homo;
+    bool flag = false;
+    float BTh = mFlowThreshold;
+
 //    flag = TrackHomo(homo);
-//
-//    if(flag && !homo.empty())
-//    {
-//        mFlow.ComputeMask(mImGray, homo, mImMask, BTh);
-//    }
-//    else
-//    {
-//        mFlow.ComputeMask(mImGray, mImMask, BTh);
-//    }
-//
-//    if (mSensor == System::RGBD)
-//    {
-//        mCurrentFrame = Frame(mImGray,mImDepth,mImMask,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera);
-//    }
-//    else if(mSensor == System::IMU_RGBD)
-//    {
-//        mCurrentFrame = Frame(mImGray,mImDepth,mImMask,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,&mLastFrame,*mpImuCalib);
-//    }
+
+    if(flag && !homo.empty())
+    {
+        mFlow.ComputeMask(mImGray, homo, mImMask, BTh);
+    }
+    else
+    {
+        mFlow.ComputeMask(mImGray, mImMask, BTh);
+    }
+
+    if (mSensor == System::RGBD)
+    {
+        mCurrentFrame = Frame(mImGray,mImDepth,mImMask,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera);
+    }
+    else if(mSensor == System::IMU_RGBD)
+    {
+        mCurrentFrame = Frame(mImGray,mImDepth,mImMask,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,&mLastFrame,*mpImuCalib);
+    }
 
     mCurrentFrame.mNameFile = filename;
     mCurrentFrame.mnDataset = mnNumDataset;
@@ -2059,7 +2058,7 @@ void Tracking::Track()
             MonocularInitialization();
         }
 
-        //mpFrameDrawer->Update(this);
+        mpFrameDrawer->Update(this);
 
         if(mState!=OK) // If rightly initialized, mState=OK
         {
@@ -2351,6 +2350,7 @@ void Tracking::Track()
 
         // Update drawer
         mpFrameDrawer->Update(this);
+
         if(mCurrentFrame.isSet())
             mpMapDrawer->SetCurrentCameraPose(mCurrentFrame.GetPose());
 
@@ -2445,9 +2445,6 @@ void Tracking::Track()
 
         mLastFrame = Frame(mCurrentFrame);
     }
-
-
-
 
     if(mState==OK || mState==RECENTLY_LOST)
     {
@@ -2769,7 +2766,6 @@ void Tracking::CreateInitialMapMonocular()
         mpImuPreintegratedFromLastKF = new IMU::Preintegrated(pKFcur->mpImuPreintegrated->GetUpdatedBias(),pKFcur->mImuCalib);
     }
 
-
     mpLocalMapper->InsertKeyFrame(pKFini);
     mpLocalMapper->InsertKeyFrame(pKFcur);
     mpLocalMapper->mFirstTs=pKFcur->mTimeStamp;
@@ -2933,7 +2929,15 @@ void Tracking::UpdateLastFrame()
     // Update pose according to reference keyframe
     KeyFrame* pRef = mLastFrame.mpReferenceKF;
     Sophus::SE3f Tlr = mlRelativeFramePoses.back();
-    mLastFrame.SetPose(Tlr * pRef->GetPose());
+
+    if(pRef->GetPose().log() == Sophus::SE3f().log())
+    {
+        return;
+    }
+    else
+    {
+        mLastFrame.SetPose(Tlr * pRef->GetPose());
+    }
 
     if(mnLastKeyFrameId==mLastFrame.mnId || mSensor==System::MONOCULAR || mSensor==System::IMU_MONOCULAR || !mbOnlyTracking)
         return;

@@ -160,6 +160,7 @@ public:
     cv::Mat mImGray;
     cv::Mat mImDepth; // added to realize pointcloud view
     cv::Mat mImRGB; // added for color point map
+    cv::Mat mImMask;
     float mFlowThreshold;
 
     // Initialization Variables (Monocular)

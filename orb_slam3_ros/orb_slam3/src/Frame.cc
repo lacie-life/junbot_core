@@ -413,10 +413,8 @@ namespace ORB_SLAM3 {
         ExtractORB(0, imGray, 0, 1000);
 #ifdef REGISTER_TIMES
         std::chrono::steady_clock::time_point time_EndExtORB = std::chrono::steady_clock::now();
-
         mTimeORB_Ext = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_EndExtORB - time_StartExtORB).count();
 #endif
-
 
         N = mvKeys.size();
         if (mvKeys.empty())
@@ -452,7 +450,6 @@ namespace ORB_SLAM3 {
 
             mbInitialComputations = false;
         }
-
 
         mb = mbf / fx;
 

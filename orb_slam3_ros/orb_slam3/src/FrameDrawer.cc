@@ -22,7 +22,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include<mutex>
+#include <mutex>
 
 namespace ORB_SLAM3
 {
@@ -393,7 +393,6 @@ void FrameDrawer::generatePC(void)
 }
 
 
-
 void FrameDrawer::DrawTextInfo(cv::Mat &im, int nState, cv::Mat &imText)
 {
     stringstream s;
@@ -440,6 +439,14 @@ void FrameDrawer::Update(Tracking *pTracker)
     mvCurrentKeys=pTracker->mCurrentFrame.mvKeys;
     mThDepth = pTracker->mCurrentFrame.mThDepth;
     mvCurrentDepth = pTracker->mCurrentFrame.mvDepth;
+
+    pTracker->mImGray.copyTo(mIm);
+    pTracker->mImMask.copyTo(mDynMask);
+    pTracker->mImDepth.copyTo(mImDep);
+    pTracker->mImRGB.copyTo(mImRGB);
+
+    cv::Mat _Tcw = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(pTracker->mCurrentFrame.GetPose()));
+    _Tcw.copyTo(mTcw);
 
     if(both){
         mvCurrentKeysRight = pTracker->mCurrentFrame.mvKeysRight;

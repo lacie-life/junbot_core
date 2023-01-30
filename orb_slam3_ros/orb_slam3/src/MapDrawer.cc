@@ -488,7 +488,10 @@ namespace ORB_SLAM3 {
             return;
 
         vector<KeyFrame *> vKFs = pActiveMap->GetAllKeyFrames();
+
         int N = vKFs.size();
+
+        std::cout << "OctoMap Draw with " << N << " Keyframe \n";
 
         if (N == 0) {
             m_octree->clear();
@@ -648,7 +651,8 @@ namespace ORB_SLAM3 {
 
         if( objnumber >0)
         {
-            //std::cout<< "OD size: " << objnumber << std::endl;
+            std::cout<< "OD size: " << objnumber << std::endl;
+
             for(int m=0; m<objnumber; m++)
             {
                 Cluster & cluster = Clusters[m];

@@ -47,7 +47,7 @@ void Detector::Run(void)
             mDetector->Detect(colorImgs[i], vobject);
             if(vobject.size()>0)
             {
-                std::cout << "detect : " << vobject.size() << " uums obj" << std::endl;
+                std::cout << "detect : " << vobject.size() << " obj" << std::endl;
                 for(unsigned int j =0; j<vobject.size(); j++)
                 {
                     unique_lock<mutex> lckObj(mvKeyframesMutex);

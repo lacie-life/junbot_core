@@ -317,7 +317,7 @@ void Viewer::Run()
         if(menuShowKeyFrames || menuShowGraph || menuShowInertialGraph || menuShowOptLba)
             mpMapDrawer->DrawKeyFrames(menuShowKeyFrames,menuShowGraph, menuShowInertialGraph, menuShowOptLba);
 
-        if(menuShowPoints)
+        if(!menuShowPoints)
         {
             mpMapDrawer->DrawMapPoints();
         }
