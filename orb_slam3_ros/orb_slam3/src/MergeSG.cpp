@@ -29,7 +29,6 @@ MergeSG::MergeSG():
 
     applyConfig();
 
-
     mpOD = new(ObjectDatabase);
 }
 
@@ -46,13 +45,17 @@ MergeSG::~MergeSG()
 
 void MergeSG::merge(std::vector<Object>& objects, cv::Mat depth, PointCloudT::Ptr pclMap)
 {
+    std::cout << "Object number: " << objects.size() << "\n";
 
     std::vector<Cluster> clusters;
     extract(objects, pclMap, clusters);
 
-    for(std::vector<Cluster>::iterator it = clusters.begin();
-        it != clusters.end(); ++it)
+    for(std::vector<Cluster>::iterator it = clusters.begin(); it != clusters.end(); ++it)
+    {
         mpOD->addObject(*it);
+    }
+
+    std::cout << "ObjectDatabase: " << mpOD->mClusters.size() << "\n";
 }
 
 void MergeSG::extract(std::vector<Object>& objects,
@@ -132,7 +135,7 @@ void MergeSG::extract(std::vector<Object>& objects,
         }
     }
 
-    // std::cout << "object3ds size  " << object3ds.size() << std::endl;
+    std::cout << "Object3ds size  " << object3ds.size() << std::endl;
 
     findMaxIntersectionRelationships(objects, object3ds, clusters);
 }
@@ -148,13 +151,10 @@ void MergeSG::findMaxIntersectionRelationships(std::vector<Object>& objects,
         double max = 0;
         cv::Rect_<float>  rect2d = obj2d_it->rect;
 
-
-        //std::cout << "2dobject_roi: " << rect2d.x     << " "
-        //                              << rect2d.y     << " "
-        //                              << rect2d.width << " "
-        //                              << rect2d.height << std::endl;
-
-
+//        std::cout << "2dobject_roi: " << rect2d.x     << " "
+//                                      << rect2d.y     << " "
+//                                      << rect2d.width << " "
+//                                      << rect2d.height << std::endl;
 
         for (std::vector<Object3d>::iterator it = max_it;
              it != object3d.end(); ++it)

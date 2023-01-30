@@ -491,7 +491,7 @@ namespace ORB_SLAM3 {
 
         int N = vKFs.size();
 
-        std::cout << "OctoMap Draw with " << N << " Keyframe \n";
+//        std::cout << "OctoMap Draw with " << N << " Keyframe \n";
 
         if (N == 0) {
             m_octree->clear();
@@ -870,8 +870,6 @@ namespace ORB_SLAM3 {
         }
     }
 
-
-
     // Generate the point cloud of the current frame, simply filter and separate the ground and non-ground
     void MapDrawer::GeneratePointCloud(KeyFrame *kf,
                                        pcl::PointCloud<pcl::PointXYZRGB> &ground,
@@ -905,7 +903,7 @@ namespace ORB_SLAM3 {
             }
         }
 
-        Eigen::Isometry3d T = ORB_SLAM3::Converter::toSE3Quat( kf->GetPose() );
+        Eigen::Isometry3d T = ORB_SLAM3::Converter::toSE3Quat(kf->GetPose());
         //pcl::PointCloud<pcl::PointXYZRGB> temp;
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr temp (new pcl::PointCloud<pcl::PointXYZRGB>);
         pcl::transformPointCloud( *cloud, *temp, T.inverse().matrix());
@@ -913,9 +911,12 @@ namespace ORB_SLAM3 {
         mpMerge2d3d->merge(objects, kf->mImDep, temp);
 
         std::vector<Cluster>& Clusters = mpMerge2d3d->mpOD->mClusters;
-        int objnumber = Clusters.size();
-        std::cout<< "OD size: " << objnumber << std::endl;
-        for( int m=0; m<objnumber; m++)
+
+        int objNumber = Clusters.size();
+
+        std::cout<< "OD size: " << objNumber << std::endl;
+
+        for( int m=0; m < objNumber; m++)
         {
             Cluster & cluster = Clusters[m];
             Eigen::Vector3f size  = cluster.size;
@@ -964,7 +965,6 @@ namespace ORB_SLAM3 {
                 }
                 extract.setInputCloud(cloud_filtered.makeShared());
                 extract.setIndices(inliers);
-
 
                 // a*X + b*Y + c*Z + d = 0;
                 if (std::abs(coefficients->values.at(3)) >0.07)

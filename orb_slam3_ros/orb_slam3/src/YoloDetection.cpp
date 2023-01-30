@@ -81,6 +81,8 @@ bool YoloDetection::Detect(const cv::Mat &bgr_img, std::vector<Object> &objects)
 
     cv::Mat img;
 
+    mRGB = bgr_img.clone();
+
     if(bgr_img.empty())
     {
         std::cout << "Read RGB failed!" << std::endl;
@@ -88,7 +90,7 @@ bool YoloDetection::Detect(const cv::Mat &bgr_img, std::vector<Object> &objects)
     }
 
     // Preparing input tensor
-    cv::resize(bgr_img, img, cv::Size(640, 380));
+    cv::resize(mRGB, img, cv::Size(640, 380));
     cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
     torch::Tensor imgTensor = torch::from_blob(img.data, {img.rows, img.cols,3},torch::kByte);
     imgTensor = imgTensor.permute({2,0,1});
@@ -110,14 +112,18 @@ bool YoloDetection::Detect(const cv::Mat &bgr_img, std::vector<Object> &objects)
             float bottom = dets[0][i][3].item().toFloat() * mRGB.rows / 384;
             int classID = dets[0][i][5].item().toInt();
 
-
             cv::Rect2i DetectArea(left, top, (right - left), (bottom - top));
             mmDetectMap[mClassnames[classID]].push_back(DetectArea);
 
             Object tmp;
             tmp.rect = DetectArea;
-            tmp.class_id =classID;
+            tmp.class_id = classID;
             tmp.object_name = mClassnames[classID];
+
+            std::cout << "2dobject_roi: " << DetectArea.x     << " "
+                                          << DetectArea.y     << " "
+                                          << DetectArea.width << " "
+                                          << DetectArea.height << std::endl;
 
             objects.push_back(tmp);
 
@@ -135,12 +141,17 @@ bool YoloDetection::Detect(const cv::Mat &bgr_img, std::vector<Object> &objects)
         }
     }
 
-//    display(bgr_img, objects);
+//    std::cout << "Number of objects: " << objects.size() << "\n";
 
+//    if (!bgr_img.empty())
+//    {
+//        display(bgr_img, objects);
+//    }
     return true;
 }
 
 cv::Mat YoloDetection::display(const cv::Mat &bgr_img, std::vector<Object> &objects) {
+
     cv::Mat image = bgr_img.clone();
 
     for (size_t i = 0; i < objects.size(); i++)
@@ -170,7 +181,7 @@ cv::Mat YoloDetection::display(const cv::Mat &bgr_img, std::vector<Object> &obje
     }
 
     cv::imshow("image", image);
-    cv::waitKey(0);
+//    cv::waitKey(0);
 }
 
 vector<torch::Tensor> YoloDetection::non_max_suppression(torch::Tensor preds, float score_thresh, float iou_thresh)

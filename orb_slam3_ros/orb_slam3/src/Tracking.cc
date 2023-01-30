@@ -3498,20 +3498,20 @@ void Tracking::CreateNewKeyFrame()
 
     mpLocalMapper->SetNotStop(false);
 
-    double minT, maxT;
-    cv::minMaxIdx(mImDepth, &minT, &maxT);
-
-    cout << "Depth mat type " << mImDepth.type() << endl;
-    cout << "DepthMapFactor " << mDepthMapFactor << endl;  
-    cout << "BEFORE +++ (" << minT << ", " << maxT << ") \n"; 
-
-    cv::minMaxIdx(this->mImRGB, &minT, &maxT);
-
-
-    cout << "Color mat type " << mImRGB.type() << endl;
-    cout << "Color mat size " << mImRGB.size() << endl;
-    cout << "Color mat channels " << mImRGB.channels() << endl;
-    cout << "Color +++ (" << minT << ", " << maxT << ") \n"; 
+//    double minT, maxT;
+//    cv::minMaxIdx(mImDepth, &minT, &maxT);
+//
+//    cout << "Depth mat type " << mImDepth.type() << endl;
+//    cout << "DepthMapFactor " << mDepthMapFactor << endl;
+//    cout << "BEFORE +++ (" << minT << ", " << maxT << ") \n";
+//
+//    cv::minMaxIdx(this->mImRGB, &minT, &maxT);
+//
+//
+//    cout << "Color mat type " << mImRGB.type() << endl;
+//    cout << "Color mat size " << mImRGB.size() << endl;
+//    cout << "Color mat channels " << mImRGB.channels() << endl;
+//    cout << "Color +++ (" << minT << ", " << maxT << ") \n";
 
 	// insert Key Frame into point cloud viewer
     // mpPointCloudMapping->insertKeyFrame(pKF, this->mImRGB, this->mImDepth);

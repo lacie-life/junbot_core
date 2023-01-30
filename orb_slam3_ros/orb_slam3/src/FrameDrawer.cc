@@ -387,6 +387,9 @@ void FrameDrawer::generatePC(void)
     vg.filter(*cloud);
 
     Eigen::Isometry3d T = ORB_SLAM3::Converter::toSE3Quat(Tcw);
+
+//    std::cout << "Trans Cam to World: " << Tcw << endl;
+
     pcl::PointCloud<pcl::PointXYZRGB> temp;
     pcl::transformPointCloud( *cloud, temp, T.inverse().matrix());
     mpMapDrawer->RegisterObs(temp);
