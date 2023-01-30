@@ -38,7 +38,7 @@ namespace ORB_SLAM3 {
     float Frame::mnMinX, Frame::mnMinY, Frame::mnMaxX, Frame::mnMaxY;
     float Frame::mfGridElementWidthInv, Frame::mfGridElementHeightInv;
 
-//For stereo fisheye matching
+    //For stereo fisheye matching
     cv::BFMatcher Frame::BFmatcher = cv::BFMatcher(cv::NORM_HAMMING);
 
     Frame::Frame() : mpcpi(NULL), mpImuPreintegrated(NULL), mpPrevFrame(NULL), mpImuPreintegratedFrame(NULL),
@@ -325,7 +325,6 @@ namespace ORB_SLAM3 {
 
         mTimeORB_Ext = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_EndExtORB - time_StartExtORB).count();
 #endif
-
 
         N = mvKeys.size();
 

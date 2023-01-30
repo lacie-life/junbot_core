@@ -135,7 +135,7 @@ bool YoloDetection::Detect(const cv::Mat &bgr_img, std::vector<Object> &objects)
         }
     }
 
-    display(bgr_img, objects);
+//    display(bgr_img, objects);
 
     return true;
 }

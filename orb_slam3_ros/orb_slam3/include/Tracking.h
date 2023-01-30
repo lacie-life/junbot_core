@@ -366,7 +366,7 @@ protected:
     // For point cloud viewing
     boost::shared_ptr<PointCloudMapping> mpPointCloudMapping;
     std::shared_ptr<Detector> mpDetector;
-    Geometry mGeometry;
+    // Geometry mGeometry;
     Flow mFlow;
 
     list<MapPoint*> mlpTemporalPoints;

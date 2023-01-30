@@ -1678,29 +1678,29 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
 //        mGeometry.GeometricModelCorrection(mCurrentFrame, mImDepth, mImMask);
 //    }
 
-    cv::Mat homo;
-    bool flag;
-    float BTh = mFlowThreshold;
-
-    flag = TrackHomo(homo);
-
-    if(flag && !homo.empty())
-    {
-        mFlow.ComputeMask(mImGray, homo, mImMask, BTh);
-    }
-    else
-    {
-        mFlow.ComputeMask(mImGray, mImMask, BTh);
-    }
-
-    if (mSensor == System::RGBD)
-    {
-        mCurrentFrame = Frame(mImGray,mImDepth,mImMask,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera);
-    }
-    else if(mSensor == System::IMU_RGBD)
-    {
-        mCurrentFrame = Frame(mImGray,mImDepth,mImMask,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,&mLastFrame,*mpImuCalib);
-    }
+//    cv::Mat homo;
+//    bool flag;
+//    float BTh = mFlowThreshold;
+//
+//    flag = TrackHomo(homo);
+//
+//    if(flag && !homo.empty())
+//    {
+//        mFlow.ComputeMask(mImGray, homo, mImMask, BTh);
+//    }
+//    else
+//    {
+//        mFlow.ComputeMask(mImGray, mImMask, BTh);
+//    }
+//
+//    if (mSensor == System::RGBD)
+//    {
+//        mCurrentFrame = Frame(mImGray,mImDepth,mImMask,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera);
+//    }
+//    else if(mSensor == System::IMU_RGBD)
+//    {
+//        mCurrentFrame = Frame(mImGray,mImDepth,mImMask,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,&mLastFrame,*mpImuCalib);
+//    }
 
     mCurrentFrame.mNameFile = filename;
     mCurrentFrame.mnDataset = mnNumDataset;
@@ -2674,7 +2674,6 @@ void Tracking::MonocularInitialization()
 }
 
 
-
 void Tracking::CreateInitialMapMonocular()
 {
     // Create KeyFrames
@@ -2683,7 +2682,6 @@ void Tracking::CreateInitialMapMonocular()
 
     if(mSensor == System::IMU_MONOCULAR)
         pKFini->mpImuPreintegrated = (IMU::Preintegrated*)(NULL);
-
 
     pKFini->ComputeBoW();
     pKFcur->ComputeBoW();
@@ -3021,9 +3019,6 @@ bool Tracking::TrackWithMotionModel()
     {
         mCurrentFrame.SetPose(mVelocity * mLastFrame.GetPose());
     }
-
-
-
 
     fill(mCurrentFrame.mvpMapPoints.begin(),mCurrentFrame.mvpMapPoints.end(),static_cast<MapPoint*>(NULL));
 
@@ -4213,6 +4208,7 @@ bool Tracking::Relocalization()
 
         if(mState==NOT_INITIALIZED || mState==NO_IMAGES_YET)
         {
+            std::cout << "Light Track \n";
             cout << "Light Tracking not working because Tracking is not initialized..." << endl;
             return;
         }
