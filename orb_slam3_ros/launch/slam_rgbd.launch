@@ -3,9 +3,9 @@
 	<node pkg="orb_slam3_ros" name="simple_rgbd_node" type="simple_rgbd_node" 
 	args="/home/lacie/slam_ws/src/junbot_planner/orb_slam3_ros/orb_slam3/Vocabulary/ORBvoc.txt.bin
 	/home/lacie/slam_ws/src/junbot_planner/orb_slam3_ros/config/RGB-D/TUM2.yaml
-	/home/lacie/Github/Data/TUM/rgbd_dataset_freiburg2_desk_with_person 
-	/home/lacie/Github/Data/TUM/rgbd_dataset_freiburg2_desk_with_person/depth.txt 
-	/home/lacie/Github/Data/TUM/rgbd_dataset_freiburg2_desk_with_person/rgb.txt"
+	/home/lacie/Github/Data/TUM/rgbd_dataset_freiburg2_large_with_loop
+	/home/lacie/Github/Data/TUM/rgbd_dataset_freiburg2_large_with_loop/depth.txt 
+	/home/lacie/Github/Data/TUM/rgbd_dataset_freiburg2_large_with_loop/rgb.txt"
 	output="screen"/>
 
 	<include file="$(find orb_slam3_ros)/launch/transform.launch" />

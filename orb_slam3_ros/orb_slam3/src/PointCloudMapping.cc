@@ -44,8 +44,6 @@
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
 #include <vision_msgs/BoundingBox3DArray.h>
-#include <vision_msgs/Detection3D.h>
-#include <vision_msgs/Detection3DArray.h>
 #include <vision_msgs/ObjectHypothesis.h>
 #include <sensor_msgs/PointCloud2.h>
 
@@ -135,7 +133,8 @@ pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePoint
     return tmp;
 }
 
-pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePointCloud(KeyFrame *kf, cv::Mat color,
+pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePointCloud(KeyFrame *kf, 
+                                                                                      cv::Mat color,
                                                                                       cv::Mat depth,
                                                                                       std::vector<Object> &objects)
 {
@@ -149,22 +148,30 @@ pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePoint
     {
         for (int n = 0; n < kf->mImDep.cols; n++)
         {
-            float d = kf->mImDep.ptr<float>(m)[n];
-            if (d < MIN_POINTCLOUD_DEPTH_X || d > MAX_POINTCLOUD_DEPTH_X)
-                continue;
 
-            float y = ( m - kf->cy) * d / kf->fy;
-            if (y < MIN_POINTCLOUD_DEPTH_Y || y > MAX_POINTCLOUD_DEPTH_Y)
-                continue;
+            cv::Point2i pt(n, m);
+            bool IsDynamic = false;
+            IsDynamic = checkDynamicPoint(pt, objects);
 
-            int ind = m * kf->mImDep.cols + n;
+            if(!IsDynamic)
+            {
+                float d = kf->mImDep.ptr<float>(m)[n];
 
-            tmp->points[ind].z = d;
-            tmp->points[ind].x = ( n - kf->cx) * d / kf->fx;
-            tmp->points[ind].y = y;
-            tmp->points[ind].b = kf->mImRGB.ptr<uchar>(m)[n*3+0];
-            tmp->points[ind].g = kf->mImRGB.ptr<uchar>(m)[n*3+1];
-            tmp->points[ind].r = kf->mImRGB.ptr<uchar>(m)[n*3+2];
+                if (d < MIN_POINTCLOUD_DEPTH_X || d > MAX_POINTCLOUD_DEPTH_X)
+                    continue;
+
+                float y = ( m - kf->cy) * d / kf->fy;
+                if (y < MIN_POINTCLOUD_DEPTH_Y || y > MAX_POINTCLOUD_DEPTH_Y)
+                    continue;
+
+                int ind = m * kf->mImDep.cols + n;
+
+                tmp->points[ind].z = d;
+                tmp->points[ind].x = ( n - kf->cx) * d / kf->fx;
+                tmp->points[ind].y = y;
+                tmp->points[ind].b = kf->mImRGB.ptr<uchar>(m)[n*3+0];
+                tmp->points[ind].g = kf->mImRGB.ptr<uchar>(m)[n*3+1];
+                tmp->points[ind].r = kf->mImRGB.ptr<uchar>(m)[n*3+2];
 
 //            PointT _p;
 //            _p.z = d;
@@ -176,6 +183,7 @@ pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePoint
 //            _p.r = kf->mImRGB.ptr<uchar>(m)[n*3+2];
 //
 //            tmp->points.push_back(_p);
+            }
         }
     }
 
@@ -211,6 +219,22 @@ pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePoint
     // TODO: Segment ground?
 
     return tmp;
+}
+
+bool PointCloudMapping::checkDynamicPoint(cv::Point2f pt, std::vector<Object> objects)
+{
+    for(int i = 0; i < objects.size(); i++)
+    {
+        if(objects[i].object_name == "person")
+        {
+            if((objects[i].rect.x <= pt.x < objects[i].rect.x + objects[i].rect.width)
+                    && objects[i].rect.y <= pt.y < objects[i].rect.y + objects[i].rect.height)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 void PointCloudMapping::generateAndPublishPointCloud(size_t N)
@@ -432,3 +456,4 @@ void PointCloudMapping::publisher()
     pcl::io::savePCDFile("result.pcd", *globalMap);
     std::cout << "Final point cloud saved!!!" << std::endl;
 }
+
