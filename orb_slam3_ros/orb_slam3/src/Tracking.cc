@@ -627,7 +627,6 @@ void Tracking::PrintTimeStats()
 Tracking::~Tracking()
 {
     //f_track_stats.close();
-
 }
 
 void Tracking::newParameterLoader(Settings *settings) {
@@ -1258,7 +1257,6 @@ bool Tracking::ParseCamParamFile(cv::FileStorage &fSettings)
     mMaxFrames = fps;
 
     cout << "- fps: " << fps << endl;
-
 
     int nRGB = fSettings["Camera.RGB"];
     mbRGB = nRGB;

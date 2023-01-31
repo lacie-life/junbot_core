@@ -31,6 +31,7 @@ public:
     ~ObjectDatabase();
     void addObject(Cluster& cluster);
     cv::Scalar  getObjectColor(int class_id); // defined object color
+    cv::Scalar  getObjectColor(string class_name); // defined object color
     float getObjectSize(int class_id);        // defined object size
 
     // Return the object data with the same name in the database
@@ -44,6 +45,7 @@ protected:
 
     // the size of each object
     std::vector<float>      mvSizes;
+    std::vector<string> mvInterestNames;
 
     int DataBaseSize;
 };

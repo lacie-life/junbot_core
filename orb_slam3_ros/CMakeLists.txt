@@ -179,9 +179,16 @@ target_link_libraries(${PROJECT_NAME}
 
 ## ROS node
 add_executable(simple_rgbd_node
-        src/simple_rgbd_node.cpp
-        )
+        src/simple_rgbd_node.cpp)
 target_link_libraries(simple_rgbd_node
+        ${PROJECT_NAME}
+        ${catkin_LIBRARIES}
+        )
+
+## ZED ROS node
+add_executable(zed_rgbd_node
+        src/zed_node_rgbd.cpp)
+target_link_libraries(zed_rgbd_node
         ${PROJECT_NAME}
         ${catkin_LIBRARIES}
         )

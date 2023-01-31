@@ -662,7 +662,7 @@ namespace ORB_SLAM3 {
 
                 glBegin(GL_LINES);
                 glLineWidth(5);
-                cv::Scalar color =  mpMerge2d3d->mpOD->getObjectColor(cluster.class_id);
+                cv::Scalar color =  mpMerge2d3d->mpOD->getObjectColor(cluster.object_name);
                 glColor3f(color.val[0]/255.0, color.val[1]/255.0, color.val[2]/255.0);
 
                 glVertex3f(cent[0]+size[0]/2.0,cent[1]-size[1]/2.0,cent[2]+size[2]/2.0);//
