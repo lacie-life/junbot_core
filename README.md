@@ -10,9 +10,9 @@
  
   ~~- [ ] Option 2: detect 3d cuboid [[Ref](https://github.com/aibo-kit/new_3dbbox_generation_method.git)] [[Ref](https://wym.netlify.app/2019-02-22-cubeslam/)]~~
   
-  - [ ] Replace Yolo with Segmentation net => remove dynamic object (by interest class)
-  - [ ] Turning object database
-  - [ ] Add ZED example
+   - [ ] Replace Yolo with Segmentation net => remove dynamic object (by interest class)
+   - [ ] Turning object database
+   - [ ] Add ZED example
 - [ ] Re-path planning?
   - [ ] Plan of re-path planning
   - [ ] How to represent map with object for navigation stack ? (Grid map / OctoMap) ?
