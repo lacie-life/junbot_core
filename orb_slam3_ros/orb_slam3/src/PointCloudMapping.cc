@@ -44,11 +44,17 @@
 #include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
 #include <vision_msgs/BoundingBox3DArray.h>
+#include <vision_msgs/Detection3D.h>
+#include <vision_msgs/Detection3DArray.h>
+#include <vision_msgs/ObjectHypothesis.h>
 #include <sensor_msgs/PointCloud2.h>
 
 #include <opencv2/core/core.hpp>
 
-#define MAX_POINTCLOUD_DEPTH 10.0 // in meters
+#define MAX_POINTCLOUD_DEPTH_X 3.0 // in meters
+#define MIN_POINTCLOUD_DEPTH_X 0.3
+#define MIN_POINTCLOUD_DEPTH_Y -3.0 // in meters
+#define MAX_POINTCLOUD_DEPTH_Y 3.3
 
 using namespace std;
 
@@ -57,8 +63,6 @@ ros::Publisher fullMapPub;
 ros::Publisher objPub;
 sensor_msgs::PointCloud2 pclPoint;
 sensor_msgs::PointCloud2 fullPCLPoint;
-vision_msgs::BoundingBox3DArray objDB;
-vision_msgs::BoundingBox3D obj;
 
 PointCloudMapping::PointCloudMapping(double resolution_, std::string modelPath)
 {
@@ -108,7 +112,7 @@ pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePoint
         for (int n = 0; n < depth.cols; n++)
         {
             float d = depth.ptr<float>(m)[n];
-            if (d < 0.01 || d > MAX_POINTCLOUD_DEPTH)
+            if (d < MIN_POINTCLOUD_DEPTH_X || d > MAX_POINTCLOUD_DEPTH_X)
                 continue;
 
             PointT _p;
@@ -136,40 +140,56 @@ pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePoint
                                                                                       std::vector<Object> &objects)
 {
     PointCloud::Ptr tmp(new PointCloud());
+    tmp->resize(kf->mImDep.rows * kf->mImDep.cols);
+    tmp->width    =  kf->mImDep.cols;
+    tmp->height   =  kf->mImDep.rows;
 
     // point cloud is null ptr
-    for (int m = 0; m < depth.rows; m++)
+    for (int m = 0; m < kf->mImDep.rows; m++)
     {
-        for (int n = 0; n < depth.cols; n++)
+        for (int n = 0; n < kf->mImDep.cols; n++)
         {
-            float d = depth.ptr<float>(m)[n];
-            if (d < 0.01 || d > MAX_POINTCLOUD_DEPTH)
+            float d = kf->mImDep.ptr<float>(m)[n];
+            if (d < MIN_POINTCLOUD_DEPTH_X || d > MAX_POINTCLOUD_DEPTH_X)
                 continue;
 
-            PointT _p;
-            _p.z = d;
-            _p.x = (n - kf->cx) * _p.z * kf->invfx;
-            _p.y = (m - kf->cy) * _p.z * kf->invfy;
+            float y = ( m - kf->cy) * d / kf->fy;
+            if (y < MIN_POINTCLOUD_DEPTH_Y || y > MAX_POINTCLOUD_DEPTH_Y)
+                continue;
 
-            _p.b = color.ptr<uchar>(m)[n*3];
-            _p.g = color.ptr<uchar>(m)[n*3+1];
-            _p.r = color.ptr<uchar>(m)[n*3+2];
+            int ind = m * kf->mImDep.cols + n;
 
-            tmp->points.push_back(_p);
+            tmp->points[ind].z = d;
+            tmp->points[ind].x = ( n - kf->cx) * d / kf->fx;
+            tmp->points[ind].y = y;
+            tmp->points[ind].b = kf->mImRGB.ptr<uchar>(m)[n*3+0];
+            tmp->points[ind].g = kf->mImRGB.ptr<uchar>(m)[n*3+1];
+            tmp->points[ind].r = kf->mImRGB.ptr<uchar>(m)[n*3+2];
+
+//            PointT _p;
+//            _p.z = d;
+//            _p.x = (n - kf->cx) * _p.z * kf->invfx;
+//            _p.y = (m - kf->cy) * _p.z * kf->invfy;
+//
+//            _p.b = kf->mImRGB.ptr<uchar>(m)[n*3];
+//            _p.g = kf->mImRGB.ptr<uchar>(m)[n*3+1];
+//            _p.r = kf->mImRGB.ptr<uchar>(m)[n*3+2];
+//
+//            tmp->points.push_back(_p);
         }
     }
 
     std::cout << "Size: " << tmp->size() << std::endl;
     std::cout << "2D object number: " << objects.size() << "\n";
-    tmp->is_dense = false;
 
     // Convert 2D bounding box to 3D cluster
     Eigen::Isometry3d T = Converter::toSE3Quat(kf->GetPose());
     PointCloud::Ptr pointCloud(new PointCloud);
+//    pcl::PointCloud<pcl::PointXYZRGB>::Ptr pointCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
     pointCloud->resize(tmp->size());
     pcl::transformPointCloud(*tmp, *pointCloud, T.inverse().matrix());
 
-    mpMergeSG->merge(objects, depth, pointCloud);
+    mpMergeSG->merge(objects, kf->mImDep, pointCloud);
 
     std::vector<Cluster>& Clusters = mpMergeSG->mpOD->mClusters;
 
@@ -265,9 +285,32 @@ void PointCloudMapping::generateAndPublishPointCloud(size_t N)
 
     if(objNumber > 0)
     {
-        std::cout << "Publish pending \n";
-    }
+        vision_msgs::BoundingBox3DArray objDB;
 
+        std::cout << "Publish pending \n";
+        for(int i = 0; i < objNumber; i++)
+        {
+            vision_msgs::BoundingBox3D obj;
+
+            Cluster& cluster = clusters[i];
+
+            obj.center.position.x = cluster.centroid[0];   // 1 + 4/2
+            obj.center.position.y = cluster.centroid[1]; // 2 + 5/2
+            obj.center.position.z = cluster.centroid[2];   // 3 + 6/2
+            obj.center.orientation.x = 0;
+            obj.center.orientation.y = 0;
+            obj.center.orientation.z = 0;
+            obj.center.orientation.w = 1;
+            obj.size.x = cluster.size.x();
+            obj.size.y = cluster.size.y();
+            obj.size.z = cluster.size.z();
+
+            objDB.boxes.push_back(obj);
+        }
+        objDB.header = std_msgs::Header();
+
+        objPub.publish(objDB);
+    }
     lastKeyframeSize = N;
 }
 
@@ -353,7 +396,7 @@ void PointCloudMapping::publisher()
     ros::NodeHandlePtr n = boost::make_shared<ros::NodeHandle>();
     pclPub = n->advertise<sensor_msgs::PointCloud2>("/slam_pointclouds", 100000);
     fullMapPub = n->advertise<sensor_msgs::PointCloud2>("/full_slam_pointclouds", 100000);
-    objPub = n->advertise<vision_msgs::BoundingBox3DArray>("/obj_DB", 100000);
+    objPub = n->advertise<vision_msgs::BoundingBox3DArray>("/detection_array",100000);
 
     while (ros::ok())
     {
