@@ -90,7 +90,7 @@ void PointCloudMapping::shutdown()
 
 void PointCloudMapping::insertKeyFrame(KeyFrame *kf, cv::Mat &color, cv::Mat &depth)
 {
-    std::cout << "There? \n";
+//    std::cout << "There? \n";
 
     unique_lock<mutex> lck(keyframeMutex);
     
@@ -243,7 +243,7 @@ void PointCloudMapping::generateAndPublishPointCloud(size_t N)
         PointCloud::Ptr p;
         if (keyframes[i]->mvObject.size() > 0)
         {
-            std::cout << "Keyframe has objects \n";
+//            std::cout << "Keyframe has objects \n";
             p = generatePointCloud(keyframes[i], colorImgs[i], depthImgs[i], keyframes[i]->mvObject);
         }
         else
@@ -287,7 +287,7 @@ void PointCloudMapping::generateAndPublishPointCloud(size_t N)
     {
         vision_msgs::BoundingBox3DArray objDB;
 
-        std::cout << "Publish pending \n";
+//        std::cout << "Publish pending \n";
         for(int i = 0; i < objNumber; i++)
         {
             vision_msgs::BoundingBox3D obj;
@@ -385,7 +385,7 @@ void PointCloudMapping::broadcastTransformMat(Eigen::Isometry3d cameraPose)
     transform.setOrigin(translationMat);
     transform.setBasis(rotationMat);
 
-    std::cout << "Transform: " << finalTransform.matrix() << "\n"; 
+//    std::cout << "Transform: " << finalTransform.matrix() << "\n";
 
     // Publish the transfrom with the parent frame = /cameraToRobot and create a new child frame pointCloudFrame
     transformBroadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "cameraToRobot", "pointCloudFrame"));

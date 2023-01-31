@@ -70,7 +70,6 @@ message("PCL Include Directory: ${PCL_INCLUDE_DIRS}")
 find_package(octomap REQUIRED)
 include_directories(${OCTOMAP_INCLUDE_DIRS})
 
-
 find_package(Boost COMPONENTS system filesystem serialization REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIR})
@@ -113,6 +112,7 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/orb_slam3
         ${PROJECT_SOURCE_DIR}/orb_slam3/include
         ${PROJECT_SOURCE_DIR}/orb_slam3/include/CameraModels
+#        ${PROJECT_SOURCE_DIR}/orb_slam3/include/cuda
         ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty
         ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/Sophus
         ${EIGEN3_INCLUDE_DIR}
@@ -129,12 +129,16 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/orb_slam3/lib)
 file(GLOB HEADERS 
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/*.h
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/*.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/CameraModels/*.h)
+        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/CameraModels/*.h
+#        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/cuda/*.hpp
+        )
 
 file(GLOB SOURCES 
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/*.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/*.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/CameraModels/*.cpp)
+        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/CameraModels/*.cpp
+#        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/cuda/*.cu
+        )
 
 source_group("Header Files" FILES ${HEADERS})
 source_group("Source Files" FILES ${SOURCES})
@@ -160,6 +164,17 @@ target_link_libraries(${PROJECT_NAME}
         #  ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/yolov5/lib/libyolov5_detector.so
         -lboost_serialization
         -lcrypto
+#        nvToolsExt
+#        opencv_cudabgsegm
+#        opencv_cudaobjdetect
+#        opencv_cudastereo
+#        opencv_cudafeatures2d
+#        opencv_cudacodec
+#        opencv_cudaoptflow
+#        opencv_cudalegacy
+#        opencv_cudawarping
+#        opencv_cudaimgproc
+#        opencv_cudafilters
         )
 
 ## ROS node
