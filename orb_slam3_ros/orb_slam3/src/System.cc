@@ -195,11 +195,12 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     mpFrameDrawer = new FrameDrawer(mpAtlas, mpMapDrawer, strSettingsFile);
 
     // Initialize pointcloud mapping
-    mpPointCloudMapping = boost::make_shared<PointCloudMapping>(resolution);
+    mpPointCloudMapping = boost::make_shared<PointCloudMapping>(resolution, modelPath);
 
     //Initialize the Tracking thread
     //(it will live in the main thread of execution, the one that called this constructor)
     cout << "Seq. Name: " << strSequence << endl;
+
     if(isYoloDetection)
     {
         std::cout << "Here \n";

@@ -323,10 +323,11 @@ void Viewer::Run()
         }
         else
         {
-            mpMapDrawer->DrawOctoMap();
-            mpFrameDrawer->generatePC();
+            // TODO: Uncomment for OctoMap viewer
+//            mpMapDrawer->DrawOctoMap();
+//            mpFrameDrawer->generatePC();
 //            mpMapDrawer->DrawObs();
-            mpMapDrawer->DrawObject();
+//            mpMapDrawer->DrawObject();
         }
 
         // Draw world frame

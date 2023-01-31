@@ -51,7 +51,7 @@ void Detector::Run(void)
             if(vobject.size()>0)
             {
                 std::cout << "detect : " << vobject.size() << " obj" << std::endl;
-                for(unsigned int j =0; j<vobject.size(); j++)
+                for(unsigned int j =0; j < vobject.size(); j++)
                 {
                     unique_lock<mutex> lckObj(mvKeyframesMutex);
                     mvKeyframes[i]->mvObject.push_back(vobject[j]);

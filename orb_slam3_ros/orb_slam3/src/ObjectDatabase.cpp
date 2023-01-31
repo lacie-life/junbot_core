@@ -53,7 +53,7 @@ float ObjectDatabase::getObjectSize(int class_id)
     return mvSizes[class_id];
 }
 
-std::vector<Cluster>  ObjectDatabase::getObjectByName(std::string objectName)
+std::vector<Cluster> ObjectDatabase::getObjectByName(std::string objectName)
 {
 
     std::vector<Cluster>::iterator iter   = mClusters.begin()-1;

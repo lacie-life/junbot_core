@@ -3517,13 +3517,15 @@ void Tracking::CreateNewKeyFrame()
 //    cout << "Color mat channels " << mImRGB.channels() << endl;
 //    cout << "Color +++ (" << minT << ", " << maxT << ") \n";
 
-	// insert Key Frame into point cloud viewer
-     mpPointCloudMapping->insertKeyFrame(pKF, this->mImRGB, this->mImDepth);
+    // Update object
+//    if(mpDetector)
+//    {
+//        mpDetector->insertKFColorImg(pKF, this->mImRGB);
+//    }
 
-    if(mpDetector)
-    {
-        mpDetector->insertKFColorImg(pKF, this->mImRGB);
-    }
+    // insert Key Frame into point cloud viewer
+    mpPointCloudMapping->insertKeyFrame(pKF, this->mImRGB, this->mImDepth);
+
     mnLastKeyFrameId = mCurrentFrame.mnId;
     mpLastKeyFrame = pKF;
 }

@@ -120,7 +120,7 @@ bool YoloDetection::Detect(const cv::Mat &bgr_img, std::vector<Object> &objects)
             tmp.class_id = classID;
             tmp.object_name = mClassnames[classID];
 
-            std::cout << "2dobject_roi: " << DetectArea.x     << " "
+            std::cout << "2d object_roi: " << DetectArea.x     << " "
                                           << DetectArea.y     << " "
                                           << DetectArea.width << " "
                                           << DetectArea.height << std::endl;
