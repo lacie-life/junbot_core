@@ -43,6 +43,7 @@
 
 - Libtorch 1.12.1+cu116 (cxx11-abi) [[Link](https://download.pytorch.org/libtorch/cu116/libtorch-cxx11-abi-shared-with-deps-1.12.1%2Bcu116.zip)]
   - <i> Unzip and change path to libtorch in  CMakeLists.txt</i>
+  - For Jetson, follow this [link](https://github.com/pytorch/pytorch/blob/master/docs/libtorch.rst#building-libtorch-using-cmake) 
 
 - Pangolin
 
