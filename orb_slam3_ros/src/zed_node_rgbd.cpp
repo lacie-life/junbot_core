@@ -1,7 +1,3 @@
-//
-// Created by lacie on 31/01/2023.
-//
-
 #include "common.h"
 
 using namespace std;
@@ -9,11 +5,9 @@ using namespace std;
 class ImageGrabber
 {
 public:
-    ImageGrabber(ORB_SLAM3::System* pSLAM):mpSLAM(pSLAM){}
+    ImageGrabber(){};
 
     void GrabRGBD(const sensor_msgs::ImageConstPtr& msgRGB,const sensor_msgs::ImageConstPtr& msgD);
-
-    ORB_SLAM3::System* mpSLAM;
 };
 
 int main(int argc, char **argv)
@@ -25,8 +19,9 @@ int main(int argc, char **argv)
         ROS_WARN ("Arguments supplied via command line are ignored.");
     }
 
-    ros::NodeHandle node_handler;
     std::string node_name = ros::this_node::getName();
+
+    ros::NodeHandle node_handler;
     image_transport::ImageTransport image_transport(node_handler);
 
     std::string voc_file, settings_file;
@@ -48,27 +43,31 @@ int main(int argc, char **argv)
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
     sensor_type = ORB_SLAM3::System::RGBD;
-    ORB_SLAM3::System SLAM(voc_file, settings_file, sensor_type, enable_pangolin);
+    pSLAM = new ORB_SLAM3::System(voc_file, settings_file, sensor_type, enable_pangolin);
 
-    ImageGrabber igb(&SLAM);
+    ImageGrabber igb;
 
-    message_filters::Subscriber<sensor_msgs::Image> rgb_sub(node_handler, "/camera/rgb/image_raw", 100);
-    message_filters::Subscriber<sensor_msgs::Image> depth_sub(node_handler, "/camera/depth_registered/image_raw", 100);
+    message_filters::Subscriber<sensor_msgs::Image> sub_rgb_img(node_handler, "/camera/rgb/image_raw", 100);
+    message_filters::Subscriber<sensor_msgs::Image> sub_depth_img(node_handler, "/camera/depth_registered/image_raw", 100);
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> sync_pol;
-    message_filters::Synchronizer<sync_pol> sync(sync_pol(10), rgb_sub, depth_sub);
-    sync.registerCallback(boost::bind(&ImageGrabber::GrabRGBD,&igb,_1,_2));
+    message_filters::Synchronizer<sync_pol> sync(sync_pol(10), sub_rgb_img, sub_depth_img);
+    sync.registerCallback(boost::bind(&ImageGrabber::GrabRGBD, &igb, _1, _2));
 
-    setup_ros_publishers(node_handler, image_transport, sensor_type);
+    setup_publishers(node_handler, image_transport, node_name);
+    setup_services(node_handler, node_name);
 
     ros::spin();
 
     // Stop all threads
-    SLAM.Shutdown();
-
+    pSLAM->Shutdown();
     ros::shutdown();
 
     return 0;
 }
+
+//////////////////////////////////////////////////
+// Functions
+//////////////////////////////////////////////////
 
 void ImageGrabber::GrabRGBD(const sensor_msgs::ImageConstPtr& msgRGB,const sensor_msgs::ImageConstPtr& msgD)
 {
@@ -96,12 +95,9 @@ void ImageGrabber::GrabRGBD(const sensor_msgs::ImageConstPtr& msgRGB,const senso
     }
     
     // ORB-SLAM3 runs in TrackRGBD()
-    Sophus::SE3f Tcw = mpSLAM->TrackRGBD(cv_ptrRGB->image, cv_ptrD->image, cv_ptrRGB->header.stamp.toSec());
-    Sophus::SE3f Twc = Tcw.inverse();
+    Sophus::SE3f Tcw = pSLAM->TrackRGBD(cv_ptrRGB->image, cv_ptrD->image, cv_ptrRGB->header.stamp.toSec());
 
     ros::Time msg_time = cv_ptrRGB->header.stamp;
 
-    publish_ros_camera_pose(Twc, msg_time);
-    publish_ros_tf_transform(Twc, world_frame_id, cam_frame_id, msg_time);
-    publish_ros_tracked_mappoints(mpSLAM->GetTrackedMapPoints(), msg_time);
+    publish_topics(msg_time);
 }
