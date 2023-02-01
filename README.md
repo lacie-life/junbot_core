@@ -66,7 +66,7 @@ sudo make install
 - ZED SDK (Option)
 - Realsense SDK (Option)
 
-## Bug 
+# Bug 
 
 Pls refer links:
 
@@ -74,7 +74,7 @@ Pls refer links:
  
 [PointCloudMapping Errors](https://blog.csdn.net/hai_fellow_Z/article/details/123681382)
 
-3. Note
+# Note
 
 - Make -j4
 - If log too long, use can use this command:
