@@ -24,10 +24,10 @@
 #include "MapPoint.h"
 #include "Atlas.h"
 
-#include<opencv2/core/core.hpp>
-#include<opencv2/features2d/features2d.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/features2d/features2d.hpp>
 
-#include<mutex>
+#include <mutex>
 #include <unordered_set>
 
 
@@ -36,12 +36,15 @@ namespace ORB_SLAM3
 
 class Tracking;
 class Viewer;
+class Atlas;
+class MapDrawer;
 
 class FrameDrawer
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     FrameDrawer(Atlas* pAtlas);
+    FrameDrawer(Atlas* pAtlas, MapDrawer* pMapDrawer, const string &strSettingPath);
 
     // Update info from the last processed frame.
     void Update(Tracking *pTracker);
@@ -49,6 +52,7 @@ public:
     // Draw last processed frame.
     cv::Mat DrawFrame(float imageScale=1.f);
     cv::Mat DrawRightFrame(float imageScale=1.f);
+    void generatePC(void);
 
     bool both;
 
@@ -56,8 +60,16 @@ protected:
 
     void DrawTextInfo(cv::Mat &im, int nState, cv::Mat &imText);
 
+    void FillImage(cv::Mat &im, const cv::Mat &mask, cv::Scalar color);
+
     // Info of the frame to be drawn
     cv::Mat mIm, mImRight;
+    cv::Mat mDynMask;
+    cv::Mat mImDep;
+    cv::Mat mImRGB;
+    cv::Mat mK;
+    cv::Mat mTcw;
+
     int N;
     vector<cv::KeyPoint> mvCurrentKeys,mvCurrentKeysRight;
     vector<bool> mvbMap, mvbVO;
@@ -70,6 +82,7 @@ protected:
     float mThDepth;
 
     Atlas* mpAtlas;
+    MapDrawer* mpMapDrawer;
 
     std::mutex mMutex;
     vector<pair<cv::Point2f, cv::Point2f> > mvTracks;

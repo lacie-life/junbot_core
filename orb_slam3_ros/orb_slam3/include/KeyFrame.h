@@ -32,6 +32,9 @@
 #include "GeometricCamera.h"
 #include "SerializationUtils.h"
 
+#include "YoloDetection.h"
+#include "Detector.h"
+
 #include <mutex>
 
 #include <boost/serialization/base_object.hpp>
@@ -46,7 +49,6 @@ class Map;
 class MapPoint;
 class Frame;
 class KeyFrameDatabase;
-
 class GeometricCamera;
 
 class KeyFrame
@@ -196,6 +198,8 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     KeyFrame();
     KeyFrame(Frame &F, Map* pMap, KeyFrameDatabase* pKFDB);
+    KeyFrame(Frame &F, Map* pMap, KeyFrameDatabase* pKFDB,
+             cv::Mat rgb, cv::Mat depth);
 
     // Pose functions
     void SetPose(const Sophus::SE3f &Tcw);
@@ -423,10 +427,16 @@ public:
 
     std::vector<cv::Rect2i> mvDynamicArea;
 
+    // Semantic path
+    // TODO: Add to boost serialization
+    cv::Mat mImRGB;
+    cv::Mat mImDep;
+    std::vector<Object> mvObject;
+
     //bool mbHasHessian;
     //cv::Mat mHessianPose;
 
-    // The following variables need to be accessed trough a mutex to be thread safe.
+    // The following variables need to be accessed through a mutex to be thread safe.
 protected:
     // sophus poses
     Sophus::SE3<float> mTcw;

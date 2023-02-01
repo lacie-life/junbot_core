@@ -117,12 +117,12 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     {
         cout << "Using YoLo detector \n";
         isYoloDetection = true;
-        mpDetector = new YoloDetection(modelPath);
+        mpDetector = std::make_shared<Detector>(modelPath);
     }
     else{
         cout << "Defaut: YoLo detector \n";
         isYoloDetection = true;
-        mpDetector = new YoloDetection(modelPath);
+        mpDetector = std::make_shared<Detector>(modelPath);
     }
 
     node = fsSettings["loopClosing"];
@@ -190,21 +190,30 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
         mpAtlas->SetInertialSensor();
 
     //Create Drawers. These are used by the Viewer
-    mpFrameDrawer = new FrameDrawer(mpAtlas);
+    // mpFrameDrawer = new FrameDrawer(mpAtlas);
     mpMapDrawer = new MapDrawer(mpAtlas, strSettingsFile, settings_);
+    mpFrameDrawer = new FrameDrawer(mpAtlas, mpMapDrawer, strSettingsFile);
 
     // Initialize pointcloud mapping
-    mpPointCloudMapping = boost::make_shared<PointCloudMapping>(resolution);
+    mpPointCloudMapping = boost::make_shared<PointCloudMapping>(resolution, modelPath);
 
     //Initialize the Tracking thread
     //(it will live in the main thread of execution, the one that called this constructor)
     cout << "Seq. Name: " << strSequence << endl;
-    mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer,
-                             mpAtlas, mpPointCloudMapping, mpKeyFrameDatabase, strSettingsFile, mSensor, settings_, strSequence);
 
     if(isYoloDetection)
     {
-        mpTracker->SetDetector(mpDetector);
+        std::cout << "Here \n";
+        mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer,
+                                 mpAtlas, mpPointCloudMapping, mpKeyFrameDatabase,
+                                 strSettingsFile, mSensor, settings_,
+                                 strSequence, mpDetector);
+    }
+    else
+    {
+        mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer,
+                                 mpAtlas, mpKeyFrameDatabase,
+                                 strSettingsFile, mSensor, settings_, strSequence);
     }
 
     //Initialize the Local Mapping thread and launch
@@ -489,8 +498,6 @@ Sophus::SE3f System::TrackMonocular(const cv::Mat &im, const double &timestamp, 
     return Tcw;
 }
 
-
-
 void System::ActivateLocalizationMode()
 {
     unique_lock<mutex> lock(mMutexMode);
@@ -568,7 +575,7 @@ void System::Shutdown()
     }
 
     /*if(mpViewer)
-        pangolin::BindToContext("ORB-SLAM2: Map Viewer");*/
+        pangolin::BindToContext("ORB-SLAM3: Map Viewer");*/
 
 #ifdef REGISTER_TIMES
     mpTracker->PrintTimeStats();

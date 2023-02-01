@@ -107,6 +107,7 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     MapPoint();
 
+    MapPoint(const cv::Mat &Pos, int FirstKFid, int FirstFrame, Map* pMap);
     MapPoint(const Eigen::Vector3f &Pos, KeyFrame* pRefKF, Map* pMap);
     MapPoint(const double invDepth, cv::Point2f uv_init, KeyFrame* pRefKF, KeyFrame* pHostKF, Map* pMap);
     MapPoint(const Eigen::Vector3f &Pos,  Map* pMap, Frame* pFrame, const int &idxF);
@@ -118,6 +119,7 @@ public:
     void SetNormalVector(const Eigen::Vector3f& normal);
 
     KeyFrame* GetReferenceKeyFrame();
+    void SetReferenceKeyFrame(KeyFrame* pRefKF);
 
     std::map<KeyFrame*,std::tuple<int,int>> GetObservations();
     int Observations();
@@ -149,8 +151,10 @@ public:
 
     float GetMinDistanceInvariance();
     float GetMaxDistanceInvariance();
+
     int PredictScale(const float &currentDist, KeyFrame*pKF);
     int PredictScale(const float &currentDist, Frame* pF);
+    int PredictScale(const float &currentDist, const float &logScaleFactor);
 
     Map* GetMap();
     void UpdateMap(Map* pMap);
