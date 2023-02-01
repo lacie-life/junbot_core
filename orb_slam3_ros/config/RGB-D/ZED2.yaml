@@ -25,7 +25,7 @@ Camera.width: 1280
 Camera.height: 720
 
 # Camera frames per second 
-Camera.fps: 10.0
+Camera.fps: 30.0
 
 # stereo baseline in meters times fx
 Camera.bf: 62.92245016 # 119.9321517944336 * 524.65039
@@ -34,11 +34,10 @@ Camera.bf: 62.92245016 # 119.9321517944336 * 524.65039
 Camera.RGB: 1
 
 # Close/Far threshold. Baseline times.
-Stereo.ThDepth: 40.0
-Stereo.b: 0.0745
+ThDepth: 40.0
 
 # Depth map values factor
-RGBD.DepthMapFactor: 1000.0
+DepthMapFactor: 1000.0
 
 #--------------------------------------------------------------------------------------------
 # ORB Parameters

@@ -41,6 +41,7 @@ namespace ORB_SLAM3 {
             bool is_correct = ParseViewerParamFile(fSettings);
 
             if (!is_correct) {
+                std::cout << "Map drawer param \n";
                 std::cerr << "**ERROR in the config file, the format is not correct**" << std::endl;
                 try {
                     throw -1;

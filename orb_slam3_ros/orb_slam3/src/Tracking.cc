@@ -86,6 +86,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
 
         if(!b_parse_cam || !b_parse_orb || !b_parse_imu)
         {
+            std::cout << "Tracking param \n";
             std::cerr << "**ERROR in the config file, the format is not correct**" << std::endl;
             try
             {
@@ -180,6 +181,7 @@ Tracking::Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer,
 
         if(!b_parse_cam || !b_parse_orb || !b_parse_imu)
         {
+            std::cout << "Tracking param \n";
             std::cerr << "**ERROR in the config file, the format is not correct**" << std::endl;
             try
             {
