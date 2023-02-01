@@ -101,7 +101,7 @@ generate_messages(
 
 catkin_package(
         CATKIN_DEPENDS roscpp rospy std_msgs cv_bridge image_transport tf sensor_msgs dynamic_reconfigure message_runtime
-        LIBRARIES {PROJECT_NAME} libDBoW2 libg2o libyolov5_detector
+        LIBRARIES {PROJECT_NAME} libDBoW2 libg2o
 )
 
 ## Specify additional locations of header files
@@ -147,7 +147,7 @@ add_library(${PROJECT_NAME} SHARED
         ${HEADERS}
         ${SOURCES})
 
-SET(TRT_LIBS nvinfer)
+# set(TRT_LIBS nvinfer)
 
 target_link_libraries(${PROJECT_NAME}
         ${OpenCV_LIBS}
@@ -187,8 +187,18 @@ target_link_libraries(simple_rgbd_node
 
 ## ZED ROS node
 add_executable(zed_rgbd_node
-        src/zed_node_rgbd.cpp)
+        src/zed_node_rgbd.cpp
+        src/common.cc)
 target_link_libraries(zed_rgbd_node
+        ${PROJECT_NAME}
+        ${catkin_LIBRARIES}
+        )
+
+## D435i ROS node
+add_executable(d435i_rgbd_node
+        src/d435i_rgbd.cpp
+        src/common.cc)
+target_link_libraries(d435i_rgbd_node
         ${PROJECT_NAME}
         ${catkin_LIBRARIES}
         )

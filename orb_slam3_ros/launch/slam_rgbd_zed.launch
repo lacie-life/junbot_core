@@ -1,0 +1,21 @@
+<launch>  
+	<arg name="rgb_image_node" default="/zed/zed_node/rgb/image_rect_color"/>
+	<arg name="depth_image_node" default="/zed/zed_node/depth/depth_registered"/>
+	<arg name="zed_params_dir" default="$(find orb_slam3_ros)/config"/>
+	<arg name="zed_params" default="/RGB-D/ZED2.yaml"/>
+
+
+	<!-- OrbSlam3  -->
+	<node pkg="orb_slam3_ros" name="zed_rgbd_node" type="zed_rgbd_node" 
+	args="$(find orb_slam3_ros)/orb_slam3/Vocabulary/ORBvoc.txt.bin  
+	$(arg zed_params_dir)$(arg zed_params)
+	/camera/rgb/image_raw:=$(arg rgb_image_node) 
+	/camera/depth_registered/image_raw:=$(arg depth_image_node)"
+	output="screen"/>
+
+	<!-- Run other launch file -->
+    <include file="$(find orb_slam3_ros)/launch/octomap.launch" />
+	<include file="$(find orb_slam3_ros)/launch/transform.launch" />
+	<node pkg="rviz" name="rviz" type="rviz" /> 
+	
+</launch>

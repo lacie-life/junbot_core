@@ -2,30 +2,33 @@
 
 #--------------------------------------------------------------------------------------------
 # Camera Parameters. Adjust them!
+# These are taken from the Camera Information in Python API of ZED
 #--------------------------------------------------------------------------------------------
-File.version: "1.0"
-
 Camera.type: "PinHole"
 
-# Right Camera calibration and distortion parameters (OpenCV)
-Camera1.fx: 617.201
-Camera1.fy: 617.362
-Camera1.cx: 324.637
-Camera1.cy: 242.462
+# Camera calibration and distortion parameters (OpenCV) 
+Camera.fx: 524.650390625
+Camera.fy: 524.650390625
+Camera.cx: 636.3681030273438
+Camera.cy: 359.5227966308594
+
+Camera.k1: 0.0
+Camera.k2: 0.0
+Camera.k3: 0.0
+Camera.p1: 0.0
+Camera.p2: 0.0
 
 
-# distortion parameters
-Camera1.k1: 0.0
-Camera1.k2: 0.0
-Camera1.p1: 0.0
-Camera1.p2: 0.0
+Camera.bFishEye: 0
 
-# Camera resolution
-Camera.width: 640
-Camera.height: 480
+Camera.width: 1280
+Camera.height: 720
 
 # Camera frames per second 
-Camera.fps: 30
+Camera.fps: 10.0
+
+# stereo baseline in meters times fx
+Camera.bf: 62.92245016 # 119.9321517944336 * 524.65039
 
 # Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
 Camera.RGB: 1
@@ -40,8 +43,9 @@ RGBD.DepthMapFactor: 1000.0
 #--------------------------------------------------------------------------------------------
 # ORB Parameters
 #--------------------------------------------------------------------------------------------
+
 # ORB Extractor: Number of features per image
-ORBextractor.nFeatures: 1250
+ORBextractor.nFeatures: 1000
 
 # ORB Extractor: Scale factor between levels in the scale pyramid 	
 ORBextractor.scaleFactor: 1.2
@@ -60,15 +64,15 @@ ORBextractor.minThFAST: 7
 # Viewer Parameters
 #--------------------------------------------------------------------------------------------
 Viewer.KeyFrameSize: 0.05
-Viewer.KeyFrameLineWidth: 1.0
+Viewer.KeyFrameLineWidth: 1
 Viewer.GraphLineWidth: 0.9
-Viewer.PointSize: 2.0
+Viewer.PointSize: 2
 Viewer.CameraSize: 0.08
-Viewer.CameraLineWidth: 3.0
-Viewer.ViewpointX: 0.0
+Viewer.CameraLineWidth: 3
+Viewer.ViewpointX: 0
 Viewer.ViewpointY: -0.7
-Viewer.ViewpointZ: -3.5
-Viewer.ViewpointF: 500.0
+Viewer.ViewpointZ: -1.8
+Viewer.ViewpointF: 500
 
 #--------------------------------------------------------------------------------------------
 # PointCloud Mapping
