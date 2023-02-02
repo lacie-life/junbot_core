@@ -57,7 +57,7 @@ cd Pangolin
 ./scripts/install_prerequisites.sh --dry-run recommended
 
 mkdir build && cd build
-cmake ..
+cmake .. or cmake .. -DPython_EXECUTABLE='/usr/bin/python3'
 cmake --build .
 
 sudo make install
