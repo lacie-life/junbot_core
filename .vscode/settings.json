@@ -3,7 +3,7 @@
         "thread": "cpp"
     },
     "python.autoComplete.extraPaths": [
-        "/home/lacie/slam_ws/devel/lib/python3/dist-packages",
+        "/home/hn/junbot_ws/devel/lib/python3/dist-packages",
         "/opt/ros/noetic/lib/python3/dist-packages"
     ]
 }
