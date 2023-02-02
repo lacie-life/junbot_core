@@ -40,6 +40,7 @@ Viewer::Viewer(System* pSystem, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer
 
         if(!is_correct)
         {
+            std::cout << "Viewer param \n";
             std::cerr << "**ERROR in the config file, the format is not correct**" << std::endl;
             try
             {
@@ -185,6 +186,7 @@ void Viewer::Run()
     pangolin::Var<bool> menuLocalizationMode("menu.Localization Mode",false,true);
     pangolin::Var<bool> menuReset("menu.Reset",false,false);
     pangolin::Var<bool> menuStop("menu.Stop",false,false);
+    pangolin::Var<bool> menuSave("menu.Save", false, false);
     pangolin::Var<bool> menuStepByStep("menu.Step By Step",false,true);  // false, true
     pangolin::Var<bool> menuStep("menu.Step",false,false);
 
@@ -309,11 +311,25 @@ void Viewer::Run()
 
         d_cam.Activate(s_cam);
         glClearColor(1.0f,1.0f,1.0f,1.0f);
+
+        mpMapDrawer->DrawGrid();
         mpMapDrawer->DrawCurrentCamera(Twc);
+
         if(menuShowKeyFrames || menuShowGraph || menuShowInertialGraph || menuShowOptLba)
             mpMapDrawer->DrawKeyFrames(menuShowKeyFrames,menuShowGraph, menuShowInertialGraph, menuShowOptLba);
+
         if(menuShowPoints)
+        {
             mpMapDrawer->DrawMapPoints();
+        }
+        else
+        {
+            // TODO: Uncomment for OctoMap viewer
+//            mpMapDrawer->DrawOctoMap();
+//            mpFrameDrawer->generatePC();
+//            mpMapDrawer->DrawObs();
+//            mpMapDrawer->DrawObject();
+        }
 
         // Draw world frame
         pangolin::glDrawAxis(10.0);
@@ -390,6 +406,15 @@ void Viewer::Run()
             menuStop = false;
         }
 
+        if(menuSave)
+        {
+//            mpSystem->SaveMap("map.bin");
+            mpMapDrawer->SaveOctoMap("octomap.ot");
+            menuSave = false;
+            cout<<"save done!"<<endl;
+
+        }
+
         if(Stop())
         {
             while(isStopped())
@@ -464,6 +489,11 @@ void Viewer::Release()
 {
     unique_lock<mutex> lock(mMutexStop);
     mbStopped = false;
+}
+
+void Viewer::Finalize(void)
+{
+    pangolin::BindToContext("ORB-SLAM3: Map Viewer");
 }
 
 /*void Viewer::SetTrackingPause()

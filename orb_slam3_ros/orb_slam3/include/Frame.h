@@ -20,7 +20,7 @@
 #ifndef FRAME_H
 #define FRAME_H
 
-#include<vector>
+#include <vector>
 
 #include "Thirdparty/DBoW2/DBoW2/BowVector.h"
 #include "Thirdparty/DBoW2/DBoW2/FeatureVector.h"
@@ -63,6 +63,7 @@ public:
 
     // Constructor for RGB-D cameras.
     Frame(const cv::Mat &imGray, const cv::Mat &imDepth, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth, GeometricCamera* pCamera,Frame* pPrevF = static_cast<Frame*>(NULL), const IMU::Calib &ImuCalib = IMU::Calib());
+    Frame(const cv::Mat &imGray, const cv::Mat &imDepth, const cv::Mat &imMask, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth, GeometricCamera* pCamera,Frame* pPrevF = static_cast<Frame*>(NULL), const IMU::Calib &ImuCalib = IMU::Calib());
 
     // Constructor for Monocular cameras.
     Frame(const cv::Mat &imGray, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, GeometricCamera* pCamera, cv::Mat &distCoef, const float &bf, const float &thDepth, Frame* pPrevF = static_cast<Frame*>(NULL), const IMU::Calib &ImuCalib = IMU::Calib());
@@ -120,6 +121,22 @@ public:
 
     // Backprojects a keypoint (if stereo/depth info available) into 3D world coordinates.
     bool UnprojectStereo(const int &i, Eigen::Vector3f &x3D);
+
+    // TODO: Load/Save map
+    void InitializeScaleLevels();
+    void InitializeClass(cv::Mat K);
+
+    // Undistort keypoints given OpenCV distortion parameters.
+    // Only for the RGB-D case. Stereo must be already rectified!
+    // (called in the constructor).
+    void UndistortKeyPoints();
+
+    // Computes image bounds for the undistorted image (called in the constructor).
+    void ComputeImageBounds(const cv::Mat &imLeft);
+    void ComputeImageBounds();
+
+    // Assign keypoints to the grid for speed up feature matching (called in the constructor).
+    void AssignFeaturesToGrid();
 
     ConstraintPoseImu* mpcpi;
 
@@ -222,6 +239,10 @@ public:
     // Number of KeyPoints.
     int N;
 
+    cv::Mat mImDynm_mask;
+    bool mIsKeyFrame;
+    cv::Mat mImDepth;
+
     // Vector of keypoints (original for visualization) and undistorted (actually used by the system).
     // In the stereo case, mvKeysUn is redundant as images must be rectified.
     // In the RGB-D case, RGB images can be distorted.
@@ -304,17 +325,6 @@ public:
 #endif
 
 private:
-
-    // Undistort keypoints given OpenCV distortion parameters.
-    // Only for the RGB-D case. Stereo must be already rectified!
-    // (called in the constructor).
-    void UndistortKeyPoints();
-
-    // Computes image bounds for the undistorted image (called in the constructor).
-    void ComputeImageBounds(const cv::Mat &imLeft);
-
-    // Assign keypoints to the grid for speed up feature matching (called in the constructor).
-    void AssignFeaturesToGrid();
 
     bool mbIsSet;
 

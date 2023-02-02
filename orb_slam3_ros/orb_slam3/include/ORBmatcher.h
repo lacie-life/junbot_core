@@ -20,14 +20,14 @@
 #ifndef ORBMATCHER_H
 #define ORBMATCHER_H
 
-#include<vector>
-#include<opencv2/core/core.hpp>
-#include<opencv2/features2d/features2d.hpp>
-#include"sophus/sim3.hpp"
+#include <vector>
+#include <opencv2/core/core.hpp>
+#include <opencv2/features2d/features2d.hpp>
+#include "sophus/sim3.hpp"
 
-#include"MapPoint.h"
-#include"KeyFrame.h"
-#include"Frame.h"
+#include "MapPoint.h"
+#include "KeyFrame.h"
+#include "Frame.h"
 
 
 namespace ORB_SLAM3
@@ -53,6 +53,11 @@ namespace ORB_SLAM3
         // Project MapPoints seen in KeyFrame into the Frame and search matches.
         // Used in relocalisation (Tracking)
         int SearchByProjection(Frame &CurrentFrame, KeyFrame* pKF, const std::set<MapPoint*> &sAlreadyFound, const float th, const int ORBdist);
+
+        int SearchByProjection(Frame &CurrentFrame, const Frame &LastFrame,
+                               const float th, const bool bMono,
+                               vector<cv::Point2f>& points_last,
+                               vector<cv::Point2f>& points_current);
 
         // Project MapPoints using a Similarity Transformation and search matches.
         // Used in loop detection (Loop Closing)

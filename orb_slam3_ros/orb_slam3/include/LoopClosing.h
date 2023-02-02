@@ -25,8 +25,8 @@
 #include "Atlas.h"
 #include "ORBVocabulary.h"
 #include "Tracking.h"
-
 #include "KeyFrameDatabase.h"
+#include "Viewer.h"
 
 #include <boost/algorithm/string.hpp>
 #include <thread>
@@ -40,7 +40,8 @@ class Tracking;
 class LocalMapping;
 class KeyFrameDatabase;
 class Map;
-
+class Atlas;
+class Viewer;
 
 class LoopClosing
 {
@@ -119,7 +120,6 @@ public:
 protected:
 
     bool CheckNewKeyFrames();
-
 
     //Methods to implement the new place recognition algorithm
     bool NewDetectCommonRegions();
@@ -222,10 +222,7 @@ protected:
     // Fix scale in the stereo/RGB-D case
     bool mbFixScale;
 
-
     bool mnFullBAIdx;
-
-
 
     vector<double> vdPR_CurrentTime;
     vector<double> vdPR_MatchedTime;
@@ -235,7 +232,6 @@ protected:
     string mstrFolderSubTraj;
     int mnNumCorrection;
     int mnCorrectionGBA;
-
 
     // To (de)activate LC
     bool mbActiveLC = true;

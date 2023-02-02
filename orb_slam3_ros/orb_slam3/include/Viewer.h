@@ -61,6 +61,8 @@ public:
 
     void Release();
 
+    void Finalize(void);
+
     //void SetTrackingPause();
 
     bool both;
@@ -102,7 +104,6 @@ private:
 };
 
 }
-
 
 #endif // VIEWER_H
 	

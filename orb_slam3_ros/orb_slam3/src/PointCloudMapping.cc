@@ -32,43 +32,47 @@
  */
 
 #include "PointCloudMapping.h"
-#include "sensor_msgs/PointCloud2.h"
 
 #include <iostream>
 #include <algorithm>
-#include <fstream>
 #include <chrono>
 #include <thread>
 
-#include <ros/ros.h>
-#include <tf/transform_broadcaster.h>
 #include <boost/thread/thread.hpp>
 #include <boost/chrono.hpp>
+
+#include <ros/ros.h>
 #include <tf/transform_broadcaster.h>
-#include <cv_bridge/cv_bridge.h>
-#include <message_filters/subscriber.h>
-#include <message_filters/time_synchronizer.h>
-#include <message_filters/sync_policies/approximate_time.h>
+#include <vision_msgs/BoundingBox3DArray.h>
+#include <vision_msgs/ObjectHypothesis.h>
+#include <sensor_msgs/PointCloud2.h>
 
 #include <opencv2/core/core.hpp>
 
-#define MAX_POINTCLOUD_DEPTH 10.0 // in meters
+#define MAX_POINTCLOUD_DEPTH_X 3.0 // in meters
+#define MIN_POINTCLOUD_DEPTH_X 0.3
+#define MIN_POINTCLOUD_DEPTH_Y -3.0 // in meters
+#define MAX_POINTCLOUD_DEPTH_Y 3.3
 
 using namespace std;
 
 ros::Publisher pclPub;
 ros::Publisher fullMapPub;
+ros::Publisher objPub;
 sensor_msgs::PointCloud2 pclPoint;
 sensor_msgs::PointCloud2 fullPCLPoint;
 
-PointCloudMapping::PointCloudMapping(double resolution_)
+PointCloudMapping::PointCloudMapping(double resolution_, std::string modelPath)
 {
     this->resolution = resolution_;
     voxel.setLeafSize(resolution, resolution, resolution);
     this->sor.setMeanK(100);
     this->sor.setStddevMulThresh(0.1);
     globalMap = boost::make_shared<PointCloud>();
-    viewerThread = boost::make_shared<thread>(bind(&PointCloudMapping::viewer, this));
+    viewerThread = boost::make_shared<thread>(bind(&PointCloudMapping::publisher, this));
+
+    mpMergeSG = new(MergeSG);
+    mDetector = new YoloDetection(modelPath);
 }
 
 void PointCloudMapping::shutdown()
@@ -78,12 +82,13 @@ void PointCloudMapping::shutdown()
         shutDownFlag = true;
         keyFrameUpdated.notify_one();
     }
+    delete mpMergeSG;
     viewerThread->join();
 }
 
 void PointCloudMapping::insertKeyFrame(KeyFrame *kf, cv::Mat &color, cv::Mat &depth)
 {
-    std::cout << "There? \n";
+//    std::cout << "There? \n";
 
     unique_lock<mutex> lck(keyframeMutex);
     
@@ -105,7 +110,7 @@ pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePoint
         for (int n = 0; n < depth.cols; n++)
         {
             float d = depth.ptr<float>(m)[n];
-            if (d < 0.01 || d > MAX_POINTCLOUD_DEPTH)
+            if (d < MIN_POINTCLOUD_DEPTH_X || d > MAX_POINTCLOUD_DEPTH_X)
                 continue;
 
             PointT _p;
@@ -128,6 +133,116 @@ pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePoint
     return tmp;
 }
 
+pcl::PointCloud<PointCloudMapping::PointT>::Ptr PointCloudMapping::generatePointCloud(KeyFrame *kf, 
+                                                                                      cv::Mat color,
+                                                                                      cv::Mat depth,
+                                                                                      std::vector<Object> &objects)
+{
+    PointCloud::Ptr tmp(new PointCloud());
+    tmp->resize(kf->mImDep.rows * kf->mImDep.cols);
+    tmp->width    =  kf->mImDep.cols;
+    tmp->height   =  kf->mImDep.rows;
+
+    // point cloud is null ptr
+    for (int m = 0; m < kf->mImDep.rows; m++)
+    {
+        for (int n = 0; n < kf->mImDep.cols; n++)
+        {
+
+            cv::Point2i pt(n, m);
+            bool IsDynamic = false;
+            IsDynamic = checkDynamicPoint(pt, objects);
+
+            if(!IsDynamic)
+            {
+                float d = kf->mImDep.ptr<float>(m)[n];
+
+                if (d < MIN_POINTCLOUD_DEPTH_X || d > MAX_POINTCLOUD_DEPTH_X)
+                    continue;
+
+                float y = ( m - kf->cy) * d / kf->fy;
+                if (y < MIN_POINTCLOUD_DEPTH_Y || y > MAX_POINTCLOUD_DEPTH_Y)
+                    continue;
+
+                int ind = m * kf->mImDep.cols + n;
+
+                tmp->points[ind].z = d;
+                tmp->points[ind].x = ( n - kf->cx) * d / kf->fx;
+                tmp->points[ind].y = y;
+                tmp->points[ind].b = kf->mImRGB.ptr<uchar>(m)[n*3+0];
+                tmp->points[ind].g = kf->mImRGB.ptr<uchar>(m)[n*3+1];
+                tmp->points[ind].r = kf->mImRGB.ptr<uchar>(m)[n*3+2];
+
+//            PointT _p;
+//            _p.z = d;
+//            _p.x = (n - kf->cx) * _p.z * kf->invfx;
+//            _p.y = (m - kf->cy) * _p.z * kf->invfy;
+//
+//            _p.b = kf->mImRGB.ptr<uchar>(m)[n*3];
+//            _p.g = kf->mImRGB.ptr<uchar>(m)[n*3+1];
+//            _p.r = kf->mImRGB.ptr<uchar>(m)[n*3+2];
+//
+//            tmp->points.push_back(_p);
+            }
+            else
+            {
+                int ind = m * kf->mImDep.cols + n;
+                tmp->points[ind].z = NAN;
+                continue;
+            }
+        }
+    }
+
+    std::cout << "Size: " << tmp->size() << std::endl;
+    std::cout << "2D object number: " << objects.size() << "\n";
+
+    // Convert 2D bounding box to 3D cluster
+    Eigen::Isometry3d T = Converter::toSE3Quat(kf->GetPose());
+//    PointCloud::Ptr pointCloud(new PointCloud);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr pointCloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pointCloud->resize(tmp->size());
+
+    pcl::transformPointCloud(*tmp, *pointCloud, T.inverse().matrix());
+
+    mpMergeSG->merge(objects, kf->mImDep, pointCloud);
+
+    std::vector<Cluster>& Clusters = mpMergeSG->mpOD->mClusters;
+
+    // Debug object number
+    int objNumber = Clusters.size();
+    std::cout<< "OD size: " << objNumber << std::endl;
+    for( int m = 0; m < objNumber; m++)
+    {
+        Cluster & cluster = Clusters[m];
+        Eigen::Vector3f size  = cluster.size;
+        Eigen::Vector3f cent  = cluster.centroid;
+
+        // TODO: Turning dynamic bias
+        std::cout<< "obj: " << cluster.object_name << " " << cluster.prob << " "
+                 << cent[0] << " " << cent[1] << " " << cent[2] << " "
+                 << size[0] << " " << size[1] << " " << size[2] << " "
+                 << std::endl;
+    }
+
+    // TODO: Segment ground?
+
+    return tmp;
+}
+
+bool PointCloudMapping::checkDynamicPoint(cv::Point2f pt, std::vector<Object> objects)
+{
+    for(int i = 0; i < objects.size(); i++)
+    {
+        if(objects[i].object_name == "person")
+        {
+//            std::cout << "Person here \n";
+            if (objects[i].rect.contains(pt))
+                return true;
+        }
+    }
+    return false;
+}
+
 void PointCloudMapping::generateAndPublishPointCloud(size_t N)
 {
     Eigen::Matrix4d m;
@@ -141,7 +256,33 @@ void PointCloudMapping::generateAndPublishPointCloud(size_t N)
 
     for (size_t i = lastKeyframeSize; i < N; i++)
     {
-        PointCloud::Ptr p = generatePointCloudWithDynamicObject(keyframes[i], colorImgs[i], depthImgs[i]);
+        // Object detection
+        std::vector<Object> vObject;
+        
+        mDetector->Detectv2(colorImgs[i], vObject);
+
+        if(vObject.size()>0)
+        {
+            std::cout << "detect : " << vObject.size() << " obj" << std::endl;
+            for(unsigned int j =0; j < vObject.size(); j++)
+            {
+                unique_lock<mutex> lckObj(keyframeMutex);
+                keyframes[i]->mvObject.push_back(vObject[j]);
+            }
+        }
+
+        // Point cloud generate
+        PointCloud::Ptr p;
+        if (keyframes[i]->mvObject.size() > 0)
+        {
+//            std::cout << "Keyframe has objects \n";
+            p = generatePointCloud(keyframes[i], colorImgs[i], depthImgs[i], keyframes[i]->mvObject);
+        }
+        else
+        {
+            p = generatePointCloud(keyframes[i], colorImgs[i], depthImgs[i]);
+        }
+
         PointCloud::Ptr tmp1(new PointCloud());
 
         tmp1->resize(p->size());
@@ -170,6 +311,38 @@ void PointCloudMapping::generateAndPublishPointCloud(size_t N)
     fullPCLPoint.header.frame_id = "cameraToRobot";
     fullMapPub.publish(fullPCLPoint);
 
+    // Publish object database
+    std::vector<Cluster>& clusters = mpMergeSG->mpOD->mClusters;
+    int objNumber = clusters.size();
+
+    if(objNumber > 0)
+    {
+        vision_msgs::BoundingBox3DArray objDB;
+
+//        std::cout << "Publish pending \n";
+        for(int i = 0; i < objNumber; i++)
+        {
+            vision_msgs::BoundingBox3D obj;
+
+            Cluster& cluster = clusters[i];
+
+            obj.center.position.x = cluster.centroid[0];   // 1 + 4/2
+            obj.center.position.y = cluster.centroid[1]; // 2 + 5/2
+            obj.center.position.z = cluster.centroid[2];   // 3 + 6/2
+            obj.center.orientation.x = 0;
+            obj.center.orientation.y = 0;
+            obj.center.orientation.z = 0;
+            obj.center.orientation.w = 1;
+            obj.size.x = cluster.size.x();
+            obj.size.y = cluster.size.y();
+            obj.size.z = cluster.size.z();
+
+            objDB.boxes.push_back(obj);
+        }
+        objDB.header = std_msgs::Header();
+
+        objPub.publish(objDB);
+    }
     lastKeyframeSize = N;
 }
 
@@ -244,17 +417,18 @@ void PointCloudMapping::broadcastTransformMat(Eigen::Isometry3d cameraPose)
     transform.setOrigin(translationMat);
     transform.setBasis(rotationMat);
 
-    std::cout << "Transform: " << finalTransform.matrix() << "\n"; 
+//    std::cout << "Transform: " << finalTransform.matrix() << "\n";
 
     // Publish the transfrom with the parent frame = /cameraToRobot and create a new child frame pointCloudFrame
     transformBroadcaster.sendTransform(tf::StampedTransform(transform, ros::Time::now(), "cameraToRobot", "pointCloudFrame"));
 }
 
-void PointCloudMapping::viewer()
+void PointCloudMapping::publisher()
 {
     ros::NodeHandlePtr n = boost::make_shared<ros::NodeHandle>();
     pclPub = n->advertise<sensor_msgs::PointCloud2>("/slam_pointclouds", 100000);
     fullMapPub = n->advertise<sensor_msgs::PointCloud2>("/full_slam_pointclouds", 100000);
+    objPub = n->advertise<vision_msgs::BoundingBox3DArray>("/detection_array",100000);
 
     while (ros::ok())
     {
@@ -290,3 +464,4 @@ void PointCloudMapping::viewer()
     pcl::io::savePCDFile("result.pcd", *globalMap);
     std::cout << "Final point cloud saved!!!" << std::endl;
 }
+

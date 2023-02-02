@@ -40,10 +40,11 @@
 #include "ImuTypes.h"
 #include "Settings.h"
 
-#include "YoloDetection.h"
+#include "Detector.h"
 #include "PointCloudMapping.h"
 
 class PointCloudMapping;
+class Detector;
 
 namespace ORB_SLAM3
 {
@@ -239,7 +240,6 @@ private:
 
     // The viewer draws the map and the current camera pose. It uses Pangolin.
     Viewer* mpViewer;
-
     FrameDrawer* mpFrameDrawer;
     MapDrawer* mpMapDrawer;
 
@@ -268,19 +268,18 @@ private:
     std::vector<cv::KeyPoint> mTrackedKeyPointsUn;
     std::mutex mMutexState;
 
-    //
+    // Load/Save Atlas
     string mStrLoadAtlasFromFile;
     string mStrSaveAtlasToFile;
 
     string mStrVocabularyFilePath;
 
-    YoloDetection* mpDetector;
-
     Settings* settings_;
 
     // Point cloud mapping
     boost::shared_ptr<PointCloudMapping> mpPointCloudMapping;
-
+    // YoloDetection* mpDetector;
+    // std::shared_ptr<Detector> mpDetector;
 public:
     bool isYoloDetection = true;
 };

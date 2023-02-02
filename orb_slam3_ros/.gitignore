@@ -32,3 +32,6 @@
 *.app
 
 config/Model/yolov4.weights
+orb_slam3/Thirdparty/yolov5/build/
+orb_slam3/Thirdparty/yolov5/lib/
+

@@ -22,6 +22,10 @@
 
 #include "MapPoint.h"
 #include "KeyFrame.h"
+#include "Converter.h"
+#include "ORBextractor.h"
+#include "Frame.h"
+#include "Atlas.h"
 
 #include <set>
 #include <pangolin/pangolin.h>
@@ -37,6 +41,9 @@ class MapPoint;
 class KeyFrame;
 class Atlas;
 class KeyFrameDatabase;
+class ORBextractor;
+class Converter;
+class Frame;
 
 class Map
 {
@@ -133,6 +140,9 @@ public:
     void PreSave(std::set<GeometricCamera*> &spCams);
     void PostLoad(KeyFrameDatabase* pKFDB, ORBVocabulary* pORBVoc/*, map<long unsigned int, KeyFrame*>& mpKeyFrameId*/, map<unsigned int, GeometricCamera*> &mpCams);
 
+//    bool Save(const std::string &filename);
+//    bool Load(const std::string &filename, ORBVocabulary &voc);
+
     void printReprojectionError(list<KeyFrame*> &lpLocalWindowKFs, KeyFrame* mpCurrentKF, string &name, string &name_folder);
 
     vector<KeyFrame*> mvpKeyFrameOrigins;
@@ -156,6 +166,16 @@ public:
     std::set<long unsigned int> msFixedKFs;
 
 protected:
+
+//    void _WriteMapPoint(ofstream &f, MapPoint* mp);
+//    void _WriteKeyFrame(ofstream &f, KeyFrame* kf,
+//                        map<MapPoint*, unsigned long int>& idx_of_mp);
+//
+//    MapPoint* _ReadMapPoint(ifstream &f);
+//    KeyFrame* _ReadKeyFrame(ifstream &f,
+//                            ORBVocabulary &voc,
+//                            std::vector<MapPoint*> amp,
+//                            ORBextractor* ex);
 
     long unsigned int mnId;
 
@@ -201,6 +221,7 @@ protected:
     // Mutex
     std::mutex mMutexMap;
 
+    Converter convert;
 };
 
 } //namespace ORB_SLAM3
