@@ -1,7 +1,7 @@
 /*
  *--------------------------------------------------------------------------------------------------
  * DS-SLAM: A Semantic Visual SLAM towards Dynamic Environments
-　*　Author(s):
+ *　Author(s):
  * Chao Yu, Zuxin Liu, Xinjun Liu, Fugui Xie, Yi Yang, Qi Wei, Fei Qiao qiaofei@mail.tsinghua.edu.cn
  * Created by Yu Chao@2018.12.03
  * --------------------------------------------------------------------------------------------------
@@ -12,13 +12,13 @@
  * 
  *　@article{murORB2,
  *　title={{ORB-SLAM2}: an Open-Source {SLAM} System for Monocular, Stereo and {RGB-D} Cameras},
-　*　author={Mur-Artal, Ra\'ul and Tard\'os, Juan D.},
-　* journal={IEEE Transactions on Robotics},
-　*　volume={33},
-　* number={5},
-　* pages={1255--1262},
-　* doi = {10.1109/TRO.2017.2705103},
-　* year={2017}
+ *　author={Mur-Artal, Ra\'ul and Tard\'os, Juan D.},
+ * journal={IEEE Transactions on Robotics},
+ *　volume={33},
+ * number={5},
+ * pages={1255--1262},
+ * doi = {10.1109/TRO.2017.2705103},
+ * year={2017}
  *　}
  * --------------------------------------------------------------------------------------------------
  * Copyright (C) 2018, iVip Lab @ EE, THU (https://ivip-tsinghua.github.io/iViP-Homepage/) and 
@@ -89,7 +89,6 @@ void PointCloudMapping::shutdown()
 void PointCloudMapping::insertKeyFrame(KeyFrame *kf, cv::Mat &color, cv::Mat &depth)
 {
 //    std::cout << "There? \n";
-
     unique_lock<mutex> lck(keyframeMutex);
     
     keyframes.push_back(kf);

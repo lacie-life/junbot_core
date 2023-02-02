@@ -40,6 +40,10 @@
 #include "MergeSG.h"
 #include "YoloDetection.h"
 
+#include <octomap/ColorOcTree.h>
+#include <octomap/Pointcloud.h>
+#include <octomap/octomap.h>
+
 #include <condition_variable>
 
 #include <pcl/common/transforms.h>
@@ -76,6 +80,13 @@ public:
      */
     void insertKeyFrame(KeyFrame *kf, cv::Mat &color, cv::Mat &depth);
 
+    void generateOctoMap();
+    void genrerateObjectBondingBox();
+
+    void SaveOctoMap(const char* filename);
+    void LoadOctoMap(const char* filename);
+    void RegisterObs(pcl::PointCloud<pcl::PointXYZRGB> mvObs);
+
     /**
      * @brief Shuts down all threads properly
      */
@@ -85,10 +96,6 @@ public:
     YoloDetection* mDetector;
 
 protected:
-    PointCloud::Ptr generatePointCloud(KeyFrame *kf, cv::Mat color, cv::Mat depth);
-    PointCloud::Ptr generatePointCloud(KeyFrame *kf, cv::Mat color, cv::Mat depth, std::vector<Object>& objects);
-    PointCloud::Ptr generatePointCloudWithDynamicObject(KeyFrame* kf, cv::Mat& color, cv::Mat& depth);
-
     PointCloud::Ptr globalMap;
 
     boost::shared_ptr<thread> viewerThread;
@@ -113,6 +120,64 @@ protected:
     double resolution = 0.005;
     pcl::VoxelGrid<PointT> voxel;
     pcl::StatisticalOutlierRemoval<PointT> sor;
+
+protected:
+
+    // OctoMap
+    // int last_obj_size;
+
+    PointCloud::Ptr generatePointCloud(KeyFrame *kf, cv::Mat color, cv::Mat depth);
+    PointCloud::Ptr generatePointCloud(KeyFrame *kf, cv::Mat color, cv::Mat depth, std::vector<Object>& objects);
+    PointCloud::Ptr generatePointCloudWithDynamicObject(KeyFrame* kf, cv::Mat& color, cv::Mat& depth);
+
+    void GeneratePointCloud(KeyFrame* kf,
+                            pcl::PointCloud<pcl::PointXYZRGB>& ground,
+                            pcl::PointCloud<pcl::PointXYZRGB>& nonground);
+
+    void GeneratePointCloud(KeyFrame* kf,
+                            pcl::PointCloud<pcl::PointXYZRGB>& ground,
+                            pcl::PointCloud<pcl::PointXYZRGB>& nonground,
+                            std::vector<Object>& objects);
+
+    void InsertScan(octomap::point3d sensorOrigin,
+                    pcl::PointCloud<pcl::PointXYZRGB>& ground,
+                    pcl::PointCloud<pcl::PointXYZRGB>& nonground);
+
+    bool isSpeckleNode(const octomap::OcTreeKey &nKey);
+
+    void UpdateOctomap(vector<KeyFrame*> vKFs);
+
+    void heightMapColor(double h, double& r, double &g, double& b);
+
+    pcl::PointCloud<pcl::PointXYZRGB> observation;
+
+    octomap::ColorOcTree *m_octree;
+    octomap::KeyRay m_keyRay; // temp storage for casting
+    octomap::OcTreeKey m_updateBBXMin;
+    octomap::OcTreeKey m_updateBBXMax;
+
+    double m_maxRange;
+    bool m_useHeightMap;
+
+    double m_colorFactor;
+    double m_res;
+    unsigned m_treeDepth;
+    unsigned m_maxTreeDepth;
+    bool bIsLocalization;
+
+    octomap::OcTreeKey m_paddedMinKey, m_paddedMaxKey;
+    inline static void updateMinKey(const octomap::OcTreeKey&in,
+                                    octomap::OcTreeKey& min)
+    {
+        for(unsigned int i=0; i<3; i++)
+            min[i] = std::min(in[i], min[i]);
+    }
+    inline static void updateMaxKey(const octomap::OcTreeKey&in,
+                                    octomap::OcTreeKey& max)
+    {
+        for(unsigned int i=0; i<3; i++)
+            max[i] = std::max(in[i], max[i]);
+    }
 
     /**
      * @brief Runs all functionalities in a new thread
