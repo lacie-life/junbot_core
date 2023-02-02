@@ -5,7 +5,7 @@
 #ifndef AG_MAPPING_YOLODETECTION_H
 #define AG_MAPPING_YOLODETECTION_H
 
-#include <torch/script.h>
+// #include <torch/script.h>
 #include <opencv2/opencv.hpp>
 #include <algorithm>
 #include <iostream>
@@ -39,11 +39,11 @@ public:
     void ClearArea();
 
     vector<cv::Rect2i> mvPersonArea = {};
-    vector<torch::Tensor> non_max_suppression(torch::Tensor preds, float score_thresh=0.5, float iou_thresh=0.5);
+    // vector<torch::Tensor> non_max_suppression(torch::Tensor preds, float score_thresh=0.5, float iou_thresh=0.5);
 
 public:
     cv::Mat mRGB;
-    torch::jit::script::Module mModule;
+    // torch::jit::script::Module mModule;
     std::vector<std::string> mClassnames;
     YoLoObjectDetection* mModel;
 

@@ -74,9 +74,9 @@ find_package(Boost COMPONENTS system filesystem serialization REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIR})
 
-list(APPEND CMAKE_PREFIX_PATH "~/Github/libtorch/")
-find_package(Torch REQUIRED)
-include_directories(${TORCH_INCLUDE_DIRS})
+# list(APPEND CMAKE_PREFIX_PATH "~/Github/libtorch/")
+# find_package(Torch REQUIRED)
+# include_directories(${TORCH_INCLUDE_DIRS})
 
 # cuda
 find_package(CUDA REQUIRED)
@@ -157,7 +157,7 @@ target_link_libraries(${PROJECT_NAME}
         ${Pangolin_LIBRARIES}
         ${PCL_LIBRARIES}
         ${OCTOMAP_LIBRARIES}
-        ${TORCH_LIBRARIES}
+        # ${TORCH_LIBRARIES}
         ${TRT_LIBS}
         ${CUDA_CUDA_LIBRARY}
         ${CUDA_CUDART_LIBRARY}

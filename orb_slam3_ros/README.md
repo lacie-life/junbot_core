@@ -8,7 +8,7 @@ Based on [orb_slam3_ros](https://github.com/thien94/orb_slam3_ros)
 - Pangolin
 - Boost
 - CUDA 11.6
-- Libtorch 1.12.1+cu116 (cxx11-abi)
+- Libtorch 1.12.1+cu116 (cxx11-abi) (Option)
 - TensorRT
 - ZED SDK (Option)
 - Realsense SDK (Option)
