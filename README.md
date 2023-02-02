@@ -67,6 +67,21 @@ sudo make install
 - ZED SDK (Option)
 - Realsense SDK (Option)
 
+3. TensorRT with Yolov5 model (Replace for libtorch in Jetson series)
+
+```
+git clone -b v7.0 https://github.com/ultralytics/yolov5.git
+# create conda envs and install requierments.txt for running gen_wts.py
+# stupid scripts
+
+git clone -b yolov5-v7.0 https://github.com/wang-xinyu/tensorrtx.git
+cd yolov5/
+wget https://github.com/ultralytics/yolov5/releases/download/v7.0/yolov5s.pt
+cp [PATH-TO-TENSORRTX]/yolov5/gen_wts.py .
+python gen_wts.py -w yolov5s.pt -o yolov5s.wts
+# A file 'yolov5s.wts' will be generated.
+```
+
 # Bug 
 
 Pls refer links:

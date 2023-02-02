@@ -258,7 +258,9 @@ void PointCloudMapping::generateAndPublishPointCloud(size_t N)
     {
         // Object detection
         std::vector<Object> vObject;
-        mDetector->Detect(colorImgs[i], vObject);
+        
+        mDetector->Detectv2(colorImgs[i], vObject);
+
         if(vObject.size()>0)
         {
             std::cout << "detect : " << vObject.size() << " obj" << std::endl;

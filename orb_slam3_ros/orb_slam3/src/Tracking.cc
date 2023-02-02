@@ -137,14 +137,14 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
 
 Tracking::Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Atlas* pAtlas,
             boost::shared_ptr<PointCloudMapping> pPointCloud,
-            KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, Settings* settings, const string &_nameSeq,
-            std::shared_ptr<Detector> pDetector):
+            KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, Settings* settings, const string &_nameSeq
+            /*, std::shared_ptr<Detector> pDetector*/):
         mState(NO_IMAGES_YET), mSensor(sensor), mTrackedFr(0), mbStep(false),
         mbOnlyTracking(false), mbMapUpdated(false), mbVO(false), mpORBVocabulary(pVoc), mpPointCloudMapping(pPointCloud), mpKeyFrameDB(pKFDB),
         mbReadyToInitializate(false), mpSystem(pSys), mpViewer(NULL), bStepByStep(false),
         mpFrameDrawer(pFrameDrawer), mpMapDrawer(pMapDrawer), mpAtlas(pAtlas), mnLastRelocFrameId(0), time_recently_lost(5.0),
-        mnInitialFrameId(0), mbCreatedMap(false), mnFirstFrameId(0), mpCamera2(nullptr), mpLastKeyFrame(static_cast<KeyFrame*>(NULL)),
-        mpDetector(pDetector)
+        mnInitialFrameId(0), mbCreatedMap(false), mnFirstFrameId(0), mpCamera2(nullptr), mpLastKeyFrame(static_cast<KeyFrame*>(NULL))
+        /*, mpDetector(pDetector)*/
 {
     std::cout << "Here \n";
     // Load camera parameters from settings file

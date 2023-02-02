@@ -82,7 +82,7 @@ PointCloudMapping.Resolution: 0.01
 # Semantic Mapping
 #---------------------------------------------------------------------------------------------
 Semantic.Model: 0 # Yolov5: 0
-Semantic.ModelPath: "/home/lacie/slam_ws/src/junbot_planner/orb_slam3_ros/config/Model"
+Semantic.ModelPath: "/home/lacie/slam_ws/src/junbot_planner/orb_slam3_ros/config/Model/yolov5s.engine"
 
 #--------------------------------------------------------------------------------------------
 # OctoMap Parameters

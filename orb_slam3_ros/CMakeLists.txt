@@ -101,7 +101,7 @@ generate_messages(
 
 catkin_package(
         CATKIN_DEPENDS roscpp rospy std_msgs cv_bridge image_transport tf sensor_msgs dynamic_reconfigure message_runtime
-        LIBRARIES {PROJECT_NAME} libDBoW2 libg2o
+        LIBRARIES {PROJECT_NAME} libDBoW2 libg2o libyolov5-detector
 )
 
 ## Specify additional locations of header files
@@ -115,6 +115,7 @@ include_directories(
 #        ${PROJECT_SOURCE_DIR}/orb_slam3/include/cuda
         ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty
         ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/Sophus
+        ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/yolov5
         ${EIGEN3_INCLUDE_DIR}
         ${Pangolin_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
@@ -145,7 +146,8 @@ source_group("Source Files" FILES ${SOURCES})
 
 add_library(${PROJECT_NAME} SHARED
         ${HEADERS}
-        ${SOURCES})
+        ${SOURCES}
+        )
 
 # set(TRT_LIBS nvinfer)
 
@@ -161,7 +163,7 @@ target_link_libraries(${PROJECT_NAME}
         ${CUDA_CUDART_LIBRARY}
         ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/DBoW2/lib/libDBoW2.so
         ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/g2o/lib/libg2o.so
-        #  ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/yolov5/lib/libyolov5_detector.so
+         ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/yolov5/lib/libyolov5-detector.so
         -lboost_serialization
         -lcrypto
 #        nvToolsExt

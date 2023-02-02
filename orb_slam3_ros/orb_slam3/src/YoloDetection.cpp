@@ -3,10 +3,20 @@
 //
 
 #include "YoloDetection.h"
+#include "yolov5/include/types.h"
 
-YoloDetection::YoloDetection(std::string modelPath)
+YoloDetection::YoloDetection(std::string modelPath, bool isTensorRT)
 {
-    mModule = torch::jit::load(modelPath + "/yolov5s.torchscript.pt");
+    if(!isTensorRT)
+    {
+        std::cout << "Create Torch model \n";
+        mModule = torch::jit::load(modelPath + "/yolov5s.torchscript.pt");
+    }
+    else
+    {
+        std::cout << "Create TensorRT Model \n";
+        mModel = new YoLoObjectDetection(modelPath + "/yolov5s.engine");
+    }
 
     std::ifstream f(modelPath + "/coco.names");
     std::string name = "";
@@ -170,6 +180,39 @@ bool YoloDetection::Detect(const cv::Mat &bgr_img, std::vector<Object> &objects)
     }
 
     // cv::imshow("image", mRGB);
+
+    return true;
+}
+
+bool YoloDetection::Detectv2(const cv::Mat &bgr_img, std::vector<Object> &objects)
+{
+    cv::Mat img;
+
+    img = bgr_img.clone();
+
+    if(bgr_img.empty())
+    {
+        std::cout << "Read RGB failed!" << std::endl;
+        return false;
+    }
+
+    std::vector<Detection> res; 
+
+    mModel->detectObject(img, res);
+
+    for(int i = 0; i < res.size(); i++)
+    {
+        Object ob;
+        ob.rect = mModel->get_rect(img, res[i].bbox);
+        std::cout << "Copy end \n";
+        std::cout << res[i].class_id << std::endl;
+        ob.object_name = mClassnames[(int)res[i].class_id];
+        std::cout << "Copy end \n";
+        ob.prob = res[i].conf;
+        ob.class_id = res[i].class_id;
+
+        objects.push_back(ob);
+    }
 
     return true;
 }

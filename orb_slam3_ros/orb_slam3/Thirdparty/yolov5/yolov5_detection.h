@@ -10,49 +10,26 @@
 
 #include "include/cuda_utils.h"
 #include "include/logging.h"
-#include "include/common.h"
 #include "include/utils.h"
-#include "include/calibrator.h"
+#include "include/config.h"
+#include "include/model.h"
+#include "include/types.h"
 
-#define USE_FP16  // set USE_INT8 or USE_FP16 or USE_FP32
-#define DEVICE 0  // GPU id
-#define NMS_THRESH 0.4
-#define CONF_THRESH 0.5
-#define BATCH_SIZE 1
-
-// stuff we know about the network and the input/output blobs
-static Logger gLogger;
-
-static int get_width(int x, float gw, int divisor = 8) {
-    return int(ceil((x * gw) / divisor)) * divisor;
-}
-
-static int get_depth(int x, float gd) {
-    if (x == 1) return 1;
-    int r = round(x * gd);
-    if (x * gd - int(x * gd) == 0.5 && (int(x * gd) % 2) == 0) {
-        --r;
-    }
-    return std::max<int>(r, 1);
-}
-
-struct Object{
-    cv::Rect rec;
-    float prob;
-    int label;
-};
+using namespace nvinfer1;
 
 class YoLoObjectDetection
 {
     public:
         YoLoObjectDetection(const std::string _model_path);
         ~YoLoObjectDetection();
-        std::vector<cv::Rect> detectObject(const cv::Mat& _frame);
-        std::vector<Object> detectObjectv2(const cv::Mat& _frame);
-        std::vector<Yolo::Detection> detectObjectv3(const cv::Mat& _frame);
+        void detectObject(const cv::Mat& _frame, std::vector<Detection>& objects);
+        cv::Rect get_rect(cv::Mat& img, float bbox[4]);
         
     private:
-        void doInference(IExecutionContext& context, cudaStream_t& stream, void **buffers, float* input, float* output, int batchSize);
+        void doInference(IExecutionContext& context, cudaStream_t& stream, void** gpu_buffers, float* output, int batchsize);
+        void prepare_buffers(ICudaEngine* engine, float** gpu_input_buffer, float** gpu_output_buffer, float** cpu_output_buffer);
+        void serialize_engine(unsigned int max_batchsize, bool& is_p6, float& gd, float& gw, std::string& wts_name, std::string& engine_name);
+        void deserialize_engine(std::string& engine_name, IRuntime** runtime, ICudaEngine** engine, IExecutionContext** context);
 
     private:
         IRuntime* runtime;
@@ -60,6 +37,10 @@ class YoLoObjectDetection
         IExecutionContext* context;
         cudaStream_t stream;
         void* buffers[2];
+
+        // Prepare cpu and gpu buffers
+        float* gpu_buffers[2];
+        float* cpu_output_buffer = nullptr;
 
         cv::Mat left_cv_rgb;
 };

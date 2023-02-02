@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.4)
 
-set (yolov5_ROOR_DIR "${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/yolov5")
+project(yolov5_detector)
+
+set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++14")
 
 if(COMMAND cmake_policy)
 	cmake_policy(SET CMP0003 OLD)
@@ -26,7 +28,11 @@ IF(NOT WIN32)
     add_definitions(-Wno-write-strings)
 ENDIF()
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${yolov5_ROOR_DIR}/lib)
+find_package(Boost COMPONENTS system filesystem REQUIRED)
+include_directories(${Boost_INCLUDE_DIR})
+link_directories(${Boost_LIBRARY_DIR})
+
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 include_directories(${OpenCV_INCLUDE_DIRS})
 include_directories(${GLEW_INCLUDE_DIRS})
@@ -48,13 +54,15 @@ link_directories(/usr/local/cuda/lib64)
 include_directories(/usr/include/x86_64-linux-gnu/)
 link_directories(/usr/lib/x86_64-linux-gnu/)
 
-FILE(GLOB_RECURSE SRC_FILES ${yolov5_ROOR_DIR}/src/*.c*
-                            ${yolov5_ROOR_DIR}/src/*.cu
-                            ${yolov5_ROOR_DIR}/yolov5_detection.cpp)
-FILE(GLOB_RECURSE HDR_FILES ${yolov5_ROOR_DIR}/include/*.h*
-                            ${yolov5_ROOR_DIR}/yolov5_detection.h)
-
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -std=c++11)
+FILE(GLOB_RECURSE SRC_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.c*
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cu
+        ${CMAKE_CURRENT_SOURCE_DIR}/yolov5_detection.cpp
+        )
+FILE(GLOB_RECURSE HDR_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h*
+        ${CMAKE_CURRENT_SOURCE_DIR}/yolov5_detection.h
+        )
 
 cuda_add_library(yolov5-detector SHARED ${HDR_FILES} ${SRC_FILES})
 
@@ -71,6 +79,13 @@ target_link_libraries(yolov5-detector
                         ${OpenCV_LIBRARIES}
                         ${CUDA_CUDA_LIBRARY}
                         ${CUDA_CUDART_LIBRARY}
+        )
+
+add_executable(test_detector  ${CMAKE_CURRENT_SOURCE_DIR}/test.cpp)
+target_link_libraries(test_detector
+        ${OpenCV_LIBRARIES}
+        ${Boost_LIBRARIES}
+        yolov5-detector
         )
 
 

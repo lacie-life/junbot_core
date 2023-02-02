@@ -11,6 +11,7 @@
 #include <iostream>
 #include <utility>
 #include <time.h>
+#include "yolov5_detection.h"
 
 typedef struct Object
 {
@@ -24,7 +25,7 @@ using namespace std;
 
 class YoloDetection {
 public:
-    YoloDetection(std::string modelPath);
+    YoloDetection(std::string modelPath, bool isTensorRT = true);
     ~YoloDetection();
 
     void GetImage(cv::Mat& RGB);
@@ -32,6 +33,7 @@ public:
     bool Detect();
 
     bool Detect(const cv::Mat& bgr_img, std::vector<Object>& objects);
+    bool Detectv2(const cv::Mat& bgr_img, std::vector<Object>& objects);
     cv::Mat display(std::vector<Object>& objects);
 
     void ClearArea();
@@ -43,6 +45,7 @@ public:
     cv::Mat mRGB;
     torch::jit::script::Module mModule;
     std::vector<std::string> mClassnames;
+    YoLoObjectDetection* mModel;
 
     // 6-28
     vector<string> mvDynamicNames;
