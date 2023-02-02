@@ -80,6 +80,17 @@ wget https://github.com/ultralytics/yolov5/releases/download/v7.0/yolov5s.pt
 cp [PATH-TO-TENSORRTX]/yolov5/gen_wts.py .
 python gen_wts.py -w yolov5s.pt -o yolov5s.wts
 # A file 'yolov5s.wts' will be generated.
+
+cd [PATH-TO-TENSORRTX]/yolov5/
+# Update kNumClass in src/config.h if your model is trained on custom dataset
+mkdir build
+cd build
+cp [PATH-TO-ultralytics-yolov5]/yolov5s.wts . 
+cmake ..
+make
+
+# Generate engine file (engine include 80 class of coco dataset)
+./yolov5_det -s yolov5s.wts yolov5s.engine s
 ```
 
 # Bug 
