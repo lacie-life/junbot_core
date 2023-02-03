@@ -111,6 +111,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     cv::FileNode modelNode = fsSettings["Semantic.ModelPath"];
     string modelPath = (string)modelNode;
     std::cout << modelPath << endl;
+    float octoRes = fsSettings["octoMap.res"];
 
     node = fsSettings["loopClosing"];
     bool activeLC = true;
@@ -195,7 +196,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     // }
 
     // Initialize pointcloud mapping
-    mpPointCloudMapping = boost::make_shared<PointCloudMapping>(resolution, modelPath);
+    mpPointCloudMapping = boost::make_shared<PointCloudMapping>(resolution, octoRes, modelPath);
 
     //Initialize the Tracking thread
     //(it will live in the main thread of execution, the one that called this constructor)

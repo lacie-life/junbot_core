@@ -102,6 +102,7 @@ protected:
                     pcl::PointCloud<pcl::PointXYZRGB>& ground,
                     pcl::PointCloud<pcl::PointXYZRGB>& nonground);
 
+    // Pending
     bool isSpeckleNode(const octomap::OcTreeKey &nKey);
 
     void UpdateOctomap(vector<KeyFrame*> vKFs);

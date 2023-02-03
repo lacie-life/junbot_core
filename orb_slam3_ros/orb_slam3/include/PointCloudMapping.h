@@ -69,7 +69,7 @@ public:
      * 
      * @param resolution_ 
      */
-    PointCloudMapping(double resolution_, std::string modelPath);
+    PointCloudMapping(double resolution_, double octoResolution_, std::string modelPath);
 
     /**
      * @brief Insert new keyframe and RGB-D image, and trigger pointcloud generation process
