@@ -8,6 +8,7 @@
 
 class OctoMapBuilder {
 
+    OctoMapBuilder(double resolution);
 };
 
 

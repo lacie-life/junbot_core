@@ -212,9 +212,9 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     }
     else
     {
-        mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer,
-                                 mpAtlas, mpKeyFrameDatabase,
-                                 strSettingsFile, mSensor, settings_, strSequence);
+//        mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer,
+//                                 mpAtlas, mpKeyFrameDatabase,
+//                                 strSettingsFile, mSensor, settings_, strSequence);
     }
 
     //Initialize the Local Mapping thread and launch

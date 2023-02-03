@@ -24,7 +24,6 @@
 
 namespace ORB_SLAM3 {
 
-
     MapDrawer::MapDrawer(Atlas *pAtlas, const string &strSettingPath, Settings *settings) :
             mpAtlas(pAtlas),
             m_octree(NULL),
