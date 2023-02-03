@@ -34,11 +34,7 @@
 #include <boost/archive/xml_oarchive.hpp>
 
 #include "PointCloudMapping.h"
-#include <pcl/visualization/cloud_viewer.h>
-#include <pcl/common/projection_matrix.h>
-#include <pcl/filters/passthrough.h>
-#include <pcl/common/transforms.h>
-#include <pcl/io/pcd_io.h>
+
 
 namespace ORB_SLAM3
 {
