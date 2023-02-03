@@ -7,7 +7,7 @@
 - [ ] Explore enviroment
    - [ ] Replace Yolo with Segmentation net => remove dynamic object (by interest class)
    - [ ] Turning object database
-   - [ ] Add ZED example
+   - [x] Add ZED example
  
  ~~- [ ] Option 1: Segment point cloud by PointNet++ => get 3D bounding box of object (office enviroment) [[Ref](https://github.com/sc19aas/3D-object-detection)]~~
  
