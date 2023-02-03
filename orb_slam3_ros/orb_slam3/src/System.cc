@@ -183,20 +183,20 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     mpFrameDrawer = new FrameDrawer(mpAtlas, mpMapDrawer, strSettingsFile);
 
     // Yolo
-    // if(model == 0)
-    // {
-    //     cout << "Using YoLo detector \n";
-    //     isYoloDetection = true;
-    //     mpDetector = std::make_shared<Detector>(modelPath);
-    // }
-    // else{
-    //     cout << "Defaut: YoLo detector \n";
-    //     isYoloDetection = true;
-    //     mpDetector = std::make_shared<Detector>(modelPath);
-    // }
+     if(model == 0)
+     {
+         cout << "Using YoLo detector \n";
+         isYoloDetection = true;
+         mpDetector = std::make_shared<Detector>(modelPath);
+     }
+     else{
+         cout << "Defaut: YoLo detector \n";
+         isYoloDetection = true;
+         mpDetector = std::make_shared<Detector>(modelPath);
+     }
 
     // Initialize pointcloud mapping
-    mpPointCloudMapping = boost::make_shared<PointCloudMapping>(resolution, octoRes, modelPath);
+    // mpPointCloudMapping = boost::make_shared<PointCloudMapping>(resolution, modelPath);
 
     //Initialize the Tracking thread
     //(it will live in the main thread of execution, the one that called this constructor)
@@ -206,9 +206,9 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     {
         std::cout << "Here \n";
         mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer,
-                                 mpAtlas, mpPointCloudMapping, mpKeyFrameDatabase,
+                                 mpAtlas, /*mpPointCloudMapping,*/ mpKeyFrameDatabase,
                                  strSettingsFile, mSensor, settings_,
-                                 strSequence /*, mpDetector*/);
+                                 strSequence , mpDetector);
     }
     else
     {

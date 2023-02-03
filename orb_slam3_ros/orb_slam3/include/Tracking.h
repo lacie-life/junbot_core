@@ -71,9 +71,9 @@ public:
              KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, Settings* settings, const string &_nameSeq=std::string());
 
     Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Atlas* pAtlas,
-             boost::shared_ptr<PointCloudMapping> pPointCloud,
+             /*boost::shared_ptr<PointCloudMapping> pPointCloud,*/
              KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, Settings* settings, const string &_nameSeq=std::string()
-             /* ,std::shared_ptr<Detector> pDetector = nullptr */
+                     ,std::shared_ptr<Detector> pDetector = nullptr
              );
 
     ~Tracking();
@@ -366,8 +366,8 @@ protected:
     bool mbRGB;
 
     // For point cloud viewing
-    boost::shared_ptr<PointCloudMapping> mpPointCloudMapping;
-    // std::shared_ptr<Detector> mpDetector;
+    // boost::shared_ptr<PointCloudMapping> mpPointCloudMapping;
+    std::shared_ptr<Detector> mpDetector;
     // Geometry mGeometry;
     Flow mFlow;
 
