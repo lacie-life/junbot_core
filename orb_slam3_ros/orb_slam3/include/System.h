@@ -41,9 +41,9 @@
 #include "Settings.h"
 
 #include "Detector.h"
-//#include "PointCloudMapping.h"
+#include "PointCloudMapping.h"
 
-//class PointCloudMapping;
+class PointCloudMapping;
 class Detector;
 
 namespace ORB_SLAM3
@@ -277,9 +277,9 @@ private:
     Settings* settings_;
 
     // Point cloud mapping
-    // boost::shared_ptr<PointCloudMapping> mpPointCloudMapping;
+    boost::shared_ptr<PointCloudMapping> mpPointCloudMapping;
     // YoloDetection* mpDetector;
-     std::shared_ptr<Detector> mpDetector;
+    // std::shared_ptr<Detector> mpDetector;
 public:
     bool isYoloDetection = true;
 };

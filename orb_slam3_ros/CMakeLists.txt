@@ -147,7 +147,7 @@ source_group("Source Files" FILES ${SOURCES})
 add_library(${PROJECT_NAME} SHARED
         ${HEADERS}
         ${SOURCES}
-        orb_slam3/include/OctoMapBuilder.h)
+        )
 
 # set(TRT_LIBS nvinfer)
 
