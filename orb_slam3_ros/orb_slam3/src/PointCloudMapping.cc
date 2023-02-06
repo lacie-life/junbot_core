@@ -307,9 +307,9 @@ void PointCloudMapping::generateAndPublishPointCloud(size_t N)
         *globalMap += *_p;
     }
 
-    pcl::toROSMsg(*globalMap, fullPCLPoint);
-    fullPCLPoint.header.frame_id = "cameraToRobot";
-    fullMapPub.publish(fullPCLPoint);
+//    pcl::toROSMsg(*globalMap, fullPCLPoint);
+//    fullPCLPoint.header.frame_id = "cameraToRobot";
+//    fullMapPub.publish(fullPCLPoint);
 
     // Publish object database
     std::vector<Cluster>& clusters = mpMergeSG->mpOD->mClusters;
@@ -427,7 +427,7 @@ void PointCloudMapping::publisher()
 {
     ros::NodeHandlePtr n = boost::make_shared<ros::NodeHandle>();
     pclPub = n->advertise<sensor_msgs::PointCloud2>("/slam_pointclouds", 100000);
-    fullMapPub = n->advertise<sensor_msgs::PointCloud2>("/full_slam_pointclouds", 100000);
+//    fullMapPub = n->advertise<sensor_msgs::PointCloud2>("/full_slam_pointclouds", 100000);
     objPub = n->advertise<vision_msgs::BoundingBox3DArray>("/detection_array",100000);
 
     while (ros::ok())
