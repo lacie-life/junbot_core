@@ -116,9 +116,9 @@ public:
     Eigen::Vector3f GetImuVwb();
     bool isImuPreintegrated();
 
-    cv::Mat kalmanFilter(cv::Mat m);
-    cv::Mat fusion(cv::Mat m);
-    Eigen::Quaternionf integrate();
+//    cv::Mat kalmanFilter(cv::Mat m);
+//    cv::Mat fusion(cv::Mat m);
+//    Eigen::Quaternionf integrate();
 
     void CreateMapInAtlas();
     //std::mutex mMutexTracks;

@@ -41,8 +41,9 @@
 - CUDA 11.6 [[Link](https://developer.nvidia.com/cuda-11-6-0-download-archive)]
   - <i> Choose option and follow instructions </i>
 
-- OpenCV 4.2 (with cuda support) [[Link](https://github.com/lacie-life/codecpp/blob/main/opencv_cuda.sh)]
+- OpenCV 4.5.2 (With CUDA Build) [[Link](https://github.com/lacie-life/codecpp/blob/main/opencv_cuda.sh)]
   - <i>Note: Change CUDA_ARCH flag to your NVIDIA Device </i>
+  - <i>Note: If you have conflict with Ros opencv, remove them and install ros depends manual </i>
 
 - PCL 1.8 [[Link](https://github.com/PointCloudLibrary/pcl/archive/refs/tags/pcl-1.8.0.zip)]
   - <i> Uncompress and build </i>

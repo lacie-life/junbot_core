@@ -794,160 +794,160 @@ namespace ORB_SLAM3
         return vResultKeys;
     }
 
-    void ORBextractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoints)
-    {
-        allKeypoints.resize(nlevels);
-
-        const float W = 35;
-
-        for (int level = 0; level < nlevels; ++level)
-        {
-            const int minBorderX = EDGE_THRESHOLD-3;
-            const int minBorderY = minBorderX;
-            const int maxBorderX = mvImagePyramid[level].cols-EDGE_THRESHOLD+3;
-            const int maxBorderY = mvImagePyramid[level].rows-EDGE_THRESHOLD+3;
-
-            vector<cv::KeyPoint> vToDistributeKeys;
-            vToDistributeKeys.reserve(nfeatures*10);
-
-            const float width = (maxBorderX-minBorderX);
-            const float height = (maxBorderY-minBorderY);
-
-            const int nCols = width/W;
-            const int nRows = height/W;
-            const int wCell = ceil(width/nCols);
-            const int hCell = ceil(height/nRows);
-
-            for(int i=0; i<nRows; i++)
-            {
-                const float iniY =minBorderY+i*hCell;
-                float maxY = iniY+hCell+6;
-
-                if(iniY>=maxBorderY-3)
-                    continue;
-                if(maxY>maxBorderY)
-                    maxY = maxBorderY;
-
-                for(int j=0; j<nCols; j++)
-                {
-                    const float iniX =minBorderX+j*wCell;
-                    float maxX = iniX+wCell+6;
-                    if(iniX>=maxBorderX-6)
-                        continue;
-                    if(maxX>maxBorderX)
-                        maxX = maxBorderX;
-
-                    vector<cv::KeyPoint> vKeysCell;
-
-                    FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
-                         vKeysCell,iniThFAST,true);
-
-                    /*if(bRight && j <= 13){
-                        FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
-                             vKeysCell,10,true);
-                    }
-                    else if(!bRight && j >= 16){
-                        FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
-                             vKeysCell,10,true);
-                    }
-                    else{
-                        FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
-                             vKeysCell,iniThFAST,true);
-                    }*/
-
-
-                    if(vKeysCell.empty())
-                    {
-                        FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
-                             vKeysCell,minThFAST,true);
-                        /*if(bRight && j <= 13){
-                            FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
-                                 vKeysCell,5,true);
-                        }
-                        else if(!bRight && j >= 16){
-                            FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
-                                 vKeysCell,5,true);
-                        }
-                        else{
-                            FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
-                                 vKeysCell,minThFAST,true);
-                        }*/
-                    }
-
-                    if(!vKeysCell.empty())
-                    {
-                        for(vector<cv::KeyPoint>::iterator vit=vKeysCell.begin(); vit!=vKeysCell.end();vit++)
-                        {
-                            (*vit).pt.x+=j*wCell;
-                            (*vit).pt.y+=i*hCell;
-                            vToDistributeKeys.push_back(*vit);
-                        }
-                    }
-
-                    // Delete kp
-                    float scale = mvScaleFactor[level];
-                    for (auto vit = vToDistributeKeys.begin(); vit != vToDistributeKeys.end(); vit++)
-                    {
-                        vit->pt.x += minBorderX;
-                        vit->pt.y += minBorderY;
-                        vit->pt *= scale;
-                    }
-
-                    bool Find = false;
-                    for (auto vit_kp = vToDistributeKeys.begin(); vit_kp != vToDistributeKeys.end();)
-                    {
-                        for (auto vit_area = mvDynamicArea.begin(); vit_area != mvDynamicArea.end(); vit_area++)
-                        {
-                            Find = false;
-                            if (vit_area->contains(vit_kp->pt))
-                            {
-                                Find = true;
-                                vit_kp = vToDistributeKeys.erase(vit_kp);
-                                break;
-                            }
-                        }
-
-                        if (!Find)
-                        {
-                            ++vit_kp;
-                            Find = false;
-                        }
-                    }
-
-                    float scale_inverse = 1 / scale;
-                    for (auto vit = vToDistributeKeys.begin(); vit != vToDistributeKeys.end(); vit++)
-                    {
-                        vit->pt *= scale_inverse;
-                        vit->pt.x -= minBorderX;
-                        vit->pt.y -= minBorderY;
-                    }
-
-                }
-            } 
-
-            vector<KeyPoint> & keypoints = allKeypoints[level];
-            keypoints.reserve(nfeatures);
-
-            keypoints = DistributeOctTree(vToDistributeKeys, minBorderX, maxBorderX,
-                                          minBorderY, maxBorderY,mnFeaturesPerLevel[level], level);
-
-            const int scaledPatchSize = PATCH_SIZE*mvScaleFactor[level];
-
-            // Add border to coordinates and scale information
-            const int nkps = keypoints.size();
-            for(int i=0; i<nkps ; i++)
-            {
-                keypoints[i].pt.x+=minBorderX;
-                keypoints[i].pt.y+=minBorderY;
-                keypoints[i].octave=level;
-                keypoints[i].size = scaledPatchSize;
-            }
-        }
-
-        // compute orientations
-        for (int level = 0; level < nlevels; ++level)
-            computeOrientation(mvImagePyramid[level], allKeypoints[level], umax);
-    }
+//    void ORBextractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoints)
+//    {
+//        allKeypoints.resize(nlevels);
+//
+//        const float W = 35;
+//
+//        for (int level = 0; level < nlevels; ++level)
+//        {
+//            const int minBorderX = EDGE_THRESHOLD-3;
+//            const int minBorderY = minBorderX;
+//            const int maxBorderX = mvImagePyramid[level].cols-EDGE_THRESHOLD+3;
+//            const int maxBorderY = mvImagePyramid[level].rows-EDGE_THRESHOLD+3;
+//
+//            vector<cv::KeyPoint> vToDistributeKeys;
+//            vToDistributeKeys.reserve(nfeatures*10);
+//
+//            const float width = (maxBorderX-minBorderX);
+//            const float height = (maxBorderY-minBorderY);
+//
+//            const int nCols = width/W;
+//            const int nRows = height/W;
+//            const int wCell = ceil(width/nCols);
+//            const int hCell = ceil(height/nRows);
+//
+//            for(int i=0; i<nRows; i++)
+//            {
+//                const float iniY =minBorderY+i*hCell;
+//                float maxY = iniY+hCell+6;
+//
+//                if(iniY>=maxBorderY-3)
+//                    continue;
+//                if(maxY>maxBorderY)
+//                    maxY = maxBorderY;
+//
+//                for(int j=0; j<nCols; j++)
+//                {
+//                    const float iniX =minBorderX+j*wCell;
+//                    float maxX = iniX+wCell+6;
+//                    if(iniX>=maxBorderX-6)
+//                        continue;
+//                    if(maxX>maxBorderX)
+//                        maxX = maxBorderX;
+//
+//                    vector<cv::KeyPoint> vKeysCell;
+//
+//                    FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
+//                         vKeysCell,iniThFAST,true);
+//
+//                    /*if(bRight && j <= 13){
+//                        FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
+//                             vKeysCell,10,true);
+//                    }
+//                    else if(!bRight && j >= 16){
+//                        FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
+//                             vKeysCell,10,true);
+//                    }
+//                    else{
+//                        FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
+//                             vKeysCell,iniThFAST,true);
+//                    }*/
+//
+//
+//                    if(vKeysCell.empty())
+//                    {
+//                        FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
+//                             vKeysCell,minThFAST,true);
+//                        /*if(bRight && j <= 13){
+//                            FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
+//                                 vKeysCell,5,true);
+//                        }
+//                        else if(!bRight && j >= 16){
+//                            FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
+//                                 vKeysCell,5,true);
+//                        }
+//                        else{
+//                            FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
+//                                 vKeysCell,minThFAST,true);
+//                        }*/
+//                    }
+//
+//                    if(!vKeysCell.empty())
+//                    {
+//                        for(vector<cv::KeyPoint>::iterator vit=vKeysCell.begin(); vit!=vKeysCell.end();vit++)
+//                        {
+//                            (*vit).pt.x+=j*wCell;
+//                            (*vit).pt.y+=i*hCell;
+//                            vToDistributeKeys.push_back(*vit);
+//                        }
+//                    }
+//
+//                    // Delete kp
+//                    float scale = mvScaleFactor[level];
+//                    for (auto vit = vToDistributeKeys.begin(); vit != vToDistributeKeys.end(); vit++)
+//                    {
+//                        vit->pt.x += minBorderX;
+//                        vit->pt.y += minBorderY;
+//                        vit->pt *= scale;
+//                    }
+//
+//                    bool Find = false;
+//                    for (auto vit_kp = vToDistributeKeys.begin(); vit_kp != vToDistributeKeys.end();)
+//                    {
+//                        for (auto vit_area = mvDynamicArea.begin(); vit_area != mvDynamicArea.end(); vit_area++)
+//                        {
+//                            Find = false;
+//                            if (vit_area->contains(vit_kp->pt))
+//                            {
+//                                Find = true;
+//                                vit_kp = vToDistributeKeys.erase(vit_kp);
+//                                break;
+//                            }
+//                        }
+//
+//                        if (!Find)
+//                        {
+//                            ++vit_kp;
+//                            Find = false;
+//                        }
+//                    }
+//
+//                    float scale_inverse = 1 / scale;
+//                    for (auto vit = vToDistributeKeys.begin(); vit != vToDistributeKeys.end(); vit++)
+//                    {
+//                        vit->pt *= scale_inverse;
+//                        vit->pt.x -= minBorderX;
+//                        vit->pt.y -= minBorderY;
+//                    }
+//
+//                }
+//            }
+//
+//            vector<KeyPoint> & keypoints = allKeypoints[level];
+//            keypoints.reserve(nfeatures);
+//
+//            keypoints = DistributeOctTree(vToDistributeKeys, minBorderX, maxBorderX,
+//                                          minBorderY, maxBorderY,mnFeaturesPerLevel[level], level);
+//
+//            const int scaledPatchSize = PATCH_SIZE*mvScaleFactor[level];
+//
+//            // Add border to coordinates and scale information
+//            const int nkps = keypoints.size();
+//            for(int i=0; i<nkps ; i++)
+//            {
+//                keypoints[i].pt.x+=minBorderX;
+//                keypoints[i].pt.y+=minBorderY;
+//                keypoints[i].octave=level;
+//                keypoints[i].size = scaledPatchSize;
+//            }
+//        }
+//
+//        // compute orientations
+//        for (int level = 0; level < nlevels; ++level)
+//            computeOrientation(mvImagePyramid[level], allKeypoints[level], umax);
+//    }
 
     void ORBextractor::ComputeKeyPointsOctTreeCUDA(vector<vector<KeyPoint>> &allKeypoints) {
         allKeypoints.resize(nlevels);
@@ -1009,184 +1009,184 @@ namespace ORB_SLAM3
     }
 
 
-    void ORBextractor::ComputeKeyPointsOld(std::vector<std::vector<KeyPoint> > &allKeypoints)
-    {
-        allKeypoints.resize(nlevels);
-
-        float imageRatio = (float)mvImagePyramid[0].cols/mvImagePyramid[0].rows;
-
-        for (int level = 0; level < nlevels; ++level)
-        {
-            const int nDesiredFeatures = mnFeaturesPerLevel[level];
-
-            const int levelCols = sqrt((float)nDesiredFeatures/(5*imageRatio));
-            const int levelRows = imageRatio*levelCols;
-
-            const int minBorderX = EDGE_THRESHOLD;
-            const int minBorderY = minBorderX;
-            const int maxBorderX = mvImagePyramid[level].cols-EDGE_THRESHOLD;
-            const int maxBorderY = mvImagePyramid[level].rows-EDGE_THRESHOLD;
-
-            const int W = maxBorderX - minBorderX;
-            const int H = maxBorderY - minBorderY;
-            const int cellW = ceil((float)W/levelCols);
-            const int cellH = ceil((float)H/levelRows);
-
-            const int nCells = levelRows*levelCols;
-            const int nfeaturesCell = ceil((float)nDesiredFeatures/nCells);
-
-            vector<vector<vector<KeyPoint> > > cellKeyPoints(levelRows, vector<vector<KeyPoint> >(levelCols));
-
-            vector<vector<int> > nToRetain(levelRows,vector<int>(levelCols,0));
-            vector<vector<int> > nTotal(levelRows,vector<int>(levelCols,0));
-            vector<vector<bool> > bNoMore(levelRows,vector<bool>(levelCols,false));
-            vector<int> iniXCol(levelCols);
-            vector<int> iniYRow(levelRows);
-            int nNoMore = 0;
-            int nToDistribute = 0;
-
-
-            float hY = cellH + 6;
-
-            for(int i=0; i<levelRows; i++)
-            {
-                const float iniY = minBorderY + i*cellH - 3;
-                iniYRow[i] = iniY;
-
-                if(i == levelRows-1)
-                {
-                    hY = maxBorderY+3-iniY;
-                    if(hY<=0)
-                        continue;
-                }
-
-                float hX = cellW + 6;
-
-                for(int j=0; j<levelCols; j++)
-                {
-                    float iniX;
-
-                    if(i==0)
-                    {
-                        iniX = minBorderX + j*cellW - 3;
-                        iniXCol[j] = iniX;
-                    }
-                    else
-                    {
-                        iniX = iniXCol[j];
-                    }
-
-
-                    if(j == levelCols-1)
-                    {
-                        hX = maxBorderX+3-iniX;
-                        if(hX<=0)
-                            continue;
-                    }
-
-
-                    Mat cellImage = mvImagePyramid[level].rowRange(iniY,iniY+hY).colRange(iniX,iniX+hX);
-
-                    cellKeyPoints[i][j].reserve(nfeaturesCell*5);
-
-                    FAST(cellImage,cellKeyPoints[i][j],iniThFAST,true);
-
-                    if(cellKeyPoints[i][j].size()<=3)
-                    {
-                        cellKeyPoints[i][j].clear();
-
-                        FAST(cellImage,cellKeyPoints[i][j],minThFAST,true);
-                    }
-
-
-                    const int nKeys = cellKeyPoints[i][j].size();
-                    nTotal[i][j] = nKeys;
-
-                    if(nKeys>nfeaturesCell)
-                    {
-                        nToRetain[i][j] = nfeaturesCell;
-                        bNoMore[i][j] = false;
-                    }
-                    else
-                    {
-                        nToRetain[i][j] = nKeys;
-                        nToDistribute += nfeaturesCell-nKeys;
-                        bNoMore[i][j] = true;
-                        nNoMore++;
-                    }
-
-                }
-            }
-
-
-            // Retain by score
-
-            while(nToDistribute>0 && nNoMore<nCells)
-            {
-                int nNewFeaturesCell = nfeaturesCell + ceil((float)nToDistribute/(nCells-nNoMore));
-                nToDistribute = 0;
-
-                for(int i=0; i<levelRows; i++)
-                {
-                    for(int j=0; j<levelCols; j++)
-                    {
-                        if(!bNoMore[i][j])
-                        {
-                            if(nTotal[i][j]>nNewFeaturesCell)
-                            {
-                                nToRetain[i][j] = nNewFeaturesCell;
-                                bNoMore[i][j] = false;
-                            }
-                            else
-                            {
-                                nToRetain[i][j] = nTotal[i][j];
-                                nToDistribute += nNewFeaturesCell-nTotal[i][j];
-                                bNoMore[i][j] = true;
-                                nNoMore++;
-                            }
-                        }
-                    }
-                }
-            }
-
-            vector<KeyPoint> & keypoints = allKeypoints[level];
-            keypoints.reserve(nDesiredFeatures*2);
-
-            const int scaledPatchSize = PATCH_SIZE*mvScaleFactor[level];
-
-            // Retain by score and transform coordinates
-            for(int i=0; i<levelRows; i++)
-            {
-                for(int j=0; j<levelCols; j++)
-                {
-                    vector<KeyPoint> &keysCell = cellKeyPoints[i][j];
-                    KeyPointsFilter::retainBest(keysCell,nToRetain[i][j]);
-                    if((int)keysCell.size()>nToRetain[i][j])
-                        keysCell.resize(nToRetain[i][j]);
-
-
-                    for(size_t k=0, kend=keysCell.size(); k<kend; k++)
-                    {
-                        keysCell[k].pt.x+=iniXCol[j];
-                        keysCell[k].pt.y+=iniYRow[i];
-                        keysCell[k].octave=level;
-                        keysCell[k].size = scaledPatchSize;
-                        keypoints.push_back(keysCell[k]);
-                    }
-                }
-            }
-
-            if((int)keypoints.size()>nDesiredFeatures)
-            {
-                KeyPointsFilter::retainBest(keypoints,nDesiredFeatures);
-                keypoints.resize(nDesiredFeatures);
-            }
-        }
-
-        // and compute orientations
-        for (int level = 0; level < nlevels; ++level)
-            computeOrientation(mvImagePyramid[level], allKeypoints[level], umax);
-    }
+//    void ORBextractor::ComputeKeyPointsOld(std::vector<std::vector<KeyPoint> > &allKeypoints)
+//    {
+//        allKeypoints.resize(nlevels);
+//
+//        float imageRatio = (float)mvImagePyramid[0].cols/mvImagePyramid[0].rows;
+//
+//        for (int level = 0; level < nlevels; ++level)
+//        {
+//            const int nDesiredFeatures = mnFeaturesPerLevel[level];
+//
+//            const int levelCols = sqrt((float)nDesiredFeatures/(5*imageRatio));
+//            const int levelRows = imageRatio*levelCols;
+//
+//            const int minBorderX = EDGE_THRESHOLD;
+//            const int minBorderY = minBorderX;
+//            const int maxBorderX = mvImagePyramid[level].cols-EDGE_THRESHOLD;
+//            const int maxBorderY = mvImagePyramid[level].rows-EDGE_THRESHOLD;
+//
+//            const int W = maxBorderX - minBorderX;
+//            const int H = maxBorderY - minBorderY;
+//            const int cellW = ceil((float)W/levelCols);
+//            const int cellH = ceil((float)H/levelRows);
+//
+//            const int nCells = levelRows*levelCols;
+//            const int nfeaturesCell = ceil((float)nDesiredFeatures/nCells);
+//
+//            vector<vector<vector<KeyPoint> > > cellKeyPoints(levelRows, vector<vector<KeyPoint> >(levelCols));
+//
+//            vector<vector<int> > nToRetain(levelRows,vector<int>(levelCols,0));
+//            vector<vector<int> > nTotal(levelRows,vector<int>(levelCols,0));
+//            vector<vector<bool> > bNoMore(levelRows,vector<bool>(levelCols,false));
+//            vector<int> iniXCol(levelCols);
+//            vector<int> iniYRow(levelRows);
+//            int nNoMore = 0;
+//            int nToDistribute = 0;
+//
+//
+//            float hY = cellH + 6;
+//
+//            for(int i=0; i<levelRows; i++)
+//            {
+//                const float iniY = minBorderY + i*cellH - 3;
+//                iniYRow[i] = iniY;
+//
+//                if(i == levelRows-1)
+//                {
+//                    hY = maxBorderY+3-iniY;
+//                    if(hY<=0)
+//                        continue;
+//                }
+//
+//                float hX = cellW + 6;
+//
+//                for(int j=0; j<levelCols; j++)
+//                {
+//                    float iniX;
+//
+//                    if(i==0)
+//                    {
+//                        iniX = minBorderX + j*cellW - 3;
+//                        iniXCol[j] = iniX;
+//                    }
+//                    else
+//                    {
+//                        iniX = iniXCol[j];
+//                    }
+//
+//
+//                    if(j == levelCols-1)
+//                    {
+//                        hX = maxBorderX+3-iniX;
+//                        if(hX<=0)
+//                            continue;
+//                    }
+//
+//
+//                    Mat cellImage = mvImagePyramid[level].rowRange(iniY,iniY+hY).colRange(iniX,iniX+hX);
+//
+//                    cellKeyPoints[i][j].reserve(nfeaturesCell*5);
+//
+//                    FAST(cellImage,cellKeyPoints[i][j],iniThFAST,true);
+//
+//                    if(cellKeyPoints[i][j].size()<=3)
+//                    {
+//                        cellKeyPoints[i][j].clear();
+//
+//                        FAST(cellImage,cellKeyPoints[i][j],minThFAST,true);
+//                    }
+//
+//
+//                    const int nKeys = cellKeyPoints[i][j].size();
+//                    nTotal[i][j] = nKeys;
+//
+//                    if(nKeys>nfeaturesCell)
+//                    {
+//                        nToRetain[i][j] = nfeaturesCell;
+//                        bNoMore[i][j] = false;
+//                    }
+//                    else
+//                    {
+//                        nToRetain[i][j] = nKeys;
+//                        nToDistribute += nfeaturesCell-nKeys;
+//                        bNoMore[i][j] = true;
+//                        nNoMore++;
+//                    }
+//
+//                }
+//            }
+//
+//
+//            // Retain by score
+//
+//            while(nToDistribute>0 && nNoMore<nCells)
+//            {
+//                int nNewFeaturesCell = nfeaturesCell + ceil((float)nToDistribute/(nCells-nNoMore));
+//                nToDistribute = 0;
+//
+//                for(int i=0; i<levelRows; i++)
+//                {
+//                    for(int j=0; j<levelCols; j++)
+//                    {
+//                        if(!bNoMore[i][j])
+//                        {
+//                            if(nTotal[i][j]>nNewFeaturesCell)
+//                            {
+//                                nToRetain[i][j] = nNewFeaturesCell;
+//                                bNoMore[i][j] = false;
+//                            }
+//                            else
+//                            {
+//                                nToRetain[i][j] = nTotal[i][j];
+//                                nToDistribute += nNewFeaturesCell-nTotal[i][j];
+//                                bNoMore[i][j] = true;
+//                                nNoMore++;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//
+//            vector<KeyPoint> & keypoints = allKeypoints[level];
+//            keypoints.reserve(nDesiredFeatures*2);
+//
+//            const int scaledPatchSize = PATCH_SIZE*mvScaleFactor[level];
+//
+//            // Retain by score and transform coordinates
+//            for(int i=0; i<levelRows; i++)
+//            {
+//                for(int j=0; j<levelCols; j++)
+//                {
+//                    vector<KeyPoint> &keysCell = cellKeyPoints[i][j];
+//                    KeyPointsFilter::retainBest(keysCell,nToRetain[i][j]);
+//                    if((int)keysCell.size()>nToRetain[i][j])
+//                        keysCell.resize(nToRetain[i][j]);
+//
+//
+//                    for(size_t k=0, kend=keysCell.size(); k<kend; k++)
+//                    {
+//                        keysCell[k].pt.x+=iniXCol[j];
+//                        keysCell[k].pt.y+=iniYRow[i];
+//                        keysCell[k].octave=level;
+//                        keysCell[k].size = scaledPatchSize;
+//                        keypoints.push_back(keysCell[k]);
+//                    }
+//                }
+//            }
+//
+//            if((int)keypoints.size()>nDesiredFeatures)
+//            {
+//                KeyPointsFilter::retainBest(keypoints,nDesiredFeatures);
+//                keypoints.resize(nDesiredFeatures);
+//            }
+//        }
+//
+//        // and compute orientations
+//        for (int level = 0; level < nlevels; ++level)
+//            computeOrientation(mvImagePyramid[level], allKeypoints[level], umax);
+//    }
 
     static void computeDescriptors(const Mat& image, vector<KeyPoint>& keypoints, Mat& descriptors,
                                    const vector<Point>& pattern)
@@ -1297,32 +1297,32 @@ namespace ORB_SLAM3
         return monoIndex;
     }
 
-    void ORBextractor::ComputePyramid(cv::Mat image)
-    {
-        for (int level = 0; level < nlevels; ++level)
-        {
-            float scale = mvInvScaleFactor[level];
-            Size sz(cvRound((float)image.cols*scale), cvRound((float)image.rows*scale));
-            Size wholeSize(sz.width + EDGE_THRESHOLD*2, sz.height + EDGE_THRESHOLD*2);
-            Mat temp(wholeSize, image.type()), masktemp;
-            mvImagePyramid[level] = temp(Rect(EDGE_THRESHOLD, EDGE_THRESHOLD, sz.width, sz.height));
-
-            // Compute the resized image
-            if( level != 0 )
-            {
-                resize(mvImagePyramid[level-1], mvImagePyramid[level], sz, 0, 0, INTER_LINEAR);
-
-                copyMakeBorder(mvImagePyramid[level], temp, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD,
-                               BORDER_REFLECT_101+BORDER_ISOLATED);
-            }
-            else
-            {
-                copyMakeBorder(image, temp, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD,
-                               BORDER_REFLECT_101);
-            }
-        }
-
-    }
+//    void ORBextractor::ComputePyramid(cv::Mat image)
+//    {
+//        for (int level = 0; level < nlevels; ++level)
+//        {
+//            float scale = mvInvScaleFactor[level];
+//            Size sz(cvRound((float)image.cols*scale), cvRound((float)image.rows*scale));
+//            Size wholeSize(sz.width + EDGE_THRESHOLD*2, sz.height + EDGE_THRESHOLD*2);
+//            Mat temp(wholeSize, image.type()), masktemp;
+//            mvImagePyramid[level] = temp(Rect(EDGE_THRESHOLD, EDGE_THRESHOLD, sz.width, sz.height));
+//
+//            // Compute the resized image
+//            if( level != 0 )
+//            {
+//                resize(mvImagePyramid[level-1], mvImagePyramid[level], sz, 0, 0, INTER_LINEAR);
+//
+//                copyMakeBorder(mvImagePyramid[level], temp, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD,
+//                               BORDER_REFLECT_101+BORDER_ISOLATED);
+//            }
+//            else
+//            {
+//                copyMakeBorder(image, temp, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD,
+//                               BORDER_REFLECT_101);
+//            }
+//        }
+//
+//    }
 
     void ORBextractor::ComputePyramidCUDA(Mat image) {
         if (mvImagePyramidAllocatedFlag == false) {

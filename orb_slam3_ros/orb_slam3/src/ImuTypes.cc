@@ -474,8 +474,8 @@ void Calib::Set(const Sophus::SE3<float> &sophTbc, const float &ng, const float 
     // Sophus/Eigen
     mTbc = sophTbc;
     mTcb = mTbc.inverse();
-    Qcb = Converter::toMatrix3f(Tcb.rowRange(0, 3).colRange(0, 3));
-    Qcb.normalize();
+    // Qcb = Converter::toMatrix3f(Tcb.rowRange(0, 3).colRange(0, 3));
+    // Qcb.normalize();
     Cov.diagonal() << ng2, ng2, ng2, na2, na2, na2;
     CovWalk.diagonal() << ngw2, ngw2, ngw2, naw2, naw2, naw2;
 }

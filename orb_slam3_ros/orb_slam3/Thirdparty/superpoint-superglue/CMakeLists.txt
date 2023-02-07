@@ -8,7 +8,7 @@ add_definitions(-w)
 add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/tensorrtbuffer)
 
 
-find_package(OpenCV 4.2 REQUIRED)
+find_package(OpenCV 4.5 REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(CUDA REQUIRED)
 find_package(yaml-cpp REQUIRED)

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.2)
 project(orb_slam3_ros)
 
 IF (NOT CMAKE_BUILD_TYPE)
@@ -32,9 +32,10 @@ endif ()
 
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
-find_package(OpenCV 4.2)
+set(OpenCV_DIR "/home/lacie/opencv-4.5.2/build")
+find_package(OpenCV 4.5 REQUIRED NO_MODULE PATHS /usr/local NO_DEFAULT_PATH)
 if (NOT OpenCV_FOUND)
-    message(FATAL_ERROR "OpenCV 4.2 not found.")
+    message(FATAL_ERROR "OpenCV 4.5 not found.")
 endif ()
 
 MESSAGE("OPENCV VERSION:")
@@ -144,7 +145,7 @@ file(GLOB SOURCES
 source_group("Header Files" FILES ${HEADERS})
 source_group("Source Files" FILES ${SOURCES})
 
-add_library(${PROJECT_NAME} SHARED
+cuda_add_library(${PROJECT_NAME} SHARED
         ${HEADERS}
         ${SOURCES}
         )

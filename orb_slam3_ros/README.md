@@ -4,7 +4,7 @@ Based on [orb_slam3_ros](https://github.com/thien94/orb_slam3_ros)
 
 - Ubuntu 20.04
 - PCL 1.8
-- OpenCV 4.2
+- OpenCV 4.5.2 (With CUDA Build)
 - Pangolin
 - Boost
 - CUDA 11.6
