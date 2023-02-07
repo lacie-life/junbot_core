@@ -36,6 +36,74 @@ Eigen::Matrix3f NormalizeRotation(const Eigen::Matrix3f &R){
     return svd.matrixU() * svd.matrixV().transpose();
 }
 
+cv::Mat Skew(const cv::Mat &v)
+{
+    const float x = v.at<float>(0);
+    const float y = v.at<float>(1);
+    const float z = v.at<float>(2);
+    return (cv::Mat_<float>(3,3) << 0, -z, y,
+            z, 0, -x,
+            -y,  x, 0);
+}
+
+cv::Mat ExpSO3(const float &x, const float &y, const float &z)
+{
+    cv::Mat I = cv::Mat::eye(3,3,CV_32F);
+    const float d2 = x*x+y*y+z*z;
+    const float d = sqrt(d2);
+    cv::Mat W = (cv::Mat_<float>(3,3) << 0, -z, y,
+                 z, 0, -x,
+                 -y,  x, 0);
+    if(d<eps)
+        return (I + W + 0.5f*W*W);
+    else
+        return (I + W*sin(d)/d + W*W*(1.0f-cos(d))/d2);
+}
+
+Eigen::Matrix<double,3,3> ExpSO3(const double &x, const double &y, const double &z)
+{
+    Eigen::Matrix<double,3,3> I = Eigen::MatrixXd::Identity(3,3);
+    const double d2 = x*x+y*y+z*z;
+    const double d = sqrt(d2);
+    Eigen::Matrix<double,3,3> W;
+    W(0,0) = 0;
+    W(0,1) = -z;
+    W(0,2) = y;
+    W(1,0) = z;
+    W(1,1) = 0;
+    W(1,2) = -x;
+    W(2,0) = -y;
+    W(2,1) = x;
+    W(2,2) = 0;
+
+    if(d<eps)
+        return (I + W + 0.5*W*W);
+    else
+        return (I + W*sin(d)/d + W*W*(1.0-cos(d))/d2);
+}
+
+cv::Mat ExpSO3(const cv::Mat &v)
+{
+    return ExpSO3(v.at<float>(0),v.at<float>(1),v.at<float>(2));
+}
+
+cv::Mat LogSO3(const cv::Mat &R)
+{
+    const float tr = R.at<float>(0,0)+R.at<float>(1,1)+R.at<float>(2,2);
+    cv::Mat w = (cv::Mat_<float>(3,1) <<(R.at<float>(2,1)-R.at<float>(1,2))/2,
+                                        (R.at<float>(0,2)-R.at<float>(2,0))/2,
+                                        (R.at<float>(1,0)-R.at<float>(0,1))/2);
+    const float costheta = (tr-1.0f)*0.5f;
+    if(costheta>1 || costheta<-1)
+        return w;
+    const float theta = acos(costheta);
+    const float s = sin(theta);
+    if(fabs(s)<eps)
+        return w;
+    else
+        return theta*w/s;
+}
+
 Eigen::Matrix3f RightJacobianSO3(const float &x, const float &y, const float &z)
 {
     Eigen::Matrix3f I;
@@ -406,6 +474,8 @@ void Calib::Set(const Sophus::SE3<float> &sophTbc, const float &ng, const float 
     // Sophus/Eigen
     mTbc = sophTbc;
     mTcb = mTbc.inverse();
+    Qcb = Converter::toMatrix3f(Tcb.rowRange(0, 3).colRange(0, 3));
+    Qcb.normalize();
     Cov.diagonal() << ng2, ng2, ng2, na2, na2, na2;
     CovWalk.diagonal() << ngw2, ngw2, ngw2, naw2, naw2, naw2;
 }

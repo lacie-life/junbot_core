@@ -22,6 +22,10 @@
 #include <vector>
 #include <list>
 #include <opencv2/opencv.hpp>
+#include <opencv2/core/cuda.hpp>
+#include <opencv2/cudafilters.hpp>
+#include <cuda/Fast.hpp>
+#include <cuda/Orb.hpp>
 
 
 namespace ORB_SLAM3
@@ -83,13 +87,18 @@ public:
         return mvInvLevelSigma2;
     }
 
-    std::vector<cv::Mat> mvImagePyramid;
+    // std::vector<cv::Mat> mvImagePyramid;
     std::vector<cv::Rect2i> mvDynamicArea;
+    bool mvImagePyramidAllocatedFlag;
+    std::vector<cv::cuda::GpuMat> mvImagePyramid;
+    std::vector<cv::cuda::GpuMat> mvImagePyramidBorder;
 
 protected:
 
     void ComputePyramid(cv::Mat image);
+    void ComputePyramidCUDA(cv::Mat image);
     void ComputeKeyPointsOctTree(std::vector<std::vector<cv::KeyPoint> >& allKeypoints);    
+    void ComputeKeyPointsOctTreeCUDA(std::vector<std::vector<cv::KeyPoint> >& allKeypoints);
     std::vector<cv::KeyPoint> DistributeOctTree(const std::vector<cv::KeyPoint>& vToDistributeKeys, const int &minX,
                                            const int &maxX, const int &minY, const int &maxY, const int &nFeatures, const int &level);
 
@@ -110,6 +119,12 @@ protected:
     std::vector<float> mvInvScaleFactor;    
     std::vector<float> mvLevelSigma2;
     std::vector<float> mvInvLevelSigma2;
+
+    cv::Ptr<cv::cuda::Filter> mpGaussianFilter;
+    cuda::Stream mcvStream;
+    cuda::GpuFast gpuFast;
+    cuda::IC_Angle ic_angle;
+    cuda::GpuOrb gpuOrb;
 };
 
 } //namespace ORB_SLAM

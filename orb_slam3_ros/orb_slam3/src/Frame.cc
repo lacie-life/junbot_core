@@ -1026,9 +1026,17 @@ namespace ORB_SLAM3 {
 
                 // sliding window search
                 const int w = 5;
-                cv::Mat IL = mpORBextractorLeft->mvImagePyramid[kpL.octave].rowRange(scaledvL - w,
-                                                                                     scaledvL + w + 1).colRange(
-                        scaleduL - w, scaleduL + w + 1);
+                // cv::Mat IL = mpORBextractorLeft->mvImagePyramid[kpL.octave].rowRange(scaledvL - w,
+                //                                                                      scaledvL + w + 1).colRange(
+                //         scaleduL - w, scaleduL + w + 1);
+
+                cv::cuda::GpuMat gMat = mpORBextractorLeft->mvImagePyramid[kpL.octave].rowRange(scaledvL - w, scaledvL + w + 1).colRange(scaleduL - w, scaleduL + w + 1);
+                cv::Mat IL(gMat.rows, gMat.cols, gMat.type(), gMat.data, gMat.step);
+
+                //IL.convertTo(IL,CV_32F);
+                //IL = IL - IL.at<float>(w,w) *cv::Mat::ones(IL.rows,IL.cols,CV_32F);
+                IL.convertTo(IL,CV_16S);
+                IL = IL - IL.at<short>(w,w);
 
                 int bestDist = INT_MAX;
                 int bestincR = 0;
@@ -1042,9 +1050,17 @@ namespace ORB_SLAM3 {
                     continue;
 
                 for (int incR = -L; incR <= +L; incR++) {
-                    cv::Mat IR = mpORBextractorRight->mvImagePyramid[kpL.octave].rowRange(scaledvL - w,
-                                                                                          scaledvL + w + 1).colRange(
-                            scaleduR0 + incR - w, scaleduR0 + incR + w + 1);
+                    // cv::Mat IR = mpORBextractorRight->mvImagePyramid[kpL.octave].rowRange(scaledvL - w,
+                    //                                                                       scaledvL + w + 1).colRange(
+                    //         scaleduR0 + incR - w, scaleduR0 + incR + w + 1);
+
+
+                    cv::cuda::GpuMat gMat = mpORBextractorRight->mvImagePyramid[kpL.octave].rowRange(scaledvL - w, scaledvL + w + 1).colRange(scaleduR0 + incR - w, scaleduR0 + incR + w + 1);
+                    cv::Mat IR(gMat.rows, gMat.cols, gMat.type(), gMat.data, gMat.step);
+                    //IR.convertTo(IR,CV_32F);
+                    //IR = IR - IR.at<float>(w,w) *cv::Mat::ones(IR.rows,IR.cols,CV_32F);
+                    IR.convertTo(IR,CV_16S);
+                    IR = IR - IR.at<short>(w,w);
 
                     float dist = cv::norm(IL, IR, cv::NORM_L1);
                     if (dist < bestDist) {

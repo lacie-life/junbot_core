@@ -59,6 +59,17 @@
 #include <vector>
 #include <iostream>
 
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/core/cuda.hpp>
+#include <opencv2/cudafeatures2d.hpp>
+#include <opencv2/cudawarping.hpp>
+#include <opencv2/cudaarithm.hpp>
+
+#include "cuda/Allocator.hpp"
+#include "cuda/Fast.hpp"
+#include "cuda/Orb.hpp"
+#include "Utils.hpp"
+
 #include "ORBextractor.h"
 
 
@@ -409,7 +420,8 @@ namespace ORB_SLAM3
     ORBextractor::ORBextractor(int _nfeatures, float _scaleFactor, int _nlevels,
                                int _iniThFAST, int _minThFAST):
             nfeatures(_nfeatures), scaleFactor(_scaleFactor), nlevels(_nlevels),
-            iniThFAST(_iniThFAST), minThFAST(_minThFAST)
+            iniThFAST(_iniThFAST), minThFAST(_minThFAST), gpuFast(iniThFAST, minThFAST), 
+            ic_angle(), gpuOrb()
     {
         mvScaleFactor.resize(nlevels);
         mvLevelSigma2.resize(nlevels);
@@ -429,7 +441,8 @@ namespace ORB_SLAM3
             mvInvLevelSigma2[i]=1.0f/mvLevelSigma2[i];
         }
 
-        mvImagePyramid.resize(nlevels);
+        // mvImagePyramid.resize(nlevels);
+        mvImagePyramidAllocatedFlag = false;
 
         mnFeaturesPerLevel.resize(nlevels);
         float factor = 1.0f / scaleFactor;
@@ -466,6 +479,9 @@ namespace ORB_SLAM3
             umax[v] = v0;
             ++v0;
         }
+
+        cuda::IC_Angle::loadUMax(umax.data(), umax.size());
+        cuda::GpuOrb::loadPattern(pattern.data());
     }
 
     static void computeOrientation(const Mat& image, vector<KeyPoint>& keypoints, const vector<int>& umax)
@@ -933,6 +949,66 @@ namespace ORB_SLAM3
             computeOrientation(mvImagePyramid[level], allKeypoints[level], umax);
     }
 
+    void ORBextractor::ComputeKeyPointsOctTreeCUDA(vector<vector<KeyPoint>> &allKeypoints) {
+        allKeypoints.resize(nlevels);
+
+        const int minBorderX = EDGE_THRESHOLD - 3;
+        const int minBorderY = minBorderX;
+        for (int level = 0; level < nlevels; ++level) {
+            const int maxBorderX = mvImagePyramid[level].cols - EDGE_THRESHOLD + 3;
+            const int maxBorderY = mvImagePyramid[level].rows - EDGE_THRESHOLD + 3;
+
+            vector<cv::KeyPoint> vToDistributeKeys;
+            vToDistributeKeys.reserve(nfeatures * 10);
+
+            // software pipelining
+            if (level == 0) {
+                gpuFast.detectAsync(
+                        mvImagePyramid[level].rowRange(minBorderY, maxBorderY).colRange(minBorderX, maxBorderX));
+            }
+            gpuFast.joinDetectAsync(vToDistributeKeys);
+            if (level + 1 < nlevels) {
+                const int maxBorderX = mvImagePyramid[level + 1].cols - EDGE_THRESHOLD + 3;
+                const int maxBorderY = mvImagePyramid[level + 1].rows - EDGE_THRESHOLD + 3;
+                gpuFast.detectAsync(
+                        mvImagePyramid[level + 1].rowRange(minBorderY, maxBorderY).colRange(minBorderX, maxBorderX));
+            }
+            // compute orientations and Gaussian Blur
+            if (level != 0) {
+                ic_angle.launch_async(mvImagePyramid[level - 1], allKeypoints[level - 1].data(),
+                                      allKeypoints[level - 1].size(), HALF_PATCH_SIZE, minBorderX, minBorderY,
+                                      level - 1, PATCH_SIZE * mvScaleFactor[level - 1]);
+                cv::cuda::GpuMat &gMat = mvImagePyramid[level - 1];
+                mpGaussianFilter->apply(gMat, gMat, ic_angle.cvStream());
+            }
+
+            vector<KeyPoint> &keypoints = allKeypoints[level];
+            keypoints.reserve(nfeatures);
+
+            PUSH_RANGE("DistributeOctTree", 3);
+            keypoints = DistributeOctTree(vToDistributeKeys, minBorderX, maxBorderX, minBorderY, maxBorderY,
+                                          mnFeaturesPerLevel[level], level);
+            POP_RANGE;
+
+            // Add border to coordinates and scale information
+            // Merged into IC_Angle
+
+            // compute orientations
+            // PS. I think this is a bug ? Seems like the launch and join needs to be in the same loop iteration else it breaks
+            if (level != 0) {
+                ic_angle.join(allKeypoints[level - 1].data(), allKeypoints[level - 1].size());
+            }
+        } // loop every level
+
+        // compute orientations
+        cv::cuda::GpuMat &gMat = mvImagePyramid[nlevels - 1];
+        ic_angle.launch_async(gMat, allKeypoints[nlevels - 1].data(), allKeypoints[nlevels - 1].size(), HALF_PATCH_SIZE,
+                              minBorderX, minBorderY, nlevels - 1, PATCH_SIZE * mvScaleFactor[nlevels - 1]);
+        mpGaussianFilter->apply(gMat, gMat, ic_angle.cvStream());
+        ic_angle.join(allKeypoints[nlevels - 1].data(), allKeypoints[nlevels - 1].size());
+    }
+
+
     void ORBextractor::ComputeKeyPointsOld(std::vector<std::vector<KeyPoint> > &allKeypoints)
     {
         allKeypoints.resize(nlevels);
@@ -1132,10 +1208,10 @@ namespace ORB_SLAM3
         assert(image.type() == CV_8UC1 );
 
         // Pre-compute the scale pyramid
-        ComputePyramid(image);
+        ComputePyramidCUDA(image);
 
         vector < vector<KeyPoint> > allKeypoints;
-        ComputeKeyPointsOctTree(allKeypoints);
+        ComputeKeyPointsOctTreeCUDA(allKeypoints);
         //ComputeKeyPointsOld(allKeypoints);
 
         Mat descriptors;
@@ -1167,15 +1243,31 @@ namespace ORB_SLAM3
                 continue;
 
             // preprocess the resized image
-            Mat workingMat = mvImagePyramid[level].clone();
-            GaussianBlur(workingMat, workingMat, Size(7, 7), 2, 2, BORDER_REFLECT_101);
+            cv::cuda::GpuMat &gMat = mvImagePyramid[level];
+
+            // Mat workingMat = mvImagePyramid[level].clone();
+            // GaussianBlur(workingMat, workingMat, Size(7, 7), 2, 2, BORDER_REFLECT_101);
 
             // Compute the descriptors
-            //Mat desc = descriptors.rowRange(offset, offset + nkeypointsLevel);
-            Mat desc = cv::Mat(nkeypointsLevel, 32, CV_8U);
-            computeDescriptors(workingMat, keypoints, desc, pattern);
+            // Mat desc = descriptors.rowRange(offset, offset + nkeypointsLevel);
+            // Mat desc = cv::Mat(nkeypointsLevel, 32, CV_8U);
+            // computeDescriptors(workingMat, keypoints, desc, pattern);
+
+            // offset += nkeypointsLevel;
+
+            // Pipeline the CPU and GPU work
+            if (level == 0) {
+                gpuOrb.launch_async(gMat, keypoints.data(), keypoints.size());
+            }
+            Mat desc = descriptors.rowRange(offset, offset + nkeypointsLevel);
+            gpuOrb.join(desc);
 
             offset += nkeypointsLevel;
+
+            if (level + 1 < nlevels) {
+                vector<KeyPoint> &keypoints = allKeypoints[level + 1];
+                gpuOrb.launch_async(mvImagePyramid[level + 1], keypoints.data(), keypoints.size());
+            }
 
 
             float scale = mvScaleFactor[level]; //getScale(level, firstLevel, scaleFactor);
@@ -1230,6 +1322,44 @@ namespace ORB_SLAM3
             }
         }
 
+    }
+
+    void ORBextractor::ComputePyramidCUDA(Mat image) {
+        if (mvImagePyramidAllocatedFlag == false) {
+            // first frame, allocate the Pyramids
+            for (int level = 0; level < nlevels; ++level) {
+                float scale = mvInvScaleFactor[level];
+                Size sz(cvRound((float) image.cols * scale), cvRound((float) image.rows * scale));
+                Size wholeSize(sz.width + EDGE_THRESHOLD * 2, sz.height + EDGE_THRESHOLD * 2);
+                cuda::GpuMat target(wholeSize, image.type(), cuda::gpu_mat_allocator);
+                // cuda::GpuMat target(wholeSize, image.type());
+                mvImagePyramidBorder.push_back(target);
+                mvImagePyramid.push_back(target(Rect(EDGE_THRESHOLD, EDGE_THRESHOLD, sz.width, sz.height)));
+            }
+            mvImagePyramidBorder.resize(nlevels);
+            mvImagePyramid.resize(nlevels);
+            mpGaussianFilter = cv::cuda::createGaussianFilter(mvImagePyramid[0].type(), mvImagePyramid[0].type(),
+                                                              Size(7, 7), 2, 2, BORDER_REFLECT_101);
+            mvImagePyramidAllocatedFlag = true;
+        }
+
+        for (int level = 0; level < nlevels; ++level) {
+            float scale = mvInvScaleFactor[level];
+            Size sz(cvRound((float) image.cols * scale), cvRound((float) image.rows * scale));
+            cuda::GpuMat target(mvImagePyramidBorder[level]);
+            // Compute the resized image
+            if (level != 0) {
+                cuda::resize(mvImagePyramid[level - 1], mvImagePyramid[level], sz, 0, 0, INTER_LINEAR, mcvStream);
+                cuda::copyMakeBorder(mvImagePyramid[level], target, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD,
+                                     EDGE_THRESHOLD,
+                                     BORDER_REFLECT_101, cv::Scalar(), mcvStream);
+            } else {
+                cuda::GpuMat gpuImg(image);
+                cuda::copyMakeBorder(gpuImg, target, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD,
+                                     BORDER_REFLECT_101, cv::Scalar(), mcvStream);
+            }
+        }
+        mcvStream.waitForCompletion();
     }
 
 } //namespace ORB_SLAM

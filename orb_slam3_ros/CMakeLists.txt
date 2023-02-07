@@ -112,7 +112,7 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/orb_slam3
         ${PROJECT_SOURCE_DIR}/orb_slam3/include
         ${PROJECT_SOURCE_DIR}/orb_slam3/include/CameraModels
-#        ${PROJECT_SOURCE_DIR}/orb_slam3/include/cuda
+        ${PROJECT_SOURCE_DIR}/orb_slam3/include/cuda
         ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty
         ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/Sophus
         ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/yolov5
@@ -123,7 +123,7 @@ include_directories(
 
 include(${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/DBoW2/CMakeLists.txt)
 include(${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/g2o/CMakeLists.txt)
-#include(${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/yolov5/CMakeLists.txt)
+# include(${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/yolov5/CMakeLists.txt)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/orb_slam3/lib)
 
@@ -131,14 +131,14 @@ file(GLOB HEADERS
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/*.h
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/*.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/CameraModels/*.h
-#        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/cuda/*.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/cuda/*.hpp
         )
 
 file(GLOB SOURCES 
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/*.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/CameraModels/*.cpp
-#        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/cuda/*.cu
+        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/cuda/*.cu
         )
 
 source_group("Header Files" FILES ${HEADERS})
@@ -149,7 +149,7 @@ add_library(${PROJECT_NAME} SHARED
         ${SOURCES}
         )
 
-# set(TRT_LIBS nvinfer)
+ set(TRT_LIBS nvinfer)
 
 target_link_libraries(${PROJECT_NAME}
         ${OpenCV_LIBS}
@@ -166,7 +166,7 @@ target_link_libraries(${PROJECT_NAME}
          ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/yolov5/lib/libyolov5-detector.so
         -lboost_serialization
         -lcrypto
-#        nvToolsExt
+         nvToolsExt
 #        opencv_cudabgsegm
 #        opencv_cudaobjdetect
 #        opencv_cudastereo

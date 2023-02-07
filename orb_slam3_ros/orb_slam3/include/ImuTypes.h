@@ -30,6 +30,7 @@
 #include <mutex>
 
 #include "SerializationUtils.h"
+#include "Converter.h"
 
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/vector.hpp>
@@ -122,6 +123,7 @@ public:
     Sophus::SE3<float> mTcb;
     Sophus::SE3<float> mTbc;
     Eigen::DiagonalMatrix<float,6> Cov, CovWalk;
+    Eigen::Quaternionf Qcb;
     bool mbIsSet;
 };
 
@@ -251,6 +253,12 @@ private:
 };
 
 // Lie Algebra Functions
+cv::Mat ExpSO3(const float &x, const float &y, const float &z);
+Eigen::Matrix<double,3,3> ExpSO3(const double &x, const double &y, const double &z);
+cv::Mat ExpSO3(const cv::Mat &v);
+cv::Mat LogSO3(const cv::Mat &R);
+cv::Mat Skew(const cv::Mat &v);
+
 Eigen::Matrix3f RightJacobianSO3(const float &x, const float &y, const float &z);
 Eigen::Matrix3f RightJacobianSO3(const Eigen::Vector3f &v);
 

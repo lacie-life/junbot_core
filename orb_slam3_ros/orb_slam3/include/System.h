@@ -161,6 +161,8 @@ public:
     void SaveTrajectoryEuRoC(const string &filename);
     void SaveKeyFrameTrajectoryEuRoC(const string &filename);
 
+    void getPulishData(vector<cv::Point3f> &t, vector<vector<float>> &r, vector<cv::Point3f> &p);
+    
     void SaveTrajectoryEuRoC(const string &filename, Map* pMap);
     void SaveKeyFrameTrajectoryEuRoC(const string &filename, Map* pMap);
 

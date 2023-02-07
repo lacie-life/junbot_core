@@ -44,6 +44,8 @@
 #include <boost/make_shared.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include <opencv2/highgui.hpp>
+#include <opencv2/opencv.hpp>
 
 #include <mutex>
 #include <unordered_set>
@@ -113,6 +115,10 @@ public:
     Sophus::SE3f GetImuTwb();
     Eigen::Vector3f GetImuVwb();
     bool isImuPreintegrated();
+
+    cv::Mat kalmanFilter(cv::Mat m);
+    cv::Mat fusion(cv::Mat m);
+    Eigen::Quaternionf integrate();
 
     void CreateMapInAtlas();
     //std::mutex mMutexTracks;
@@ -200,6 +206,13 @@ public:
 
     bool mbWriteStats;
 
+    // Vector of IMU measurements from previous to current frame (to be filled by PreintegrateIMU)
+    std::vector<IMU::Point> mvImuFromLastFrame;
+    std::mutex mMutexImuQueue;
+
+    Eigen::Quaternionf currentQ = Eigen::Quaternionf(1.0f, 0.0f, 0.0f, 0.0f);
+    Eigen::Quaternionf currentP = Eigen::Quaternionf(1.0f, 0.0f, 0.0f, 0.0f);
+
 #ifdef REGISTER_TIMES
     void LocalMapStats2File();
     void TrackStats2File();
@@ -268,8 +281,8 @@ protected:
     std::list<IMU::Point> mlQueueImuData;
 
     // Vector of IMU measurements from previous to current frame (to be filled by PreintegrateIMU)
-    std::vector<IMU::Point> mvImuFromLastFrame;
-    std::mutex mMutexImuQueue;
+    // std::vector<IMU::Point> mvImuFromLastFrame;
+    // std::mutex mMutexImuQueue;
 
     // Imu calibration parameters
     IMU::Calib *mpImuCalib;
