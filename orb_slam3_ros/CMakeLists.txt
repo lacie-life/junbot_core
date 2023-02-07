@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.2)
 project(orb_slam3_ros)
 
 IF (NOT CMAKE_BUILD_TYPE)
@@ -32,9 +32,10 @@ endif ()
 
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
-find_package(OpenCV 4.2)
+set(OpenCV_DIR "/home/lacie/opencv-4.5.2/build")
+find_package(OpenCV 4.5 REQUIRED NO_MODULE PATHS /usr/local NO_DEFAULT_PATH)
 if (NOT OpenCV_FOUND)
-    message(FATAL_ERROR "OpenCV 4.2 not found.")
+    message(FATAL_ERROR "OpenCV 4.5 not found.")
 endif ()
 
 MESSAGE("OPENCV VERSION:")
@@ -112,7 +113,7 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/orb_slam3
         ${PROJECT_SOURCE_DIR}/orb_slam3/include
         ${PROJECT_SOURCE_DIR}/orb_slam3/include/CameraModels
-#        ${PROJECT_SOURCE_DIR}/orb_slam3/include/cuda
+        ${PROJECT_SOURCE_DIR}/orb_slam3/include/cuda
         ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty
         ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/Sophus
         ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/yolov5
@@ -123,7 +124,7 @@ include_directories(
 
 include(${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/DBoW2/CMakeLists.txt)
 include(${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/g2o/CMakeLists.txt)
-#include(${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/yolov5/CMakeLists.txt)
+# include(${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/yolov5/CMakeLists.txt)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/orb_slam3/lib)
 
@@ -131,25 +132,25 @@ file(GLOB HEADERS
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/*.h
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/*.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/CameraModels/*.h
-#        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/cuda/*.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/cuda/*.hpp
         )
 
 file(GLOB SOURCES 
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/*.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/CameraModels/*.cpp
-#        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/cuda/*.cu
+        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/cuda/*.cu
         )
 
 source_group("Header Files" FILES ${HEADERS})
 source_group("Source Files" FILES ${SOURCES})
 
-add_library(${PROJECT_NAME} SHARED
+cuda_add_library(${PROJECT_NAME} SHARED
         ${HEADERS}
         ${SOURCES}
         )
 
-# set(TRT_LIBS nvinfer)
+ set(TRT_LIBS nvinfer)
 
 target_link_libraries(${PROJECT_NAME}
         ${OpenCV_LIBS}
@@ -166,7 +167,7 @@ target_link_libraries(${PROJECT_NAME}
          ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/yolov5/lib/libyolov5-detector.so
         -lboost_serialization
         -lcrypto
-#        nvToolsExt
+         nvToolsExt
 #        opencv_cudabgsegm
 #        opencv_cudaobjdetect
 #        opencv_cudastereo

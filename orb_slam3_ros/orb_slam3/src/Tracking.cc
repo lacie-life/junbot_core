@@ -72,7 +72,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
         }
 
         bool b_parse_imu = true;
-        if(sensor==System::IMU_MONOCULAR || sensor==System::IMU_STEREO || sensor==System::IMU_RGBD)
+        if(sensor==System::IMU_MONOCULAR || sensor==System::IMU_STEREO || sensor==System::IMU_RGBD /*|| sensor==System::STEREO*/)
         {
             b_parse_imu = ParseIMUParamFile(fSettings);
             if(!b_parse_imu)
@@ -2881,7 +2881,7 @@ bool Tracking::TrackReferenceKeyFrame()
     }
 
     mCurrentFrame.mvpMapPoints = vpMapPointMatches;
-    mCurrentFrame.SetPose(mLastFrame.GetPose());
+    mCurrentFrame.SetPose(/*Converter::toSophus(fusion(cv::Mat::eye(4, 4, CV_32F))) */ mLastFrame.GetPose());
 
     //mCurrentFrame.PrintPointDistribution();
 
@@ -4718,6 +4718,55 @@ bool Tracking::isImuPreintegrated()
 {
     return mCurrentFrame.mpImuPreintegrated;
 }
+
+//cv::Mat Tracking::fusion(cv::Mat visual)
+//{
+//    cv::Mat m;
+//    visual.copyTo(m);
+//    Eigen::Matrix3f tmp = (mpImuCalib->Qcb * integrate()).normalized().toRotationMatrix();
+//    m.rowRange(0, 3).colRange(0, 3) = Converter::toCvMat(tmp);
+//    return m;
+//}
+//
+//cv::Mat Tracking::kalmanFilter(cv::Mat observation)
+//{
+//    return observation;
+//}
+//
+//
+//Eigen::Quaternionf Tracking::integrate()
+//{
+//    Eigen::Quaternionf result(1, 0, 0, 0);
+//
+//    const int n = mvImuFromLastFrame.size() - 1;
+//    for (int i = 0; i < n; i++) {
+//        float tstep;
+//        cv::Point3f angVel;
+//        if ((i == 0) && (i < (n - 1))) {
+//            float tab = mvImuFromLastFrame[i + 1].t - mvImuFromLastFrame[i].t;
+//            float tini = mvImuFromLastFrame[i].t - mLastFrame.mTimeStamp;
+//            angVel = (mvImuFromLastFrame[i].w + mvImuFromLastFrame[i + 1].w - (mvImuFromLastFrame[i + 1].w - mvImuFromLastFrame[i].w) * (tini / tab)) * 0.5f;
+//            tstep = mvImuFromLastFrame[i + 1].t - mLastFrame.mTimeStamp;
+//        } else if (i < (n - 1)) {
+//            angVel = (mvImuFromLastFrame[i].w + mvImuFromLastFrame[i + 1].w) * 0.5f;
+//            tstep = mvImuFromLastFrame[i + 1].t - mvImuFromLastFrame[i].t;
+//        } else if ((i > 0) && (i == (n - 1))) {
+//            float tab = mvImuFromLastFrame[i + 1].t - mvImuFromLastFrame[i].t;
+//            float tend = mvImuFromLastFrame[i + 1].t - mCurrentFrame.mTimeStamp;
+//            angVel = (mvImuFromLastFrame[i].w + mvImuFromLastFrame[i + 1].w - (mvImuFromLastFrame[i + 1].w - mvImuFromLastFrame[i].w) * (tend / tab)) * 0.5f;
+//            tstep = mCurrentFrame.mTimeStamp - mvImuFromLastFrame[i].t;
+//        } else if ((i == 0) && (i == (n - 1))) {
+//            angVel = mvImuFromLastFrame[i].w;
+//            tstep = mCurrentFrame.mTimeStamp - mLastFrame.mTimeStamp;
+//        }
+//        Eigen::Quaternionf tmp(1, angVel.x * tstep, angVel.y * tstep, angVel.z * tstep);
+//        tmp.normalize();
+//        result *= tmp;
+//    }
+//
+//    // TODO: recheck
+//    return result;
+//}
 
 #ifdef REGISTER_LOOP
 void Tracking::RequestStop()
