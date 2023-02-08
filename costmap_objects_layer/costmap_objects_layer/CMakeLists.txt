@@ -26,7 +26,9 @@ find_package(catkin REQUIRED COMPONENTS
 
 # ##############################################################################
 # Generate messages and configurations
-generate_dynamic_reconfigure_options(cfg/ObjectLayer.cfg)
+generate_dynamic_reconfigure_options(
+        cfg/ObjectLayer.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -55,13 +57,12 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(object_layer_node src/addObjects.cpp)
-target_link_libraries(object_layer_node ${catkin_LIBRARIES})
-
 ## Declare a C++ library
 add_library(object_layer
         src/ObjectLayer.cpp
         )
+
+add_dependencies(object_layer ${PROJECT_NAME}_gencfg)
 
 target_link_libraries(object_layer
         ${catkin_LIBRARIES}
@@ -75,7 +76,8 @@ target_link_libraries(grid_layer
         ${catkin_LIBRARIES}
         )
 
-add_dependencies(object_layer ${PROJECT_NAME}_gencfg)
+add_executable(object_layer_node src/addObjects.cpp)
+target_link_libraries(object_layer_node ${catkin_LIBRARIES})
 
 #############
 ## Install ##
