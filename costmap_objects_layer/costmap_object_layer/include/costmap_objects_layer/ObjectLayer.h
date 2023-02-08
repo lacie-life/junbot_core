@@ -5,13 +5,20 @@
 #ifndef COSTMAP_OBJECTS_LAYER_OBJECTLAYER_H
 #define COSTMAP_OBJECTS_LAYER_OBJECTLAYER_H
 
+#include "costmap_objects_layer/ObjectLayer.h"
+
 #include <ros/ros.h>
 #include <costmap_2d/layer.h>
 #include <costmap_2d/layered_costmap.h>
 #include <costmap_2d/GenericPluginConfig.h>
 #include <dynamic_reconfigure/server.h>
 
-namespace objectlayer_namespace
+#include <memory>
+#include <mutex>
+#include <string>
+#include <vector>
+
+namespace object_layer_namespace
 {
     class ObjectLayer : public costmap_2d::Layer
     {

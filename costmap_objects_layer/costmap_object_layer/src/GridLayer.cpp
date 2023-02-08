@@ -5,12 +5,12 @@
 #include "costmap_objects_layer/GridLayer.h"
 #include <pluginlib/class_list_macros.h>
 
-PLUGINLIB_EXPORT_CLASS(objectlayer_namespace::GridLayer, costmap_2d::Layer)
+PLUGINLIB_EXPORT_CLASS(object_layer_namespace::GridLayer, costmap_2d::Layer)
 
 using costmap_2d::LETHAL_OBSTACLE;
 using costmap_2d::NO_INFORMATION;
 
-namespace objectlayer_namespace
+namespace object_layer_namespace
 {
 
     GridLayer::GridLayer() {}

@@ -1,12 +1,12 @@
 <class_librarry>
     <library path="lib/libobject_layer">
-        <class type="objectlayer_namespace::ObjectLayer" base_class_type="costmap_2d::Layer">
+        <class type="object_layer_namespace::ObjectLayer" base_class_type="costmap_2d::Layer">
             <description>Demo Layer that adds objects to cost map</description>
         </class>
     </library>
 
     <library path="lib/libgrid_layer">
-        <class type="objectlayer_namespace::GridLayer" base_class_type="costmap_2d::Layer">
+        <class type="object_layer_namespace::GridLayer" base_class_type="costmap_2d::Layer">
             <description>Demo Layer that adds objects to cost map</description>
         </class>
     </library>

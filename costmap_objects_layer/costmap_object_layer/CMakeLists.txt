@@ -13,6 +13,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  custom_msgs
+  tf
 )
 
 ## System dependencies are found with CMake's conventions
@@ -22,11 +24,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## Declare ROS dynamic reconfigure parameters ##
 ################################################
 
-## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+# ##############################################################################
+# Generate messages and configurations
+generate_dynamic_reconfigure_options(cfg/ObjectLayer.cfg)
 
 ###################################
 ## catkin specific configuration ##
@@ -38,10 +38,10 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES costmap_objects_layer
-#  CATKIN_DEPENDS costmap_2d dynamic_reconfigure roscpp rospy std_msgs
-#  DEPENDS system_lib
+  INCLUDE_DIRS include
+  LIBRARIES costmap_objects_layer
+  CATKIN_DEPENDS costmap_2d dynamic_reconfigure roscpp rospy std_msgs tf custom_msgs
+  DEPENDS
 )
 
 ###########
@@ -74,6 +74,8 @@ add_library(grid_layer
 target_link_libraries(grid_layer
         ${catkin_LIBRARIES}
         )
+
+add_dependencies(object_layer ${PROJECT_NAME}_gencfg)
 
 #############
 ## Install ##

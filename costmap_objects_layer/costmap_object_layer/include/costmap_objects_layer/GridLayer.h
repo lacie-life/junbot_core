@@ -11,7 +11,7 @@
 #include <costmap_2d/GenericPluginConfig.h>
 #include <dynamic_reconfigure/server.h>
 
-namespace objectlayer_namespace
+namespace object_layer_namespace
 {
     class GridLayer : public costmap_2d::Layer, public costmap_2d::Costmap2D
     {
