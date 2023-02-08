@@ -24,7 +24,8 @@
 
 - [ ] Re-path planning?
   - [ ] Plan of re-path planning
-  - [ ] How to represent map with object for navigation stack ? (Grid map / OctoMap) ?
+  - [ ] How to represent map with object for navigation stack ? (Grid map / OctoMap) ? 
+      - [ ] CostMap layer? ([Ref](http://wiki.ros.org/costmap_2d/Tutorials/Creating%20a%20New%20Layer))
   - [ ] Planner? Which param need to change?
   - [ ] ....
 
