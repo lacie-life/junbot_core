@@ -6,23 +6,26 @@
 - [x] Publish point cloud to ROS
 - [ ] Explore enviroment
    
-   ~~- [ ] Replace Yolo with Segmentation net => remove dynamic object (by interest class)~~
+   - [ ] ~~Replace Yolo with Segmentation net => remove dynamic object (by interest class)~~
    
    - [x] Yolov5 TensorRT support
-   - [ ] OctoMap support 
+   
+   - [x] ~~OctoMap support~~
+   
    - [ ] Turning object database
    	- [x] Segment 3D bounding box
    	- [ ] Object filter
    - [x] Add ZED example
  
- ~~- [ ] Option 1: Segment point cloud by PointNet++ => get 3D bounding box of object (office enviroment) [[Ref](https://github.com/sc19aas/3D-object-detection)]~~
+ - [ ] ~~Option 1: Segment point cloud by PointNet++ => get 3D bounding box of object (office enviroment) [[Ref](https://github.com/sc19aas/3D-object-detection)]~~
  
-  ~~- [ ] Option 2: detect 3d cuboid [[Ref](https://github.com/aibo-kit/new_3dbbox_generation_method.git)] [[Ref](https://wym.netlify.app/2019-02-22-cubeslam/)]~~
+ - [ ] ~~Option 2: detect 3d cuboid [[Ref](https://github.com/aibo-kit/new_3dbbox_generation_method.git)] [[Ref](https://wym.netlify.app/2019-02-22-cubeslam/)]~~
   
 
 - [ ] Re-path planning?
   - [ ] Plan of re-path planning
-  - [ ] How to represent map with object for navigation stack ? (Grid map / OctoMap) ?
+  - [ ] How to represent map with object for navigation stack ? (Grid map / OctoMap) ? 
+      - [ ] CostMap layer? ([Ref](http://wiki.ros.org/costmap_2d/Tutorials/Creating%20a%20New%20Layer))
   - [ ] Planner? Which param need to change?
   - [ ] ....
 
@@ -41,15 +44,16 @@
 - CUDA 11.6 [[Link](https://developer.nvidia.com/cuda-11-6-0-download-archive)]
   - <i> Choose option and follow instructions </i>
 
-- OpenCV 4.2 (with cuda support) [[Link](https://github.com/lacie-life/codecpp/blob/main/opencv_cuda.sh)]
-  - <i>Note: Change CUDA_ARCH flag to your NVIDIA Device </i>
+- OpenCV 4.5.2 (With CUDA Build) [[Link](https://github.com/lacie-life/codecpp/blob/main/opencv_cuda.sh)]
+  - <i>Note: Change CUDA_ARCH flag to your NVIDIA Device and OpenCV version</i>
+  - <i>Note: If you have conflict with Ros opencv, remove them and install ros depends manual </i>
 
 - PCL 1.8 [[Link](https://github.com/PointCloudLibrary/pcl/archive/refs/tags/pcl-1.8.0.zip)]
   - <i> Uncompress and build </i>
 
 - Libtorch 1.12.1+cu116 (cxx11-abi) [[Link](https://download.pytorch.org/libtorch/cu116/libtorch-cxx11-abi-shared-with-deps-1.12.1%2Bcu116.zip)]
   - <i> Unzip and change path to libtorch in  CMakeLists.txt</i>
-  - For Jetson, follow this [link](https://github.com/pytorch/pytorch/blob/master/docs/libtorch.rst#building-libtorch-using-cmake) 
+  - For Jetson, follow this [link](https://github.com/pytorch/pytorch/blob/master/docs/libtorch.rst#building-libtorch-using-cmake) or using TensorRT
 
 - Pangolin
 

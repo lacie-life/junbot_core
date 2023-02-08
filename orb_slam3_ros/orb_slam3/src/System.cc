@@ -334,6 +334,7 @@ Sophus::SE3f System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, 
         for(size_t i_imu = 0; i_imu < vImuMeas.size(); i_imu++)
             mpTracker->GrabImuData(vImuMeas[i_imu]);
 
+    mpTracker->mvImuFromLastFrame.assign(vImuMeas.begin(), vImuMeas.end());
     // std::cout << "start GrabImageStereo" << std::endl;
     Sophus::SE3f Tcw = mpTracker->GrabImageStereo(imLeftToFeed,imRightToFeed,timestamp,filename);
 
@@ -1336,6 +1337,72 @@ void System::SaveDebugData(const int &initIdx)
     f << mpLocalMapper->mInitTime << endl;
     f.close();
 }
+
+//void System::getPulishData(vector<cv::Point3f> &t, vector<vector<float>> &r, vector<cv::Point3f> &p, vector<cv::Point3f> &cp)
+//{
+//    vector<Map*> vpMaps = mpAtlas->GetAllMaps();
+//    Map* pBiggerMap;
+//    int numMaxKFs = 0;
+//    for (Map* pMap : vpMaps) {
+//        if (pMap->GetAllKeyFrames().size() > numMaxKFs) {
+//            numMaxKFs = pMap->GetAllKeyFrames().size();
+//            pBiggerMap = pMap;
+//        }
+//    }
+//
+//    vector<KeyFrame*> vpKFs = pBiggerMap->GetAllKeyFrames();
+//    sort(vpKFs.begin(), vpKFs.end(), KeyFrame::lId);
+//    t.reserve(vpKFs.size());
+//    r.reserve(vpKFs.size());
+//
+//    // Transform all keyframes so that the first keyframe is at the origin.
+//    // After a loop closure the first keyframe might not be at the origin.
+//
+//    cv::Mat transformMatrix = cv::Mat::eye(4, 4, CV_32F);
+//    // Converter::toRotationMatrix(7.0f / 180.0f * CV_PI, 0, 0).copyTo(transformMatrix.rowRange(0, 3).colRange(0, 3));
+//
+//    for (size_t i = 0; i < vpKFs.size(); i++) {
+//        KeyFrame* pKF = vpKFs[i];
+//
+//        // pKF->SetPose(pKF->GetPose()*Two);
+//
+//        cv::Mat pose = pKF->GetPoseInverse();
+//        pose = transformMatrix * pose;
+//
+//        if (pKF->isBad())
+//            continue;
+//
+//        cv::Mat T = pose.rowRange(0, 3).col(3);
+//        t.emplace_back(T.at<float>(0), T.at<float>(1), T.at<float>(2));
+//
+//        cv::Mat R = pose.rowRange(0, 3).colRange(0, 3);
+//        vector<float> q = Converter::toQuaternion(R);
+//        r.emplace_back(vector<float>({ q[0], q[1], q[2], q[3] }));
+//    }
+//
+//    const vector<MapPoint *> &vpMPs = pBiggerMap->GetAllMapPoints();
+//    if (vpMPs.empty())
+//        return;
+//    p.reserve(vpMPs.size());
+//    for (size_t i = 0, iend = vpMPs.size(); i < iend; i++)
+//    {
+//        if (vpMPs[i]->isBad())
+//            continue;
+//        cv::Mat pos = vpMPs[i]->GetWorldPos();
+//        p.emplace_back(pos.at<float>(0), pos.at<float>(1), pos.at<float>(2));
+//    }
+//
+//    set<MapPoint*> s;
+//    if(!vpKFs.empty()) {
+//        s = vpKFs.back()->GetMapPoints();
+//        cp.reserve(s.size());
+//        for(auto &i: s) {
+//            cv::Mat pos = i->GetWorldPos();
+//            cp.emplace_back(pos.at<float>(0), pos.at<float>(1), pos.at<float>(2));
+//        }
+//    }
+//}
+
 
 
 int System::GetTrackingState()
