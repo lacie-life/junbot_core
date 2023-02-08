@@ -55,6 +55,9 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+add_executable(object_layer_node src/addObjects.cpp)
+target_link_libraries(object_layer_node ${catkin_LIBRARIES})
+
 ## Declare a C++ library
 add_library(object_layer
         src/ObjectLayer.cpp
