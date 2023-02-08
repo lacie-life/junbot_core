@@ -13,8 +13,9 @@
    - [x] ~~OctoMap support~~
    
    - [ ] Turning object database
-   	- [x] Segment 3D bounding box
-   	- [ ] Object filter
+   	   - [x] Segment 3D bounding box
+         - [ ] Darknet-ros-3d test (Link)[https://github.com/IntelligentRoboticsLabs/gb_visual_detection_3d]
+   	   - [ ] Object filter
    - [x] Add ZED example
  
  - [ ] ~~Option 1: Segment point cloud by PointNet++ => get 3D bounding box of object (office enviroment) [[Ref](https://github.com/sc19aas/3D-object-detection)]~~
@@ -23,11 +24,11 @@
   
 
 - [ ] Re-path planning?
-  - [ ] Plan of re-path planning
-  - [ ] How to represent map with object for navigation stack ? (Grid map / OctoMap) ? 
+   - [ ] Plan of re-path planning
+   - [ ] How to represent map with object for navigation stack ? (Grid map / OctoMap) ? 
       - [x] CostMap layer? ([Ref](http://wiki.ros.org/costmap_2d/Tutorials/Creating%20a%20New%20Layer))
-  - [ ] Planner? Which param need to change?
-  - [ ] ....
+   - [ ] Planner? Which param need to change?
+   - [ ] ....
 
 # Install 
 
