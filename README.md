@@ -9,7 +9,9 @@
    ~~- [ ] Replace Yolo with Segmentation net => remove dynamic object (by interest class)~~
    
    - [x] Yolov5 TensorRT support
-   - [ ] OctoMap support 
+   
+   ~~- [x] OctoMap support~~
+   
    - [ ] Turning object database
    	- [x] Segment 3D bounding box
    	- [ ] Object filter
@@ -42,7 +44,7 @@
   - <i> Choose option and follow instructions </i>
 
 - OpenCV 4.5.2 (With CUDA Build) [[Link](https://github.com/lacie-life/codecpp/blob/main/opencv_cuda.sh)]
-  - <i>Note: Change CUDA_ARCH flag to your NVIDIA Device </i>
+  - <i>Note: Change CUDA_ARCH flag to your NVIDIA Device and OpenCV version</i>
   - <i>Note: If you have conflict with Ros opencv, remove them and install ros depends manual </i>
 
 - PCL 1.8 [[Link](https://github.com/PointCloudLibrary/pcl/archive/refs/tags/pcl-1.8.0.zip)]
@@ -50,7 +52,7 @@
 
 - Libtorch 1.12.1+cu116 (cxx11-abi) [[Link](https://download.pytorch.org/libtorch/cu116/libtorch-cxx11-abi-shared-with-deps-1.12.1%2Bcu116.zip)]
   - <i> Unzip and change path to libtorch in  CMakeLists.txt</i>
-  - For Jetson, follow this [link](https://github.com/pytorch/pytorch/blob/master/docs/libtorch.rst#building-libtorch-using-cmake) 
+  - For Jetson, follow this [link](https://github.com/pytorch/pytorch/blob/master/docs/libtorch.rst#building-libtorch-using-cmake) or using TensorRT
 
 - Pangolin
 
