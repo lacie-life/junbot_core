@@ -467,6 +467,12 @@ namespace ORB_SLAM3 {
         octoMapRes_ = readParameter<float>(fSettings,"octoMap.res",found);
         flowThreshold_ = readParameter<float>(fSettings,"Dynamic.flow",found);
 
+        // For 3D cuboid
+        runPangolin_ = readParameter<int>(fSettings,"Viewer.pangolin",found);
+        runRviz_ = readParameter<int>(fSettings,"Viewer.rviz",found);
+        readLocalObject_ = readParameter<int>(fSettings,"Viewer.readlocalobject",found);
+        showObject3DFrame_ = readParameter<int>(fSettings,"Viewer.show_object3d_frame",found);
+
          if(!found)
             imageViewerScale_ = 1.0f;
     }

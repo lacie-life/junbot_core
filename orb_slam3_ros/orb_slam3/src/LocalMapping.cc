@@ -249,6 +249,11 @@ void LocalMapping::Run()
 
             mpLoopCloser->InsertKeyFrame(mpCurrentKeyFrame);
 
+            // For 3D cuboid testing
+            UpdateObject();
+            MergePotentialAssObjs();
+            WhetherOverlapObject();
+
 #ifdef REGISTER_TIMES
             std::chrono::steady_clock::time_point time_EndLocalMap = std::chrono::steady_clock::now();
 
@@ -1519,6 +1524,123 @@ double LocalMapping::GetCurrKFTime()
 KeyFrame* LocalMapping::GetCurrKF()
 {
     return mpCurrentKeyFrame;
+}
+
+// For 3D cuboid testing
+// Update the mean and variance of objects in the map
+void LocalMapping::UpdateObject()
+{
+    unique_lock<mutex> lock(mMutexObject);
+
+    const vector<Object_Map*> &vObjs = mpMap->GetObjects();
+
+    if(vObjs.empty())
+        return;
+
+    for(int i = 0; i < (int)vObjs.size(); ++i)
+    {
+        Object_Map* Obj = vObjs[i];
+
+        if((Obj->mvpMapObjectMappoints.size() < 10) || (Obj->bad_3d == true))
+        {
+            continue;
+        }
+
+        //Obj->IsolationForestDeleteOutliers();
+        Obj->ComputeMeanAndDeviation_3D();
+    }
+    // todo remove objects with too few observations.(see tracking thread)
+}
+
+// Merge potentially associated objects.
+void LocalMapping::MergePotentialAssObjs()
+{
+    unique_lock<mutex> lock(mMutexObject);
+
+    const vector<Object_Map*> &vObjs = mpMap->GetObjects();
+
+    if(vObjs.empty())
+        return;
+
+    for(int i = 0; i < (int)vObjs.size(); ++i)
+    {
+        Object_Map* Obj = vObjs[i];
+
+        if(Obj->bad_3d)
+            continue;
+
+        // localmap thread
+        if (Obj->mvObject_2ds.size() >= 10)
+        {
+            if(Obj->mReObj.size() > 0)
+            {
+                Obj->SearchAndMergeMapObjs_fll(mpMap);
+            }
+        }
+    }
+}
+
+// Check all obj3d in the map to see if they overlap
+// Decide whether to merge two overlapping objects 
+// Determine whether two objects overlap.
+void LocalMapping::WhetherOverlapObject()
+{
+    unique_lock<mutex> lock(mMutexObject);
+
+    const vector<Object_Map*> &obj_3ds = mpMap->GetObjects();
+
+    if(obj_3ds.empty())
+        return;
+
+    for(int i = 0; i < (int)obj_3ds.size(); ++i)
+    {
+        Object_Map* Obj = obj_3ds[i];
+
+        if((Obj->mvpMapObjectMappoints.size() < 10) || (Obj->bad_3d == true) || (Obj->mvObject_2ds.size() < 10))
+        {
+            continue;
+        }
+
+        for(int j = 0; j < (int)obj_3ds.size(); ++j)
+        {
+            if(i == j)
+                continue;
+
+            Object_Map* Obj2 = obj_3ds[j];
+
+            if((Obj2->mvpMapObjectMappoints.size() < 10) || (Obj2->bad_3d == true) || (Obj2->mvObject_2ds.size() < 10))
+            {
+                continue;
+            }
+
+            // the distance between the centers of two objects
+            float dis_x = abs(Obj->mCuboid3D.cuboidCenter(0) - Obj2->mCuboid3D.cuboidCenter(0));
+            float dis_y = abs(Obj->mCuboid3D.cuboidCenter(1) - Obj2->mCuboid3D.cuboidCenter(1));
+            float dis_z = abs(Obj->mCuboid3D.cuboidCenter(2) - Obj2->mCuboid3D.cuboidCenter(2));
+
+            // The average length, width, and height of the two objects
+            float sum_lenth_half = Obj->mCuboid3D.lenth/2 + Obj2->mCuboid3D.lenth/2;
+            float sum_width_half = Obj->mCuboid3D.width/2 + Obj2->mCuboid3D.width/2;
+            float sum_height_half = Obj->mCuboid3D.height/2 + Obj2->mCuboid3D.height/2;
+
+            // volume of two objects
+            float fVolume = (Obj->mCuboid3D.lenth * Obj->mCuboid3D.width) * Obj->mCuboid3D.height;
+            float fVolume2 = (Obj2->mCuboid3D.lenth * Obj2->mCuboid3D.width) * Obj2->mCuboid3D.height;
+
+            // If..., the two objects overlap
+            if((dis_x < sum_lenth_half) && (dis_y < sum_width_half) && (dis_z < sum_height_half))
+            {
+                 // overlap in 3 directions.
+                float overlap_x = sum_lenth_half - dis_x;
+                float overlap_y = sum_width_half - dis_y;
+                float overlap_z = sum_height_half - dis_z;
+                float overlap_volume = (overlap_x * overlap_y) * overlap_z;
+
+                // Various processing methods for two overlapping objects: merge, divide equally, discard one of them, etc.
+                Obj->DealTwoOverlapObjs_fll(Obj2, overlap_x, overlap_y, overlap_z);
+            }
+        }
+    }
 }
 
 } //namespace ORB_SLAM

@@ -440,6 +440,19 @@ namespace ORB_SLAM3 {
         mvpBackupMapPoints.clear();
     }
 
+    // For 3D cuboid testing
+    void Map::AddObject(Object_Map *pObj)
+    {
+        unique_lock<mutex> lock(mMutexMap);
+        mvObjectMap.insert(pObj);
+    }
+
+    vector<Object_Map*> Map::GetObjects()
+    {
+        unique_lock<mutex> lock(mMutexMap);
+        return vector<Object_Map*>(mvObjectMap.begin(), mvObjectMap.end());
+    }
+
     // TODO: Testing
 
 //    KeyFrame *Map::_ReadKeyFrame(ifstream &f,

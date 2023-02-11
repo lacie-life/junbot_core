@@ -213,45 +213,56 @@ public:
 
 protected:    
 
-     // Position in absolute coordinates
-     Eigen::Vector3f mWorldPos;
+    // Position in absolute coordinates
+    Eigen::Vector3f mWorldPos;
 
-     // Keyframes observing the point and associated index in keyframe
-     std::map<KeyFrame*,std::tuple<int,int> > mObservations;
-     // For save relation without pointer, this is necessary for save/load function
-     std::map<long unsigned int, int> mBackupObservationsId1;
-     std::map<long unsigned int, int> mBackupObservationsId2;
+    // Keyframes observing the point and associated index in keyframe
+    std::map<KeyFrame*,std::tuple<int,int> > mObservations;
+    // For save relation without pointer, this is necessary for save/load function
+    std::map<long unsigned int, int> mBackupObservationsId1;
+    std::map<long unsigned int, int> mBackupObservationsId2;
 
-     // Mean viewing direction
-     Eigen::Vector3f mNormalVector;
+    // Mean viewing direction
+    Eigen::Vector3f mNormalVector;
 
-     // Best descriptor to fast matching
-     cv::Mat mDescriptor;
+    // Best descriptor to fast matching
+    cv::Mat mDescriptor;
 
-     // Reference KeyFrame
-     KeyFrame* mpRefKF;
-     long unsigned int mBackupRefKFId;
+    // Reference KeyFrame
+    KeyFrame* mpRefKF;
+    long unsigned int mBackupRefKFId;
 
-     // Tracking counters
-     int mnVisible;
-     int mnFound;
+    // Tracking counters
+    int mnVisible;
+    int mnFound;
 
-     // Bad flag (we do not currently erase MapPoint from memory)
-     bool mbBad;
-     MapPoint* mpReplaced;
-     // For save relation without pointer, this is necessary for save/load function
-     long long int mBackupReplacedId;
+    // Bad flag (we do not currently erase MapPoint from memory)
+    bool mbBad;
+    MapPoint* mpReplaced;
+    // For save relation without pointer, this is necessary for save/load function
+    long long int mBackupReplacedId;
 
-     // Scale invariance distances
-     float mfMinDistance;
-     float mfMaxDistance;
+    // Scale invariance distances
+    float mfMinDistance;
+    float mfMaxDistance;
 
-     Map* mpMap;
+    Map* mpMap;
 
-     // Mutex
-     std::mutex mMutexPos;
-     std::mutex mMutexFeatures;
-     std::mutex mMutexMap;
+    // Mutex
+    std::mutex mMutexPos;
+    std::mutex mMutexFeatures;
+    std::mutex mMutexMap;
+
+public:
+    // bool have_feature;  
+    // cv::KeyPoint feature;
+    // bool object_view = false;
+    int object_mnId;
+    int object_class;
+    std::map<int, int> viewdCount_forObjectId;   
+    cv::KeyPoint feature_uvCoordinate;    //record the coordinates of each point in the xy(uv) directions  
+    // set<int> frame_id;
+    // bool First_obj_view;
 
 };
 

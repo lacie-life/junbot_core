@@ -268,12 +268,12 @@ protected:
     bool TrackLocalMap();
     void SearchLocalPoints();
 
-    bool NeedNewKeyFrame();
-    void CreateNewKeyFrame();
-
-    // For 3D cuboid
     int NeedNewKeyFrame();
     void CreateNewKeyFrame(bool CreateByObjs);
+
+    // For 3D cuboid
+    // int NeedNewKeyFrame();
+    // void CreateNewKeyFrame(bool CreateByObjs);
 
     // Perform preintegration from last frame
     void PreintegrateIMU();

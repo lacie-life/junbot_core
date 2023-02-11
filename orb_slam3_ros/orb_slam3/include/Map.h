@@ -26,6 +26,7 @@
 #include "ORBextractor.h"
 #include "Frame.h"
 #include "Atlas.h"
+#include "Object.h"
 
 #include <set>
 #include <pangolin/pangolin.h>
@@ -44,6 +45,7 @@ class KeyFrameDatabase;
 class ORBextractor;
 class Converter;
 class Frame;
+class Object_Map;
 
 class Map
 {
@@ -222,6 +224,14 @@ protected:
     std::mutex mMutexMap;
 
     Converter convert;
+
+protected:
+    // std::vectir<Object_Map*> mvObjectMap;
+    std::set<Object_Map*> mvObjectMap;
+
+public:
+    void AddObject(Object_Map *pObj);
+    tsd::vector<Object_Map*> GetObjects();
 };
 
 } //namespace ORB_SLAM3

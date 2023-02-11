@@ -3072,6 +3072,9 @@ bool Tracking::TrackWithMotionModel()
             return false;
     }
 
+    // For 3D cuboid
+    CreatObject_intrackmotion();
+
     // Optimize frame pose with all matches
     Optimizer::PoseOptimization(&mCurrentFrame);
 
@@ -3328,7 +3331,14 @@ bool Tracking::NeedNewKeyFrame()
     // Condition 2: Few tracked points compared to reference keyframe. Lots of visual odometry compared to map matches.
     const bool c2 = (((mnMatchesInliers<nRefMatches*thRefRatio || bNeedToInsertClose)) && mnMatchesInliers>15);
 
-    //std::cout << "NeedNewKF: c1a=" << c1a << "; c1b=" << c1b << "; c1c=" << c1c << "; c2=" << c2 << std::endl;
+    // std::cout << "NeedNewKF: c1a=" << c1a << "; c1b=" << c1b << "; c1c=" << c1c << "; c2=" << c2 << std::endl;
+    
+    bool c1d = false;
+    if(mCurrentFrame.AppearNewObject)
+    {
+        c1d = true;
+    }
+    
     // Temporal condition for Inertial cases
     bool c3 = false;
     if(mpLastKeyFrame)
@@ -3357,7 +3367,7 @@ bool Tracking::NeedNewKeyFrame()
         // Otherwise send a signal to interrupt BA
         if(bLocalMappingIdle || mpLocalMapper->IsInitializing())
         {
-            return true;
+            return 1;
         }
         else
         {
@@ -3365,7 +3375,7 @@ bool Tracking::NeedNewKeyFrame()
             if(mSensor!=System::MONOCULAR  && mSensor!=System::IMU_MONOCULAR)
             {
                 if(mpLocalMapper->KeyframesInQueue()<3)
-                    return true;
+                    return 1;
                 else
                     return false;
             }
@@ -3376,11 +3386,34 @@ bool Tracking::NeedNewKeyFrame()
             }
         }
     }
-    else
-        return false;
+    // else
+    //     return false;
+
+    if (c1d)
+    {
+        if (bLocalMappingIdle)
+        {
+            return 2;
+        }
+        else
+        {
+            mpLocalMapper->InterruptBA();
+            if (mSensor != System::MONOCULAR)
+            {
+                if (mpLocalMapper->KeyframesInQueue() < 3)
+                    return 2;
+                else
+                    return 0;
+            }
+            else
+                return 0;
+        }
+    }
+
+    return 0;
 }
 
-void Tracking::CreateNewKeyFrame()
+void Tracking::CreateNewKeyFrame(bool CreateByObjs)
 {
     if(mpLocalMapper->IsInitializing() && !mpAtlas->isImuInitialized())
         return;
@@ -3407,6 +3440,12 @@ void Tracking::CreateNewKeyFrame()
     mpReferenceKF = pKF;
     mCurrentFrame.mpReferenceKF = pKF;
 
+    // For 3D cuboid
+    if(CreateByObjs)
+    {
+        pKF->mbByNewObj = true;
+    }
+
     if(mpLastKeyFrame)
     {
         pKF->mPrevKF = mpLastKeyFrame;
@@ -3425,6 +3464,7 @@ void Tracking::CreateNewKeyFrame()
     {
         mCurrentFrame.UpdatePoseMatrices();
         // cout << "create new MPs" << endl;
+        
         // We sort points by the measured depth by the stereo/RGBD sensor.
         // We create all those MapPoints whose depth < mThDepth.
         // If there are less than 100 close points we create the 100 closest.

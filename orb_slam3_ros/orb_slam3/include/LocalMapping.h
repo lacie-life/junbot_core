@@ -195,7 +195,14 @@ protected:
     //DEBUG
     ofstream f_lm;
 
-    };
+// For 3D cuboid testing
+public:
+    void UpdateObject();            // update object.
+    void MergePotentialAssObjs();   // merge potentially associated objects.
+    void WhetherOverlapObject();    // determine whether two objects overlap.
+    std::mutex mMutexObject;
+
+};
 
 } //namespace ORB_SLAM
 

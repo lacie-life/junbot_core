@@ -101,6 +101,20 @@ private:
 
     bool mbStopTrack;
 
+    // For 3D cuboid testing
+    int run_pangolin = 1;
+    int run_rviz;
+    int read_local_object;
+    int show_object3d_frame;
+
+    void read_local_object_file();
+    void cmpute_corner(Object_Map* object);
+    // demo.
+    string mflag;
+    //nbv test
+    std::vector<ORB_SLAM3::Object_Map*> vObjects;
+    float mfx, mfy, mcx, mcy;
+
 };
 
 }
