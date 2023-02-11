@@ -216,6 +216,19 @@ Tracking::Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer,
         }
     }
 
+    // 3D cuboid testing
+    bool use_LSD_algorithm = false;
+    bool save_to_imgs = false;
+    bool save_to_txts = false;
+    int numOfOctave_ = 1;
+    float Octave_ratio = 2.0;
+    line_lbd_ptr = new line_lbd_detect(numOfOctave_, Octave_ratio);
+    line_lbd_ptr->use_LSD = use_LSD_algorithm;
+    line_lbd_ptr->save_imgs = save_to_imgs;
+    line_lbd_ptr->save_txts = save_to_txts;
+    line_lbd_ptr->line_length_thres = 15; // the threshold of removing short line.
+    // line detect ------------------------------------------------
+
 #ifdef REGISTER_TIMES
     vdRectStereo_ms.clear();
     vdResizeImage_ms.clear();
@@ -4718,55 +4731,6 @@ bool Tracking::isImuPreintegrated()
 {
     return mCurrentFrame.mpImuPreintegrated;
 }
-
-//cv::Mat Tracking::fusion(cv::Mat visual)
-//{
-//    cv::Mat m;
-//    visual.copyTo(m);
-//    Eigen::Matrix3f tmp = (mpImuCalib->Qcb * integrate()).normalized().toRotationMatrix();
-//    m.rowRange(0, 3).colRange(0, 3) = Converter::toCvMat(tmp);
-//    return m;
-//}
-//
-//cv::Mat Tracking::kalmanFilter(cv::Mat observation)
-//{
-//    return observation;
-//}
-//
-//
-//Eigen::Quaternionf Tracking::integrate()
-//{
-//    Eigen::Quaternionf result(1, 0, 0, 0);
-//
-//    const int n = mvImuFromLastFrame.size() - 1;
-//    for (int i = 0; i < n; i++) {
-//        float tstep;
-//        cv::Point3f angVel;
-//        if ((i == 0) && (i < (n - 1))) {
-//            float tab = mvImuFromLastFrame[i + 1].t - mvImuFromLastFrame[i].t;
-//            float tini = mvImuFromLastFrame[i].t - mLastFrame.mTimeStamp;
-//            angVel = (mvImuFromLastFrame[i].w + mvImuFromLastFrame[i + 1].w - (mvImuFromLastFrame[i + 1].w - mvImuFromLastFrame[i].w) * (tini / tab)) * 0.5f;
-//            tstep = mvImuFromLastFrame[i + 1].t - mLastFrame.mTimeStamp;
-//        } else if (i < (n - 1)) {
-//            angVel = (mvImuFromLastFrame[i].w + mvImuFromLastFrame[i + 1].w) * 0.5f;
-//            tstep = mvImuFromLastFrame[i + 1].t - mvImuFromLastFrame[i].t;
-//        } else if ((i > 0) && (i == (n - 1))) {
-//            float tab = mvImuFromLastFrame[i + 1].t - mvImuFromLastFrame[i].t;
-//            float tend = mvImuFromLastFrame[i + 1].t - mCurrentFrame.mTimeStamp;
-//            angVel = (mvImuFromLastFrame[i].w + mvImuFromLastFrame[i + 1].w - (mvImuFromLastFrame[i + 1].w - mvImuFromLastFrame[i].w) * (tend / tab)) * 0.5f;
-//            tstep = mCurrentFrame.mTimeStamp - mvImuFromLastFrame[i].t;
-//        } else if ((i == 0) && (i == (n - 1))) {
-//            angVel = mvImuFromLastFrame[i].w;
-//            tstep = mCurrentFrame.mTimeStamp - mLastFrame.mTimeStamp;
-//        }
-//        Eigen::Quaternionf tmp(1, angVel.x * tstep, angVel.y * tstep, angVel.z * tstep);
-//        tmp.normalize();
-//        result *= tmp;
-//    }
-//
-//    // TODO: recheck
-//    return result;
-//}
 
 #ifdef REGISTER_LOOP
 void Tracking::RequestStop()

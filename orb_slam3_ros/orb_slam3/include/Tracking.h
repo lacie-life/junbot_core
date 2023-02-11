@@ -50,6 +50,15 @@
 #include <mutex>
 #include <unordered_set>
 
+// cube
+#include "detect_3d_cuboid/matrix_utils.h"
+#include "detect_3d_cuboid/detect_3d_cuboid.h"
+#include "detect_3d_cuboid/object_3d_util.h"
+
+// line
+#include <line_lbd/line_descriptor.hpp>
+#include <line_lbd/line_lbd_allclass.h>
+
 class PointCloudMapping;
 class Detector;
 
@@ -115,10 +124,6 @@ public:
     Sophus::SE3f GetImuTwb();
     Eigen::Vector3f GetImuVwb();
     bool isImuPreintegrated();
-
-//    cv::Mat kalmanFilter(cv::Mat m);
-//    cv::Mat fusion(cv::Mat m);
-//    Eigen::Quaternionf integrate();
 
     void CreateMapInAtlas();
     //std::mutex mMutexTracks;
@@ -265,6 +270,7 @@ protected:
 
     bool NeedNewKeyFrame();
     void CreateNewKeyFrame();
+    void CreateNewKeyFrame(bool CreateByObjs);
 
     // Perform preintegration from last frame
     void PreintegrateIMU();
@@ -417,6 +423,36 @@ protected:
 
 public:
     cv::Mat mImRight;
+
+// 3d cuboid testing
+public:
+    void CreateObject_intrackmotion();
+    void AssociateObjAndPoint(std::vector<Object_2D *> objs_2d);
+
+private:
+    std::string mStrSettingPath;
+    bool mbObjectIni = false;          // initialize the object map.
+    int mnObjectIniFrameID;
+
+    cv::Mat DrawQuadricProject( cv::Mat &im,
+                                const cv::Mat &P,
+                                const cv::Mat &axe,
+                                const cv::Mat &Twq,
+                                int nClassid,
+                                bool isGT=true,
+                                int nLatitudeNum = 7,
+                                int nLongitudeNum = 6);
+
+    void SampleObjYaw(Object_Map* obj3d);
+    cv::Point2f WorldToImg(cv::Mat &PointPosWorld);
+    static bool VIC(const Eigen::Matrix<float,5,1>& lhs, const Eigen::Matrix<float,5,1>& rhs)
+    {
+        return lhs[1] > rhs[1];
+    }
+
+    // line
+    line_lbd_detect* line_lbd_ptr;
+
 };
 
 } //namespace ORB_SLAM
