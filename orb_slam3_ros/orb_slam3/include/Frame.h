@@ -32,12 +32,21 @@
 
 #include "Converter.h"
 #include "Settings.h"
+#include "YoloDetection.h"
 
 #include <mutex>
 #include <opencv2/opencv.hpp>
 
 #include "Eigen/Core"
 #include "sophus/se3.hpp"
+
+// line
+#include <line_lbd/line_descriptor.hpp>
+#include <line_lbd/line_lbd_allclass.h>
+
+// cube slam.
+#include "detect_3d_cuboid/matrix_utils.h"
+#include "detect_3d_cuboid/detect_3d_cuboid.h"
 
 namespace ORB_SLAM3
 {
@@ -49,6 +58,7 @@ class KeyFrame;
 class ConstraintPoseImu;
 class GeometricCamera;
 class ORBextractor;
+class Object_2D;
 
 class Frame
 {
@@ -67,6 +77,11 @@ public:
 
     // Constructor for Monocular cameras.
     Frame(const cv::Mat &imGray, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, GeometricCamera* pCamera, cv::Mat &distCoef, const float &bf, const float &thDepth, Frame* pPrevF = static_cast<Frame*>(NULL), const IMU::Calib &ImuCalib = IMU::Calib());
+
+    // For 3D cuboid
+    Frame(const cv::Mat &imColor, const cv::Mat &imGray, const cv::Mat &imDepth, const double &timeStamp,
+          ORBextractor* extractor, line_lbd_detect* line_lbd_ptr_frame, ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf,
+          const float &thDepth, const std::vector<BoxSE> & bbox);
 
     // Destructor
     // ~Frame();
@@ -377,6 +392,25 @@ public:
     }
 
     Sophus::SE3<double> T_test;
+
+// For 3D cuboid
+public:
+    std::vector<BoxSE> boxes;               // object box, vector<BoxSE> format.
+    //Eigen::MatrixXd boxes_eigen;          // object box, Eigen::MatrixXd format. 
+    cv::Mat mGroundtruthPose_mat;           // camera groundtruth.
+    std::vector<Object_2D*> mvObject_2ds;           // 2d object in current frame.
+    std::vector<Object_2D*> mvLastObject_2ds;       // last frame.
+    std::vector<Object_2D*> mvLastLastObject_2ds;   // last last frame.
+    bool AppearNewObject = false;                   // Whether new objects appear in the current frame.
+    cv::Mat mColorImage;
+    cv::Mat mQuadricImage;                          // On the basis of mColorImage, the ellipsoid is drawn
+
+    // line.
+    std::vector< KeyLine> keylines_raw, keylines_out;
+    cv::Mat all_lines_mat;
+    Eigen::MatrixXd all_lines_eigen;
+    std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd> > vObjsLines;
+    line_lbd_detect* mpline_lbd_ptr_frame;
 };
 
 }// namespace ORB_SLAM

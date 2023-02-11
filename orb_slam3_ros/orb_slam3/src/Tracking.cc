@@ -1628,7 +1628,7 @@ Sophus::SE3f Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat 
     return mCurrentFrame.GetPose();
 }
 
-
+// TODO: Need refactor Detector
 Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const double &timestamp, string filename)
 {
     mImGray = imRGB;
@@ -4677,6 +4677,921 @@ void Tracking::UpdateFrameIMU(const float s, const IMU::Bias &b, KeyFrame* pCurr
     }
 
     mnFirstImuFrameId = mCurrentFrame.mnId;
+}
+
+// TODO: This function should be placed in the constructor of object
+void Tracking::CreatObject_intrackmotion(){
+
+    // *****************************
+    // STEP 1. construct 2D object *
+    // *****************************
+    vector<Object_2D *> obj_2ds;
+    cv::Mat ColorImage = mCurrentFrame.mColorImage.clone();
+    for (auto &box : mCurrentFrame.boxes)
+    {
+        Object_2D *obj2d = new Object_2D( mpMap, &mCurrentFrame, box);  //(Map* Map, Frame* CurrentFrame, const BoxSE &box)
+        obj_2ds.push_back(obj2d);
+    }
+    // ***************************************
+    // STEP 2. associate objects with points * 
+    // ***************************************
+    //AssociateObjAndPoints(objs_2ds);
+    for (int i = 0; i < mCurrentFrame.N; i++)
+    {
+        if (mCurrentFrame.mvpMapPoints[i])
+        {
+            MapPoint *pMP = mCurrentFrame.mvpMapPoints[i];
+            if (pMP->isBad())
+                continue;
+
+            for (size_t k = 0; k < obj_2ds.size(); ++k)
+            {
+                if (obj_2ds[k]->mBox_cvRect.contains(mCurrentFrame.mvKeysUn[i].pt))// in rect.
+                {
+                    //pMP->object_view = true;                  // the point is associated with an object.
+                    // TODO: Store the uv coordinates of pMP in the current frame. 
+                    // But will it match obj2d->mvMapPonits in other frames, but the uv coordinates have not been modified?
+                    // Answer: No. Therefore, it is stored in obj2d->mvMapPonits according to the uv coordinates. 
+                    // So it must be modified
+                    pMP->feature_uvCoordinate = mCurrentFrame.mvKeysUn[i]; // coordinate in current frame.
+                    obj_2ds[k]->AddObjectPoint(pMP);
+                }
+            }
+        }
+    }
+
+    // ***************************************
+    // STEP 3. associate objects with lines *  
+    // ***************************************
+    // all lines in current frame.
+    Eigen::MatrixXd AllLinesEigen = mCurrentFrame.all_lines_eigen;
+
+    // step 1 make sure edges start from left to right.
+    align_left_right_edges(AllLinesEigen);
+
+    for(int i = 0; i < obj_2ds.size(); i++)
+    {
+        Object_2D* obj = obj_2ds[i];
+
+        // step 2. expand the bounding box.
+        double dLeftExpand = max(0.0, obj->mBox_cvRect.x - 15.0);
+        double dRightExpand = min(mCurrentFrame.mColorImage.cols, obj->mBox_cvRect.x + obj->mBox_cvRect.width + 15);
+        double dTopExpand = max(0.0, obj->mBox_cvRect.y - 15.0);
+        double dBottomExpand = min(mCurrentFrame.mColorImage.rows, obj->mBox_cvRect.y + obj->mBox_cvRect.height + 15);
+        Eigen::Vector2d ExpanLeftTop = Eigen::Vector2d(dLeftExpand, dTopExpand);			// lefttop.         
+		Eigen::Vector2d ExpanRightBottom = Eigen::Vector2d(dRightExpand, dBottomExpand);  // rightbottom.     
+
+        // step 3. Associate objects and lines together
+        // associate object with lines.
+        Eigen::MatrixXd ObjectLines(AllLinesEigen.rows(),AllLinesEigen.cols());
+		int nInsideLinesNum = 0;
+		for (int line_id = 0; line_id < AllLinesEigen.rows(); line_id++)   /* In the current frame, the line_id line */
+        {
+            // check endpoints of the lines, whether inside the box.
+            if (check_inside_box(   AllLinesEigen.row(line_id).head<2>(),
+                                    ExpanLeftTop,
+                                    ExpanRightBottom ))
+            {
+                if(check_inside_box(AllLinesEigen.row(line_id).tail<2>(),
+                                    ExpanLeftTop,
+                                    ExpanRightBottom ))
+                {
+                    ObjectLines.row(nInsideLinesNum) = AllLinesEigen.row(line_id); /* The line_id line belongs to the i-th bbox, so insert this line into the ObjectLines collection. */
+                    nInsideLinesNum++;
+                }
+            }
+        }
+
+        // step 4. merge lines.
+        double pre_merge_dist_thre = 20;
+		double pre_merge_angle_thre = 5;
+		double edge_length_threshold = 30;
+	    Eigen::MatrixXd ObjectLinesAfterMerge;
+		merge_break_lines(	ObjectLines.topRows(nInsideLinesNum),
+							ObjectLinesAfterMerge, 		// output lines after merge.
+							pre_merge_dist_thre,		// the distance threshold between two line, 20 pixels.
+							pre_merge_angle_thre, 		// angle threshold between two line, 5°.
+							edge_length_threshold);		// length threshold, 30 pixels.
+
+        // step 5. save object lines.
+        obj->mObjLinesEigen = ObjectLinesAfterMerge;  //linedebug
+
+        /* The capacity of vObjsLines is equal to objs_2d.size(). If a bit of vObjsLines is empty, it means that this object is not associated with a line. */
+        mCurrentFrame.vObjsLines.push_back(ObjectLinesAfterMerge);   
+    }
+
+
+    // ***************************************************
+    // STEP 4.
+    // (1)compute the mean and standard of points.*
+    // (2)Erase outliers (camera frame) by boxplot.*
+    // **************************************************
+    for (auto &obj2d : obj_2ds)
+    {
+        // compute the mean and standard.
+        obj2d->ComputeMeanAndDeviation();
+
+        // If the object has too few points, ignore.
+        if (obj2d->mvMapPonits.size() < 8)
+            continue;
+
+        // Erase outliers by boxplot.
+        obj2d->RemoveOutlier_ByHeightorDepth();
+        obj2d->ComputeMeanAndDeviation();
+    }
+
+    // **************************************************************************
+    // STEP 5. construct the bounding box by object feature points in the image.*
+    // **************************************************************************
+    // bounding box detected by yolo |  bounding box constructed by object points.
+    //  _______________                 //  _____________
+    // |   *        *  |                // |   *        *|
+    // |    *  *       |                // |    *  *     |
+    // |*      *  *    |                // |*      *  *  |
+    // | *   *    *    |                // | *   *    *  |
+    // |   *       *   |                // |___*_______*_|
+    // |_______________|
+    const cv::Mat Rcw = mCurrentFrame.mTcw.rowRange(0, 3).colRange(0, 3);
+    const cv::Mat tcw = mCurrentFrame.mTcw.rowRange(0, 3).col(3);
+    for (auto &obj2d : obj_2ds)
+    {
+        // record the coordinates of each point in the xy(uv) directions.
+        vector<float> x_pt;
+        vector<float> y_pt;
+        for (auto &pMP : obj2d->mvMapPonits)
+        {
+            float u = pMP->feature_uvCoordinate.pt.x;
+            float v = pMP->feature_uvCoordinate.pt.y;
+
+            x_pt.push_back(u);
+            y_pt.push_back(v);
+        }
+
+        if (x_pt.size() < 4) // ignore.
+            continue;
+
+        // extremum in xy(uv) direction
+        sort(x_pt.begin(), x_pt.end());
+        sort(y_pt.begin(), y_pt.end());
+        float x_min = x_pt[0];
+        float x_max = x_pt[x_pt.size() - 1];
+        float y_min = y_pt[0];
+        float y_max = y_pt[y_pt.size() - 1];
+
+        // make insure in the image.
+        if (x_min < 0)
+            x_min = 0;
+        if (y_min < 0)
+            y_min = 0;
+        if (x_max > ColorImage.cols)
+            x_max = ColorImage.cols;
+        if (y_max > ColorImage.rows)
+            y_max = ColorImage.rows;
+
+        // the bounding box constructed by object feature points.
+        // notes: Feature points within the field of view
+        // Used in data associate
+        obj2d->mBox_cvRect_FeaturePoints = cv::Rect(x_min, y_min, x_max - x_min, y_max - y_min);
+    }
+
+    // **********************************************************************************************
+    // STEP 6. remove 2d bad bounding boxes.
+    // Due to the complex scene and Yolo error detection, some poor quality objects need to be removed.
+    // The strategy can be adjusted and is not unique, such as:
+    // 1. objects overlap with too many object;
+    // 2. objects with too few points;
+    // 3. objects with too few points and on the edge of the image;
+    // 4. objects too large and take up more than half of the image;
+    // and so on ......
+    // **********************************************************************************************
+    // overlap with too many objects.
+    for (size_t f = 0; f < obj_2ds.size(); ++f)
+    {
+        int num = 0;
+        for (size_t l = 0; l < obj_2ds.size(); ++l)
+        {
+            if (f == l)
+                continue;
+
+            if (Converter::bboxOverlapratioLatter(obj_2ds[f]->mBox_cvRect, obj_2ds[l]->mBox_cvRect) > 0.05)
+                num++;
+        }
+        // overlap with more than 3 objects.  overlaps with three objects
+        if (num > 4)
+            obj_2ds[f]->bad = true;
+    }
+    for (size_t f = 0; f < obj_2ds.size(); ++f)
+    {
+        if (obj_2ds[f]->bad)
+            continue;
+
+        // ignore the error detect by yolo.
+        // if ((objs_2d[f]->_class_id == 0) || (objs_2d[f]->_class_id == 63) || (objs_2d[f]->_class_id == 15))
+        //     objs_2d[f]->bad = true;
+
+        // too large in the image.
+        if ((float)obj_2ds[f]->mBox_cvRect.area() / (float)(ColorImage.cols * ColorImage.rows) > 0.5)
+            obj_2ds[f]->bad = true;
+
+        // too few object points.
+        if (obj_2ds[f]->mvMapPonits.size() < 5)
+            obj_2ds[f]->bad = true;
+
+        // object points too few and the object on the edge of the image.
+        else if  (obj_2ds[f]->mvMapPonits.size() < 10)
+        {
+            if ((obj_2ds[f]->mBox_cvRect.x < 20) || (obj_2ds[f]->mBox_cvRect.y < 20) ||
+                (obj_2ds[f]->mBox_cvRect.x + obj_2ds[f]->mBox_cvRect.width > ColorImage.cols - 20) ||
+                (obj_2ds[f]->mBox_cvRect.y + obj_2ds[f]->mBox_cvRect.height > ColorImage.rows - 20))
+            {
+                obj_2ds[f]->bad = true;
+            }
+        }
+
+        // when the overlap is large, only one object remains.
+        for (size_t l = 0; l < obj_2ds.size(); ++l)
+        {
+            if (obj_2ds[l]->bad)
+                continue;
+
+            if (f == l)
+                continue;
+
+            // retain objects which with high probability.
+            if (Converter::bboxOverlapratio(obj_2ds[f]->mBox_cvRect, obj_2ds[l]->mBox_cvRect) > 0.3)
+            {
+                if (obj_2ds[f]->mScore < obj_2ds[l]->mScore)
+                    obj_2ds[f]->bad = true;
+                else if (obj_2ds[f]->mScore >= obj_2ds[l]->mScore)
+                    obj_2ds[l]->bad = true;
+            }
+            // if one object surrounds another, keep the larger one.
+            if (Converter::bboxOverlapratio(obj_2ds[f]->mBox_cvRect, obj_2ds[l]->mBox_cvRect) > 0.05)
+            {
+                if (Converter::bboxOverlapratioFormer(obj_2ds[f]->mBox_cvRect, obj_2ds[l]->mBox_cvRect) > 0.85)
+                    obj_2ds[f]->bad = true;
+                if (Converter::bboxOverlapratioLatter(obj_2ds[f]->mBox_cvRect, obj_2ds[l]->mBox_cvRect) > 0.85)
+                    obj_2ds[l]->bad = true;
+            }
+        }
+    }
+
+    // erase the bad object.
+    vector<Object_2D *>::iterator it;
+    for (it = obj_2ds.begin(); it != obj_2ds.end(); )
+    {
+        if ((*it)->bad == true)
+            it = obj_2ds.erase(it); // erase.
+        else
+            ++it;
+    }
+
+
+
+    // *************************************************************
+    // STEP 7. copy objects in the last frame after initialization.*
+    // *************************************************************
+    if ((mbObjectIni == true) && (mCurrentFrame.mnId > mnObjectIniFrameID))
+    {
+        // copy objects in the last frame.
+        mCurrentFrame.mvLastObject_2ds = mLastFrame.mvObject_2ds;
+
+        // copy objects in the penultimate frame.
+        if (!mLastFrame.mvLastObject_2ds.empty())
+            mCurrentFrame.mvLastLastObject_2ds = mLastFrame.mvLastObject_2ds;
+    }
+
+
+    // *******************************************************************************
+    // STEP 8. Merges objects with 5-10 points  between two adjacent frames.
+    // Advantage: Small objects with too few points, can be merged to keep them from being eliminated.
+    // (The effect is not very significant.)
+    // Copy the points in the object detection frame in the previous frame to the corresponding obj2d according to iou.
+    // But I want to ask which object mvLastLastObject_2ds is???
+    // *******************************************************************************
+    bool bMergeTwoObj = true;
+    if ((!mCurrentFrame.mvLastObject_2ds.empty()) && bMergeTwoObj)
+    {
+        // object in current frame.
+        for (size_t k = 0; k < obj_2ds.size(); ++k)
+        {
+            // ignore objects with more than 10 points.
+            if (obj_2ds[k]->mvMapPonits.size() >= 10)
+                continue;
+
+            // object in last frame.
+            for (size_t l = 0; l < mCurrentFrame.mvLastObject_2ds.size(); ++l)
+            {
+                // ignore objects with more than 10 points.
+                if (mCurrentFrame.mvLastObject_2ds[l]->mvMapPonits.size() >= 10)
+                    continue;
+
+                // merge two objects.  
+                // If the overlap rate of two object_2d is greater than 0.5, the two are fused into one object
+                if (Converter::bboxOverlapratio(obj_2ds[k]->mBox_cvRect, mCurrentFrame.mvLastObject_2ds[l]->mBox_cvRect) > 0.5)
+                {
+                    obj_2ds[k]->MergeTwo_Obj2D(mCurrentFrame.mvLastObject_2ds[l]);
+                    obj_2ds[k]->ComputeMeanAndDeviation();
+                    break;
+                }
+            }
+        }
+    }
+
+    // ************************************
+    // STEP 9. Initialize the object map  *
+    // ************************************
+    if ( mbObjectIni == false){
+        int nGoodObjId = -1;        // object id.
+        for (auto &obj2d : obj_2ds)
+        {
+            // Initialize the object map need enough points.
+            if (obj2d->mvMapPonits.size() < 10)
+            {  continue;    }
+
+            nGoodObjId++;;
+
+            // Create an object in the map.
+            std::cout<<"【debug】INIT object"<<std::endl;
+            Object_Map *Object3D = new Object_Map;
+            Object3D->mvObject_2ds.push_back(obj2d);   // 2D objects in each frame associated with this 3D map object.
+            Object3D->mnId = nGoodObjId;             // 3d objects in the map.
+            Object3D->mnClass = obj2d->mclass_id;      // object class.
+            Object3D->mnConfidence_foractive = 1;              // object confidence = mObjectFrame.size().
+            Object3D->mnAddedID_nouse = mCurrentFrame.mnId;        // added id.
+            Object3D->mnLastAddID = mCurrentFrame.mnId;      // last added id.
+            Object3D->mnLastLastAddID = mCurrentFrame.mnId;  // last last added id.
+            Object3D->mLastRect = obj2d->mBox_cvRect;             // last rect.
+            //Object3D->mPredictRect = obj->mBoxRect;       // for iou.
+            Object3D->mSumPointsPos = 0; //cv::Mat::zeros(3,1,CV_32F);
+            Object3D->mAveCenter3D = obj2d->mPos_world;  ; //cv::Mat::zeros(3,1,CV_32F);
+
+            std::cout<<"【debug】INIT Object Store feature points"<<std::endl;
+            // add properties of the point and save it to the object.
+
+            for (size_t i = 0; i < obj2d->mvMapPonits.size(); i++)
+            {
+                if(obj2d->mvMapPonits[i]->isBad())
+                    continue;
+                MapPoint *pMP = obj2d->mvMapPonits[i];
+                pMP->object_mnId = Object3D->mnId;
+                pMP->object_class = Object3D->mnClass;
+                pMP->viewdCount_forObjectId.insert(make_pair(Object3D->mnId, 1)); // the point is first observed by the object.
+
+                // save to the object.
+                Object3D->mvpMapObjectMappoints.push_back(pMP);
+                Object3D->mvpMapObjectMappoints_NewForActive.push_back(pMP);
+            }
+
+            // 2d object.
+            obj2d->mnId = Object3D->mnId;
+
+            // save this 2d object to current frame (associates with a 3d object in the map).
+            mCurrentFrame.mvObject_2ds.push_back(obj2d);
+            std::cout<<"【debug】INIT object deposited obj2d"<<std::endl;
+
+            // updata map object.
+            Object3D->ComputeMeanAndDeviation_3D();
+            std::cout<<"【debug】INIT Object Calculate mean"<<std::endl;
+            //mpMap->mvObjectMap.push_back(ObjectMapSingle);
+            mpMap->AddObject(Object3D);
+            std::cout<<"【debug】INIT object deposited map"<<std::endl;
+            std::cout<<"【debug】INIT object object id:"<<Object3D->mnLastAddID<<", frame id:"<<mCurrentFrame.mnId<<std::endl;
+            // The object is initialized
+            mbObjectIni = true;
+            mnObjectIniFrameID = mCurrentFrame.mnId;
+        }
+    }
+
+    // **************************************************************
+    // STEP 10. Data association and create objects*
+    // **************************************************************
+    if ((mCurrentFrame.mnId > mnObjectIniFrameID) && (mbObjectIni == true))
+    {
+        // step 10.1 points of the object that appeared in the last 30 frames
+        // are projected into the image to form a projection bounding box.
+        // Objects that appeared in the map in the past 30 frames, obj3d ∈ obj_3ds
+        // The point in the project is projected into the Currentframe, 
+        // and the projection bounding box of obj3d in the Currentframe is calculated, 
+        // and stored in mRectProject_forDataAssociate2D of obj3d
+        // To view obje3d, you can associate objects in Currentframe
+        const std::vector<Object_Map*> obj_3ds = mpMap->GetObjects();
+        for (int i = 0; i < (int)obj_3ds.size(); i++)
+        {
+            Object_Map* obj3d = obj_3ds[i];
+            if (obj3d->bad_3d)
+                continue;
+
+            // object appeared in the last 30 frames.
+            if(ProIou_only30_flag) {
+                if (obj3d->mnLastAddID > mCurrentFrame.mnId - 30)
+                    obj3d->ComputeProjectRectFrameToCurrentFrame(mCurrentFrame);  // Project the point in obj3d to the current frame and calculate the projected bounding box
+                else {
+                    obj3d->mRect_byProjectPoints = cv::Rect(0, 0, 0, 0);
+                }
+            }
+            else{
+                obj3d->ComputeProjectRectFrameToCurrentFrame(mCurrentFrame);  // Project the point in obj3d to the current frame and calculate the projected bounding box
+            }
+        }
+
+        // step 10.2 data association and creat new object
+        // Compare obj2d in the current frame with all obj3d in the map to see if the data association is the same object
+        // If not, generate a new object and add it to the map.
+        for (size_t k = 0; k < obj_2ds.size(); ++k)
+        {
+            // ignore object with less than 5 points.
+            if (obj_2ds[k]->mvMapPonits.size() < 5)
+                continue;
+
+            // Incorporate old objects or generate new ones
+            int result = obj_2ds[k]->creatObject();
+            switch (result) {
+                case -1:   cout << "The detection frame is close to the edge" << endl;   break;
+                case 0:    cout << "Blend into old objects" << endl;   break;
+                case 1:    cout << "Generate new objects" << endl;     break;
+            }
+        }
+
+
+    // **************************************************************
+    // STEP 11. After a round of object generation, manage the objects in the map*
+    // **************************************************************
+        // step 11.1 remove objects with too few observations.
+        // After updating the objects in the map, reacquire the objects in the map, 
+        // and remove objects with fewer observations (by setting obj3d's bad_3d to true)
+        const std::vector<Object_Map*> obj_3ds_new = mpMap->GetObjects();
+        for (int i = (int)obj_3ds_new.size() - 1; i >= 0; i--)
+        {
+            Object_Map* obj3d = obj_3ds_new[i];
+            if (obj3d->bad_3d)
+                continue;
+
+            // not been observed in the last 30 frames.
+            if (obj3d->mnLastAddID < (mCurrentFrame.mnId - 30))
+            {
+                int df = (int)obj3d->mvObject_2ds.size();
+                if (df < 10)
+                {
+                    // If the object has not been seen in the past 30 frames, and the number of observed frames is less than 5, it is set to bad_3d
+                    if (df < 5){
+                        std::cout << "object->bad Observation frame<5, object id:" << obj3d->mnLastAddID
+                                  << ", frame id: " << (mCurrentFrame.mnId - 30) << std::endl;
+                        obj3d->bad_3d = true;
+                    }
+                    // If the object has not been seen in the past 30 frames, and the number of observed frames is less than 10, 
+                    // and it overlaps too much with other objects in the map, set it to bad_3d
+                    else
+                    {
+                        for (int j = (int)obj_3ds_new.size() - 1; j >= 0; j--)
+                        {
+                            if (obj_3ds_new[j]->bad_3d || (i == j))
+                                continue;
+
+                            bool overlap = obj_3ds_new[i]->WhetherOverlap(obj_3ds_new[j]) ;
+                            if (overlap)
+                            {
+                                obj_3ds_new[i]->bad_3d = true;
+                                std::cout<<"object->bad Observation frame<10, and overlap" <<std::endl;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // step 11.2 Update the co-view relationship between objects. (appears in the same frame).
+        // For objects created for the first time, build a common-view relationship.
+        for (int i = (int)obj_3ds_new.size() - 1; i >= 0; i--)
+        {
+            if (obj_3ds_new[i]->mnLastAddID == mCurrentFrame.mnId)
+            {
+                for (int j = (int)obj_3ds_new.size() - 1; j >= 0; j--)
+                {
+                    if (i == j)
+                        continue;
+
+                    if (obj_3ds_new[j]->mnLastAddID == mCurrentFrame.mnId)
+                    {
+                        obj_3ds_new[i]->UpdateCoView(obj_3ds_new[j]);
+                    }
+                }
+            }
+        }
+
+        // Step 11.3 Merge potential associate objects (see mapping thread).
+
+        // Step 11.4 Estimate the orientation of objects.
+        for (int i = (int)obj_3ds_new.size() - 1; i >= 0; i--)
+        {
+            Object_Map* obj3d = obj_3ds_new[i];
+
+            if (obj3d->bad_3d)
+                continue;
+            // If more than 5 frames, this object is not observed, skip
+            if (obj3d->mnLastAddID < mCurrentFrame.mnId - 5)
+                continue;
+
+            // estimate only regular objects. // if (((objMap->mnClass == 73) || (objMap->mnClass == 64) || (objMap->mnClass == 65//     || (objMap->mnClass == 66) || (objMap->mnClass == 56)))
+            // objects appear in current frame.
+            if(obj3d->mnLastAddID == mCurrentFrame.mnId)
+            {
+                SampleObjYaw(obj3d);
+            }
+
+            // step 11.5 project quadrics to the image (only for visualization).
+            cv::Mat axe = cv::Mat::zeros(3, 1, CV_32F);
+            axe.at<float>(0) = obj3d->mCuboid3D.lenth / 2;
+            axe.at<float>(1) = obj3d->mCuboid3D.width / 2;
+            axe.at<float>(2) = obj3d->mCuboid3D.height / 2;
+            // object pose (world).
+            cv::Mat Twq = (obj3d->mCuboid3D.pose_mat);
+            // Projection Matrix K[R|t].
+            cv::Mat P(3, 4, CV_32F);
+            Rcw.copyTo(P.rowRange(0, 3).colRange(0, 3));
+            tcw.copyTo(P.rowRange(0, 3).col(3));
+            P = mCurrentFrame.mK * P;
+            DrawQuadricProject( this->mCurrentFrame.mQuadricImage,
+                                        P,
+                                        axe,
+                                        Twq,
+                                        obj3d->mnClass).copyTo(this->mCurrentFrame.mQuadricImage);
+        }
+    }
+}
+
+void Tracking::AssociateObjAndPoints(vector<Object_2D *> obj_2ds)
+{
+
+} // AssociateObjAndPoints() END -----------------------------------
+
+
+cv::Mat Tracking::DrawQuadricProject(cv::Mat &im,
+                                     const cv::Mat &P,   // projection matrix.
+                                     const cv::Mat &axe, // axis length.
+                                     const cv::Mat &Twq, // object pose.
+                                     int nClassid,
+                                     bool isGT,
+                                     int nLatitudeNum,
+                                     int nLongitudeNum)
+{
+    // color.
+    std::vector<cv::Scalar> colors = {  cv::Scalar(135,0,248),
+                                        cv::Scalar(255,0,253),
+                                        cv::Scalar(4,254,119),
+                                        cv::Scalar(255,126,1),
+                                        cv::Scalar(0,112,255),
+                                        cv::Scalar(0,250,250),
+                                        };
+
+    // draw params
+    cv::Scalar sc = colors[nClassid % 6];
+
+    int nLineWidth = 2;
+
+    // generate angluar grid -> xyz grid (vertical half sphere)
+    vector<float> vfAngularLatitude;  // (-90, 90)
+    vector<float> vfAngularLongitude; // [0, 180]
+    cv::Mat pointGrid(nLatitudeNum + 2, nLongitudeNum + 1, CV_32FC4);
+
+    for (int i = 0; i < nLatitudeNum + 2; i++)
+    {
+        float fThetaLatitude = -M_PI_2 + i * M_PI / (nLatitudeNum + 1);
+        cv::Vec4f *p = pointGrid.ptr<cv::Vec4f>(i);
+        for (int j = 0; j < nLongitudeNum + 1; j++)
+        {
+            float fThetaLongitude = j * M_PI / nLongitudeNum;
+            p[j][0] = axe.at<float>(0, 0) * cos(fThetaLatitude) * cos(fThetaLongitude);
+            p[j][1] = axe.at<float>(1, 0) * cos(fThetaLatitude) * sin(fThetaLongitude);
+            p[j][2] = axe.at<float>(2, 0) * sin(fThetaLatitude);
+            p[j][3] = 1.;
+        }
+    }
+
+    // draw latitude
+    for (int i = 0; i < pointGrid.rows; i++)
+    {
+        cv::Vec4f *p = pointGrid.ptr<cv::Vec4f>(i);
+        // [0, 180]
+        for (int j = 0; j < pointGrid.cols - 1; j++)
+        {
+            cv::Mat spherePt0 = (cv::Mat_<float>(4, 1) << p[j][0], p[j][1], p[j][2], p[j][3]);
+            cv::Mat spherePt1 = (cv::Mat_<float>(4, 1) << p[j + 1][0], p[j + 1][1], p[j + 1][2], p[j + 1][3]);
+            cv::Mat conicPt0 = P * Twq * spherePt0;
+            cv::Mat conicPt1 = P * Twq * spherePt1;
+            cv::Point pt0(conicPt0.at<float>(0, 0) / conicPt0.at<float>(2, 0), conicPt0.at<float>(1, 0) / conicPt0.at<float>(2, 0));
+            cv::Point pt1(conicPt1.at<float>(0, 0) / conicPt1.at<float>(2, 0), conicPt1.at<float>(1, 0) / conicPt1.at<float>(2, 0));
+            cv::line(im, pt0, pt1, sc, nLineWidth); // [0, 180]
+        }
+        // [180, 360]
+        for (int j = 0; j < pointGrid.cols - 1; j++)
+        {
+            cv::Mat spherePt0 = (cv::Mat_<float>(4, 1) << -p[j][0], -p[j][1], p[j][2], p[j][3]);
+            cv::Mat spherePt1 = (cv::Mat_<float>(4, 1) << -p[j + 1][0], -p[j + 1][1], p[j + 1][2], p[j + 1][3]);
+            cv::Mat conicPt0 = P * Twq * spherePt0;
+            cv::Mat conicPt1 = P * Twq * spherePt1;
+            cv::Point pt0(conicPt0.at<float>(0, 0) / conicPt0.at<float>(2, 0), conicPt0.at<float>(1, 0) / conicPt0.at<float>(2, 0));
+            cv::Point pt1(conicPt1.at<float>(0, 0) / conicPt1.at<float>(2, 0), conicPt1.at<float>(1, 0) / conicPt1.at<float>(2, 0));
+            cv::line(im, pt0, pt1, sc, nLineWidth); // [180, 360]
+        }
+    }
+
+    // draw longitude
+    cv::Mat pointGrid_t = pointGrid.t();
+    for (int i = 0; i < pointGrid_t.rows; i++)
+    {
+        cv::Vec4f *p = pointGrid_t.ptr<cv::Vec4f>(i);
+        // [0, 180]
+        for (int j = 0; j < pointGrid_t.cols - 1; j++)
+        {
+            cv::Mat spherePt0 = (cv::Mat_<float>(4, 1) << p[j][0], p[j][1], p[j][2], p[j][3]);
+            cv::Mat spherePt1 = (cv::Mat_<float>(4, 1) << p[j + 1][0], p[j + 1][1], p[j + 1][2], p[j + 1][3]);
+            cv::Mat conicPt0 = P * Twq * spherePt0;
+            cv::Mat conicPt1 = P * Twq * spherePt1;
+            cv::Point pt0(conicPt0.at<float>(0, 0) / conicPt0.at<float>(2, 0), conicPt0.at<float>(1, 0) / conicPt0.at<float>(2, 0));
+            cv::Point pt1(conicPt1.at<float>(0, 0) / conicPt1.at<float>(2, 0), conicPt1.at<float>(1, 0) / conicPt1.at<float>(2, 0));
+            cv::line(im, pt0, pt1, sc, nLineWidth); // [0, 180]
+        }
+        // [180, 360]
+        for (int j = 0; j < pointGrid_t.cols - 1; j++)
+        {
+            cv::Mat spherePt0 = (cv::Mat_<float>(4, 1) << -p[j][0], -p[j][1], p[j][2], p[j][3]);
+            cv::Mat spherePt1 = (cv::Mat_<float>(4, 1) << -p[j + 1][0], -p[j + 1][1], p[j + 1][2], p[j + 1][3]);
+            cv::Mat conicPt0 = P * Twq * spherePt0;
+            cv::Mat conicPt1 = P * Twq * spherePt1;
+            cv::Point pt0(conicPt0.at<float>(0, 0) / conicPt0.at<float>(2, 0), conicPt0.at<float>(1, 0) / conicPt0.at<float>(2, 0));
+            cv::Point pt1(conicPt1.at<float>(0, 0) / conicPt1.at<float>(2, 0), conicPt1.at<float>(1, 0) / conicPt1.at<float>(2, 0));
+            cv::line(im, pt0, pt1, sc, nLineWidth); // [180, 360]
+        }
+    }
+
+    return im;
+}
+
+void Tracking::SampleObjYaw(Object_Map* obj3d)
+{
+    int numMax = 0;
+    float fError = 0.0;
+    float fErrorYaw;
+    float minErrorYaw = 360.0;
+    float sampleYaw = 0.0;
+    int nAllLineNum = obj3d->mvObject_2ds.back()->mObjLinesEigen.rows(); 
+
+    for(int i = 0; i < 30; i++)
+    {
+        // initial angle.
+        float roll, pitch, yaw;
+        roll = 0.0;
+        pitch = 0.0;
+        yaw = 0.0;
+        float error = 0.0;
+        float errorYaw = 0.0;
+
+        // 1 -> 15: -45° - 0°
+        // 16 -> 30: 0° - 45°
+        if(i < 15)
+            yaw = (0.0 - i*3.0)/180.0 * M_PI;
+        else
+            yaw = (0.0 + (i-15)*3.0)/180.0 * M_PI;
+
+        // object pose in object frame. (Ryaw)
+        float cp = cos(pitch);
+        float sp = sin(pitch);
+        float sr = sin(roll);
+        float cr = cos(roll);
+        float sy = sin(yaw);
+        float cy = cos(yaw);
+        Eigen::Matrix<double,3,3> REigen;
+        REigen<<   cp*cy, (sr*sp*cy)-(cr*sy), (cr*sp*cy)+(sr*sy),
+                cp*sy, (sr*sp*sy)+(cr*cy), (cr*sp*sy)-(sr*cy),
+                    -sp,    sr*cp,              cr * cp;
+        cv::Mat Ryaw = Converter::toCvMat(REigen);
+
+        // 8 vertices of the 3D box, world --> object frame.
+        cv::Mat corner_1 = Converter::toCvMat(obj3d->mCuboid3D.corner_1_w) - Converter::toCvMat(obj3d->mCuboid3D.cuboidCenter);
+        cv::Mat corner_2 = Converter::toCvMat(obj3d->mCuboid3D.corner_2_w) - Converter::toCvMat(obj3d->mCuboid3D.cuboidCenter);
+        cv::Mat corner_3 = Converter::toCvMat(obj3d->mCuboid3D.corner_3_w) - Converter::toCvMat(obj3d->mCuboid3D.cuboidCenter);
+        cv::Mat corner_4 = Converter::toCvMat(obj3d->mCuboid3D.corner_4_w) - Converter::toCvMat(obj3d->mCuboid3D.cuboidCenter);
+        cv::Mat corner_5 = Converter::toCvMat(obj3d->mCuboid3D.corner_5_w) - Converter::toCvMat(obj3d->mCuboid3D.cuboidCenter);
+        cv::Mat corner_6 = Converter::toCvMat(obj3d->mCuboid3D.corner_6_w) - Converter::toCvMat(obj3d->mCuboid3D.cuboidCenter);
+        cv::Mat corner_7 = Converter::toCvMat(obj3d->mCuboid3D.corner_7_w) - Converter::toCvMat(obj3d->mCuboid3D.cuboidCenter);
+        cv::Mat corner_8 = Converter::toCvMat(obj3d->mCuboid3D.corner_8_w) - Converter::toCvMat(obj3d->mCuboid3D.cuboidCenter);
+
+        // rotate in object frame  + object frame --> world frame.
+        corner_1 = Ryaw * corner_1 + Converter::toCvMat(obj3d->mCuboid3D.cuboidCenter);
+        corner_2 = Ryaw * corner_2 + Converter::toCvMat(obj3d->mCuboid3D.cuboidCenter);
+        corner_3 = Ryaw * corner_3 + Converter::toCvMat(obj3d->mCuboid3D.cuboidCenter);
+        corner_4 = Ryaw * corner_4 + Converter::toCvMat(obj3d->mCuboid3D.cuboidCenter);
+        corner_5 = Ryaw * corner_5 + Converter::toCvMat(obj3d->mCuboid3D.cuboidCenter);
+        corner_6 = Ryaw * corner_6 + Converter::toCvMat(obj3d->mCuboid3D.cuboidCenter);
+        corner_7 = Ryaw * corner_7 + Converter::toCvMat(obj3d->mCuboid3D.cuboidCenter);
+        corner_8 = Ryaw * corner_8 + Converter::toCvMat(obj3d->mCuboid3D.cuboidCenter);
+
+        // project 8 vertices to image.
+        cv::Point2f point1, point2, point3, point4, point5, point6, point7, point8;
+        point1 = WorldToImg(corner_1);
+        point2 = WorldToImg(corner_2);
+        point3 = WorldToImg(corner_3);
+        point4 = WorldToImg(corner_4);
+        point5 = WorldToImg(corner_5);
+        point6 = WorldToImg(corner_6);
+        point7 = WorldToImg(corner_7);
+        point8 = WorldToImg(corner_8);
+
+        // angle of 3 edges(lenth, width, height).
+        float angle1;
+        float angle2;
+        float angle3;
+        // left -> right.
+        if(point6.x > point5.x)
+            angle1 = atan2(point6.y - point5.y, point6.x - point5.x);
+        else
+            angle1 = atan2(point5.y - point6.y, point5.x - point6.x);
+        float lenth1 = sqrt((point6.y - point5.y) * (point6.y - point5.y) + (point6.x - point5.x) * (point6.x - point5.x));
+
+        if(point7.x > point6.x)
+            angle2 = atan2(point7.y - point6.y, point7.x - point6.x);
+        else
+            angle2 = atan2(point6.y - point7.y, point6.x - point7.x);
+        float lenth2 = sqrt((point7.y - point6.y) * (point7.y - point6.y) + (point7.x - point6.x) * (point7.x - point6.x));
+
+        if(point6.x > point2.x)
+            angle3 = atan2(point6.y - point2.y, point6.x - point2.x);
+        else
+            angle3 = atan2(point2.y - point6.y, point2.x - point6.x);
+        float lenth3 = sqrt((point6.y - point2.y) * (point6.y - point2.y) + (point6.x - point2.x) * (point6.x - point2.x));
+
+        // compute angle between detected lines and cube edges.
+        int num = 0;  // number parallel lines.
+        for(int line_id = 0; line_id < obj3d->mvObject_2ds.back()->mObjLinesEigen.rows(); line_id++)
+        {
+            // angle of detected lines.
+            double x1 = obj3d->mvObject_2ds.back()->mObjLinesEigen(line_id, 0);
+            double y1 = obj3d->mvObject_2ds.back()->mObjLinesEigen(line_id, 1);
+            double x2 = obj3d->mvObject_2ds.back()->mObjLinesEigen(line_id, 2);
+            double y2 = obj3d->mvObject_2ds.back()->mObjLinesEigen(line_id, 3);
+            float angle = atan2(y2 - y1, x2 - x1);
+
+            // lenth.
+            float lenth = sqrt((y2 - y1)*(y2 - y1) + (x2 - x1)*(x2 - x1));
+
+            // angle between line and 3 edges.
+            float dis_angle1 = abs(angle * 180/M_PI - angle1 * 180/M_PI);
+            float dis_angle2 = abs(angle * 180/M_PI - angle2 * 180/M_PI);
+            float dis_angle3 = abs(angle * 180/M_PI - angle3 * 180/M_PI);
+
+            float th = 5.0;             // threshold of the angle.
+            if(obj3d->mnClass == 56)   // chair.
+            {
+                if((dis_angle2 < th) || (dis_angle3 < th))
+                    num++;
+                if(dis_angle1 < th)
+                {
+                    num+=3;
+                }
+            }
+            else
+            {
+                // the shortest edge is lenth1.
+                if( min(min(lenth1, lenth2), lenth3) == lenth1)
+                {
+                    // error with other two edges.
+                    if((dis_angle2 < th) || (dis_angle3 < th))
+                    {
+                        num++;
+                        if(dis_angle2 < th)
+                            error += dis_angle2;
+                        if(dis_angle3 < th)
+                            error += dis_angle3;
+                    }
+
+                    // angle error.
+                    errorYaw+=min(dis_angle2, dis_angle3);
+                }
+                // the shortest edge is lenth2.
+                if( min(min(lenth1, lenth2), lenth3) == lenth2)
+                {
+                    if((dis_angle1 < th) || (dis_angle3 < th))
+                    {
+                        num++;
+                        if(dis_angle1 < th)
+                            error += dis_angle1;
+                        if(dis_angle3 < th)
+                            error += dis_angle3;
+                    }
+                    errorYaw+=min(dis_angle3, dis_angle1);
+                }
+                // the shortest edge is lenth3.
+                if( min(min(lenth1, lenth2), lenth3) == lenth3)
+                {
+                    if((dis_angle1 < th) || (dis_angle2 < th))
+                    {
+                        num++;
+                        if(dis_angle1 < th)
+                            error += dis_angle1;
+                        if(dis_angle2 < th)
+                            error += dis_angle2;
+                    }
+                    errorYaw+=min(dis_angle2, dis_angle1);
+                }
+            }
+        }
+        if(num == 0)
+        {
+            num = 1;
+            errorYaw = 10.0;
+        }
+
+        // record the angle with max number parallel lines.
+        if(num > numMax)
+        {
+            numMax = num;
+            sampleYaw = yaw;
+
+            fError = error; // no used in this version.
+            // average angle error.
+            fErrorYaw = (errorYaw/(float)num)/10.0;
+        }
+    }
+
+    // scoring.
+    float fScore;
+    fScore = ((float)numMax / (float)nAllLineNum) * (1.0 - 0.1 * fErrorYaw);
+    if(isinf(fScore))
+        fScore = 0.0;
+
+    // measurement： yaw, times, score, angle, angle error.
+    Eigen::Matrix<float,5,1> AngleTimesAndScore;
+    AngleTimesAndScore[0] = sampleYaw;
+    AngleTimesAndScore[1] = 1.0;
+    AngleTimesAndScore[2] = fScore;
+    AngleTimesAndScore[3] = fError;     // no used in this version.
+    AngleTimesAndScore[4] = fErrorYaw;
+
+    // update multi-frame measurement.
+    bool bNewMeasure = true;
+    for (auto &row : obj3d->mvAngleTimesAndScore)
+    {
+        if(row[0] == AngleTimesAndScore[0])
+        {
+            row[1] += 1.0;
+            row[2] = AngleTimesAndScore[2] * (1/row[1]) + row[2] * (1 - 1/row[1]);
+            row[3] = AngleTimesAndScore[3] * (1/row[1]) + row[3] * (1 - 1/row[1]);
+            row[4] = AngleTimesAndScore[4] * (1/row[1]) + row[4] * (1 - 1/row[1]);
+
+            bNewMeasure = false;
+        }
+    }
+    if(bNewMeasure == true)
+    {
+        obj3d->mvAngleTimesAndScore.push_back(AngleTimesAndScore);
+    }
+
+    //index = 1;
+    std::sort(obj3d->mvAngleTimesAndScore.begin(), obj3d->mvAngleTimesAndScore.end(), VIC);
+    //for (auto &row : obj3d->mvAngleTimesAndScore)
+    //{
+    //    std::cout << row[0] * 180.0 / M_PI  << "\t" <<  row[1] << "\t" <<  row[2] << std::endl;
+    //}
+
+    int best_num = 0;
+    float best_score = 0;
+    for(int i = 0; i < std::min(3, (int)obj3d->mvAngleTimesAndScore.size()); i++)
+    {
+        float fScore = obj3d->mvAngleTimesAndScore[i][2];
+        if(fScore >= best_score)
+        {
+            best_score = fScore;
+            best_num = i;
+        }
+    }
+
+    // step 6. update object yaw.
+    obj3d->mCuboid3D.rotY = obj3d->mvAngleTimesAndScore[best_num][0];
+    obj3d->mCuboid3D.mfErrorParallel = obj3d->mvAngleTimesAndScore[best_num][3];
+    obj3d->mCuboid3D.mfErroeYaw = obj3d->mvAngleTimesAndScore[best_num][4];
+}
+
+// project points to image.
+cv::Point2f Tracking::WorldToImg(cv::Mat &PointPosWorld)
+{
+    // world.
+    const cv::Mat Rcw = mCurrentFrame.mTcw.rowRange(0, 3).colRange(0, 3);
+    const cv::Mat tcw = mCurrentFrame.mTcw.rowRange(0, 3).col(3);
+
+    // camera.
+    cv::Mat PointPosCamera = Rcw * PointPosWorld + tcw;
+
+    const float xc = PointPosCamera.at<float>(0);
+    const float yc = PointPosCamera.at<float>(1);
+    const float invzc = 1.0 / PointPosCamera.at<float>(2);
+
+    // image.
+    float u = mCurrentFrame.fx * xc * invzc + mCurrentFrame.cx;
+    float v = mCurrentFrame.fy * yc * invzc + mCurrentFrame.cy;
+
+    return cv::Point2f(u, v);
 }
 
 void Tracking::NewDataset()

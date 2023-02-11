@@ -270,6 +270,9 @@ protected:
 
     bool NeedNewKeyFrame();
     void CreateNewKeyFrame();
+
+    // For 3D cuboid
+    int NeedNewKeyFrame();
     void CreateNewKeyFrame(bool CreateByObjs);
 
     // Perform preintegration from last frame
