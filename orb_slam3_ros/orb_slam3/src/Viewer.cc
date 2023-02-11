@@ -76,10 +76,10 @@ void Viewer::newParameterLoader(Settings *settings) {
     mViewpointF = settings->viewPointF();
 
     // For 3D cuboid
-    run_pangolin = setting->runPangolin();
-    run_rviz = setting->runRviz();
-    read_local_object = setting->readLocalObject();
-    show_object3d_frame = setting->showObject3DFrame();
+    run_pangolin = settings->runPangolin();
+    run_rviz = settings->runRviz();
+    read_local_object = settings->readLocalObject();
+    show_object3d_frame = settings->showObject3DFrame();
 
 }
 
@@ -261,7 +261,7 @@ void Viewer::Run()
 
     while(1)
     {
-        if (run_Pangolin)
+        if (run_pangolin)
         {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -623,7 +623,7 @@ void Viewer::read_local_object_file(){
             std::vector<float> vec{x_p, y_p, z_p};
             cv::Mat WorldPos(vec);
 
-            point->SetWorldPos(WorldPos) ;
+            point->SetWorldPos(Converter::toVector3f(WorldPos));
             vObjects[ object_num ]-> mvpMapObjectMappoints.push_back( point );
             //mpMapPub -> mpMap->mvObjectMap[ object_num ]->mvpMapObjectMappoints.push_back( &point );
         }

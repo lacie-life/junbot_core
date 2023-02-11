@@ -34,10 +34,11 @@
 #include "ImuTypes.h"
 #include "Settings.h"
 
-#include "Detector.h"
+//#include "Detector.h"
 #include "PointCloudMapping.h"
 #include "Flow.h"
 #include "Geometry.h"
+#include "YoloDetection.h"
 
 #include "GeometricCamera.h"
 
@@ -60,7 +61,7 @@
 #include <line_lbd/line_lbd_allclass.h>
 
 class PointCloudMapping;
-class Detector;
+//class Detector;
 
 namespace ORB_SLAM3
 {
@@ -84,7 +85,7 @@ public:
     Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Atlas* pAtlas,
              boost::shared_ptr<PointCloudMapping> pPointCloud,
              KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, Settings* settings, const string &_nameSeq=std::string()
-                     /*,std::shared_ptr<Detector> pDetector = nullptr*/
+             /*,std::shared_ptr<Detector> pDetector = nullptr*/
              );
 
     ~Tracking();
@@ -106,6 +107,7 @@ public:
     void SetViewer(Viewer* pViewer);
     void SetStepByStep(bool bSet);
     bool GetStepByStep();
+    void SetDetector(YoloDetection* pDetector);
 
     // Load new settings
     // The focal lenght should be similar or scale prediction will fail when projecting points
@@ -390,6 +392,7 @@ protected:
     // For point cloud viewing
     boost::shared_ptr<PointCloudMapping> mpPointCloudMapping;
     // std::shared_ptr<Detector> mpDetector;
+    YoloDetection* mpDetector;
     // Geometry mGeometry;
     Flow mFlow;
 
@@ -429,8 +432,8 @@ public:
 
 // 3d cuboid testing
 public:
-    void CreateObject_intrackmotion();
-    void AssociateObjAndPoint(std::vector<Object_2D *> objs_2d);
+    void CreateObject_InTrackMotion();
+    void AssociateObjAndPoints(std::vector<Object_2D *> objs_2d);
 
 private:
     std::string mStrSettingPath;

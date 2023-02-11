@@ -79,9 +79,9 @@ public:
     Frame(const cv::Mat &imGray, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, GeometricCamera* pCamera, cv::Mat &distCoef, const float &bf, const float &thDepth, Frame* pPrevF = static_cast<Frame*>(NULL), const IMU::Calib &ImuCalib = IMU::Calib());
 
     // For 3D cuboid
-    Frame(const cv::Mat &imColor, const cv::Mat &imGray, const cv::Mat &imDepth, const double &timeStamp,
+    Frame(const cv::Mat &imColor, const cv::Mat &imGray, const cv::Mat &imDepth, const cv::Mat &imMask, const double &timeStamp,
           ORBextractor* extractor, line_lbd_detect* line_lbd_ptr_frame, ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf,
-          const float &thDepth, const std::vector<BoxSE> & bbox);
+          const float &thDepth, const std::vector<BoxSE>& bbox, GeometricCamera* pCamera,Frame* pPrevF = static_cast<Frame*>(NULL), const IMU::Calib &ImuCalib = IMU::Calib());
 
     // Destructor
     // ~Frame();

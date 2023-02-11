@@ -513,6 +513,11 @@ protected:
     std::mutex mMutexFeatures;
     std::mutex mMutexMap;
 
+// For 3D cuboid
+public:
+    std::vector<Object_2D*> obj_2ds;     // 2d objects.
+    bool mbByNewObj = false;           // keyframe created by keyframe.
+
 public:
     GeometricCamera* mpCamera, *mpCamera2;
 

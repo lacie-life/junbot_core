@@ -139,7 +139,8 @@ Tracking::Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer,
             KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, Settings* settings, const string &_nameSeq
             /*, std::shared_ptr<Detector> pDetector*/):
         mState(NO_IMAGES_YET), mSensor(sensor), mTrackedFr(0), mbStep(false),
-        mbOnlyTracking(false), mbMapUpdated(false), mbVO(false), mpORBVocabulary(pVoc), mpPointCloudMapping(pPointCloud), mpKeyFrameDB(pKFDB),
+        mbOnlyTracking(false), mbMapUpdated(false), mbVO(false), mpORBVocabulary(pVoc), mpPointCloudMapping(pPointCloud),
+        mpKeyFrameDB(pKFDB),
         mbReadyToInitializate(false), mpSystem(pSys), mpViewer(NULL), bStepByStep(false),
         mpFrameDrawer(pFrameDrawer), mpMapDrawer(pMapDrawer), mpAtlas(pAtlas), mnLastRelocFrameId(0), time_recently_lost(5.0),
         mnInitialFrameId(0), mbCreatedMap(false), mnFirstFrameId(0), mpCamera2(nullptr), mpLastKeyFrame(static_cast<KeyFrame*>(NULL))
@@ -1556,6 +1557,11 @@ void Tracking::SetStepByStep(bool bSet)
     bStepByStep = bSet;
 }
 
+void Tracking::SetDetector(YoloDetection* pDetector)
+{
+    mpDetector = pDetector;
+}
+
 bool Tracking::GetStepByStep()
 {
     return bStepByStep;
@@ -1635,19 +1641,14 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
     mImDepth = imD;
     mImRGB = imRGB;
 
-//    if (mpSystem->isYoloDetection)
-//    {
-//        // Yolo
-//        cv::Mat InputImage;
-//        InputImage = imRGB.clone();
-//        mpDetector->GetImage(InputImage);
-//        mpDetector->Detect();
-//        mpORBextractorLeft->mvDynamicArea = mpDetector->mvDynamicArea;
-//        {
-//            std::unique_lock<std::mutex> lock(mpViewer->mMutexPAFinsh);
-//            mpViewer->mmDetectMap = mpDetector->mmDetectMap;
-//        }
-//    }
+    std::vector<BoxSE> objects;
+    if (mpSystem->isYoloDetection)
+    {
+        // Yolo
+        cv::Mat InputImage;
+        InputImage = imRGB.clone();
+        mpDetector->Detectv3(InputImage, objects);
+    }
 
     if(mImGray.channels()==3)
     {
@@ -1676,12 +1677,12 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
         mCurrentFrame = Frame(mImGray,mImDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,&mLastFrame,*mpImuCalib);
     }
 
-//    if(mpSystem->isYoloDetection)
-//    {
-//        mCurrentFrame.mvDynamicArea = mpDetector->mvDynamicArea;
-//        mpDetector->mmDetectMap.clear();
-//        mpDetector->mvDynamicArea.clear();
-//    }
+    if(mpSystem->isYoloDetection)
+    {
+        mCurrentFrame.mvDynamicArea = mpDetector->mvDynamicArea;
+        mpDetector->mmDetectMap.clear();
+        mpDetector->mvDynamicArea.clear();
+    }
 
     cv::Mat CurrFrameTcw = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(mCurrentFrame.GetPose()));
 //    if(!CurrFrameTcw.empty())
@@ -1704,13 +1705,26 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
         mFlow.ComputeMask(mImGray, mImMask, BTh);
     }
 
-    if (mSensor == System::RGBD)
+    if (mSensor == System::RGBD && !mpSystem->isYoloDetection)
     {
         mCurrentFrame = Frame(mImGray,mImDepth,mImMask,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera);
     }
-    else if(mSensor == System::IMU_RGBD)
+    else if(mSensor == System::IMU_RGBD && !mpSystem->isYoloDetection)
     {
         mCurrentFrame = Frame(mImGray,mImDepth,mImMask,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,&mLastFrame,*mpImuCalib);
+    }
+    // For 3D cuboid
+    else if (mSensor == System::RGBD && mpSystem->isYoloDetection)
+    {
+        mCurrentFrame = Frame(imRGB, mImGray, mImDepth, mImMask, timestamp,
+                              mpORBextractorLeft, line_lbd_ptr, mpORBVocabulary,
+                              mK, mDistCoef, mbf, mThDepth, objects, mpCamera);
+    }
+    else if (mSensor == System::IMU_RGBD && mpSystem->isYoloDetection)
+    {
+        mCurrentFrame = Frame(imRGB, mImGray, mImDepth, mImMask, timestamp,
+                              mpORBextractorLeft, line_lbd_ptr, mpORBVocabulary,
+                              mK, mDistCoef, mbf, mThDepth, objects, mpCamera, &mLastFrame,*mpImuCalib);
     }
 
     mCurrentFrame.mNameFile = filename;
@@ -2405,13 +2419,16 @@ void Tracking::Track()
 #ifdef REGISTER_TIMES
             std::chrono::steady_clock::time_point time_StartNewKF = std::chrono::steady_clock::now();
 #endif
-            bool bNeedKF = NeedNewKeyFrame();
+            int bNeedKF = NeedNewKeyFrame();
 
             // Check if we need to insert a new keyframe
             // if(bNeedKF && bOK)
-            if(bNeedKF && (bOK || (mInsertKFsLost && mState==RECENTLY_LOST &&
+            if((bNeedKF == 1) && (bOK || (mInsertKFsLost && mState==RECENTLY_LOST &&
                                    (mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD))))
-                CreateNewKeyFrame();
+                CreateNewKeyFrame(false);
+            else if ((bNeedKF == 2) && (bOK || (mInsertKFsLost && mState==RECENTLY_LOST &&
+                                    (mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD))))
+                CreateNewKeyFrame(true);
 
 #ifdef REGISTER_TIMES
             std::chrono::steady_clock::time_point time_EndNewKF = std::chrono::steady_clock::now();
@@ -3073,7 +3090,7 @@ bool Tracking::TrackWithMotionModel()
     }
 
     // For 3D cuboid
-    CreatObject_intrackmotion();
+    CreateObject_InTrackMotion();
 
     // Optimize frame pose with all matches
     Optimizer::PoseOptimization(&mCurrentFrame);
@@ -3231,7 +3248,7 @@ bool Tracking::TrackLocalMap()
     }
 }
 
-bool Tracking::NeedNewKeyFrame()
+int Tracking::NeedNewKeyFrame()
 {
     if((mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD) && !mpAtlas->GetCurrentMap()->isImuInitialized())
     {
@@ -4720,16 +4737,17 @@ void Tracking::UpdateFrameIMU(const float s, const IMU::Bias &b, KeyFrame* pCurr
 }
 
 // TODO: This function should be placed in the constructor of object
-void Tracking::CreatObject_intrackmotion(){
+void Tracking::CreateObject_InTrackMotion(){
 
     // *****************************
     // STEP 1. construct 2D object *
     // *****************************
     vector<Object_2D *> obj_2ds;
     cv::Mat ColorImage = mCurrentFrame.mColorImage.clone();
+    Map* mpMap = mpAtlas->GetCurrentMap();
     for (auto &box : mCurrentFrame.boxes)
     {
-        Object_2D *obj2d = new Object_2D( mpMap, &mCurrentFrame, box);  //(Map* Map, Frame* CurrentFrame, const BoxSE &box)
+        Object_2D *obj2d = new Object_2D(mpMap, &mCurrentFrame, box);  //(Map* Map, Frame* CurrentFrame, const BoxSE &box)
         obj_2ds.push_back(obj2d);
     }
     // ***************************************
@@ -4851,8 +4869,11 @@ void Tracking::CreatObject_intrackmotion(){
     // | *   *    *    |                // | *   *    *  |
     // |   *       *   |                // |___*_______*_|
     // |_______________|
-    const cv::Mat Rcw = mCurrentFrame.mTcw.rowRange(0, 3).colRange(0, 3);
-    const cv::Mat tcw = mCurrentFrame.mTcw.rowRange(0, 3).col(3);
+
+    cv::Mat Tcw_ = Converter::toCvMat(Converter::toSE3Quat(mCurrentFrame.GetPose()));
+
+    const cv::Mat Rcw = Tcw_.rowRange(0, 3).colRange(0, 3);
+    const cv::Mat tcw = Tcw_.rowRange(0, 3).col(3);
     for (auto &obj2d : obj_2ds)
     {
         // record the coordinates of each point in the xy(uv) directions.
@@ -5617,8 +5638,11 @@ void Tracking::SampleObjYaw(Object_Map* obj3d)
 cv::Point2f Tracking::WorldToImg(cv::Mat &PointPosWorld)
 {
     // world.
-    const cv::Mat Rcw = mCurrentFrame.mTcw.rowRange(0, 3).colRange(0, 3);
-    const cv::Mat tcw = mCurrentFrame.mTcw.rowRange(0, 3).col(3);
+
+    cv::Mat Tcw_ = Converter::toCvMat(Converter::toSE3Quat(mCurrentFrame.GetPose()));
+
+    const cv::Mat Rcw = Tcw_.rowRange(0, 3).colRange(0, 3);
+    const cv::Mat tcw = Tcw_.rowRange(0, 3).col(3);
 
     // camera.
     cv::Mat PointPosCamera = Rcw * PointPosWorld + tcw;

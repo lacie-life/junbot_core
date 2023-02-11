@@ -237,14 +237,20 @@ bool YoloDetection::Detectv3(const cv::Mat &bgr_img, std::vector<BoxSE> &objects
     // TODO: convert to BoxSE
     for(int i = 0; i < res.size(); i++)
     {
-        Object ob;
-        ob.rect = mModel->get_rect(img, res[i].bbox);
-        std::cout << "Copy end \n";
+        BoxSE ob;
+        cv::Rect rec = mModel->get_rect(img, res[i].bbox);
+
+        // BBox
+        ob.x = rec.x;
+        ob.y = rec.y;
+        ob.width = rec.width;
+        ob.height = rec.height;
+
         std::cout << res[i].class_id << std::endl;
-        ob.object_name = mClassnames[(int)res[i].class_id];
-        std::cout << "Copy end \n";
-        ob.prob = res[i].conf;
-        ob.class_id = res[i].class_id;
+        ob.m_class_name = mClassnames[(int)res[i].class_id];
+
+        ob.m_score = res[i].conf;
+        ob.m_class = res[i].class_id;
 
         objects.push_back(ob);
     }

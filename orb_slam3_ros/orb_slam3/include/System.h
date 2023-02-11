@@ -40,11 +40,12 @@
 #include "ImuTypes.h"
 #include "Settings.h"
 
-#include "Detector.h"
+// #include "Detector.h"
 #include "PointCloudMapping.h"
+#include "YoloDetection.h"
 
 class PointCloudMapping;
-class Detector;
+// class Detector;
 
 namespace ORB_SLAM3
 {
@@ -280,7 +281,7 @@ private:
 
     // Point cloud mapping
     boost::shared_ptr<PointCloudMapping> mpPointCloudMapping;
-    // YoloDetection* mpDetector;
+    YoloDetection* mpDetector;
     // std::shared_ptr<Detector> mpDetector;
 public:
     bool isYoloDetection = true;

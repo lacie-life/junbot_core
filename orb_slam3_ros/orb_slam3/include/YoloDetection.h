@@ -39,7 +39,7 @@ class BoxSE : public cv::Rect
 			m_class_name = std::to_string(m_class) + lb[m_class < 4 ? m_class : 4] + " class";
 		}
 	}
-}
+};
 
 typedef struct Object
 {
