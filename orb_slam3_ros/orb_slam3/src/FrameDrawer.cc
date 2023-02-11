@@ -205,8 +205,35 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale)
                 // This is a match to a MapPoint in the map
                 if(vbMap[i])
                 {
-                    cv::rectangle(im,pt1,pt2,standardColor);
-                    cv::circle(im,point,2,standardColor,-1);
+                    bool bInBox = false;
+                    
+                    // For 3D cuboid testing
+                    // if(mbshow_yolo_result)
+                    {
+                        for (auto&box : Dboxes)
+                        {
+                            int left = box.x;
+                            int right = box.x+box.width;
+                            int top = box.y;
+                            int bottom = box.y+box.height;
+
+                            if((vCurrentKeys[i].pt.x > left)&&(vCurrentKeys[i].pt.x < right)
+                                &&(vCurrentKeys[i].pt.y > top)&&(vCurrentKeys[i].pt.y < bottom))
+                            {
+                                cv::circle(im, vCurrentKeys[i].pt, 2, colors[box.m_class%6], -1);
+                                bInBox = true;
+                                break;
+                            }
+                        }
+                    }
+                    if(bInBox == false)
+                    {
+                        cv::rectangle(im,pt1,pt2,cv::Scalar(0,255,0));
+                        cv::circle(im,vCurrentKeys[i].pt,2,cv::Scalar(255,0,255),-1);
+                    }
+
+                    // cv::rectangle(im,pt1,pt2,standardColor);
+                    // cv::circle(im,point,2,standardColor,-1);
                     mnTracked++;
                 }
                 else // This is match to a "visual odometry" MapPoint created in the last frame
@@ -219,8 +246,10 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale)
         }
     }
 
-    cv::Mat imWithInfo;
-    DrawTextInfo(im,state, imWithInfo);
+    // cv::Mat imWithInfo;
+    // DrawTextInfo(im,state, imWithInfo);
+
+    DrawYoloInfo(im, true);
 
     return imWithInfo;
 }
@@ -464,6 +493,20 @@ void FrameDrawer::Update(Tracking *pTracker)
     mvbMap = vector<bool>(N,false);
     mbOnlyTracking = pTracker->mbOnlyTracking;
 
+    // For 3D cuboid testing
+    // key line
+    Dkeylines_raw_nouse = pTracker->mCurrentFrame.keylines_raw;
+    Dkeylines_out_nouse = pTracker->mCurrentFrame.keylines_out;
+    DTimeStamp_nouse = pTracker->mCurrentFrame.mTimeStamp;
+    DObjsLines = pTracker->mCurrentFrame.vObjsLines;// lines in objects
+
+    // colo image
+    //pTracker->mCurrentFrame.mColorImage.copyTo(mRGBIm);
+    pTracker->mCurrentFrame.mQuadricImage.copyTo(mQuadricIm);
+    Dboxes = pTracker->mCurrentFrame.boxes;
+    this->mTcw = pTracker->mCurrentFrame.mTcw;
+    this->mK = pTracker->mCurrentFrame.mK;
+
     //Variables for the new visualization
     mCurrentFrame = pTracker->mCurrentFrame;
     mmProjectPoints = mCurrentFrame.mmProjectPoints;
@@ -510,6 +553,192 @@ void FrameDrawer::Update(Tracking *pTracker)
 
     }
     mState=static_cast<int>(pTracker->mLastProcessedState);
+}
+
+// For 3D cuboid testing
+cv::Mat FrameDrawer::DrawQuadricImage()
+{
+
+    cv::Mat imRGB = mQuadricIm.clone();
+    // Projection Matrix K[R|t].  Camera frame to world change relationship
+    cv::Mat Pcw(3, 4, CV_32F);
+    if(mTcw.size().height!=4){
+        std::cout << "Camera pose is empty" << std::endl;
+        return imRGB;
+    }
+    const cv::Mat Rcw = mTcw.rowRange(0, 3).colRange(0, 3);
+    const cv::Mat tcw = mTcw.rowRange(0, 3).col(3);
+    Rcw.copyTo(Pcw.rowRange(0, 3).colRange(0, 3));
+    tcw.copyTo(Pcw.rowRange(0, 3).col(3));
+    cv::Mat Pfw(3, 4, CV_32F);
+    Pfw = mK * Pcw;
+
+    const std::vector<Object_Map*> obj_3ds_new = mpMap->GetObjects();
+    for(int i = (int)obj_3ds_new.size() - 1; i >= 0; i--){
+
+        //cv::Mat DrawQuadricProject( cv::Mat &im,
+        //                        const cv::Mat &P,
+        //                        const cv::Mat &axe,
+        //                        const cv::Mat &Twq,
+        //                        int nClassid,
+        //                        bool isGT=true,
+        //                        int nLatitudeNum = 7,
+        //                        int nLongitudeNum = 6);
+
+        //ColorImage = DrawQuadricProject(this->mCurrentFrame.mQuadricImage,
+        //                                    P,
+        //                                    axe,
+        //                                    Twq,
+        //                                    obj_3ds_new[i]->mnClass);
+        Object_Map* obj = obj_3ds_new[i];
+        // Only display the objects in the past 20 frames, it will not be confusing
+        if((obj->mnLastAddID + 20) < CurFrameId)
+            continue;
+        if(obj->bad_3d)
+            continue;
+
+        // 尺寸
+        cv::Mat axe = cv::Mat::zeros(3, 1, CV_32F);
+        axe.at<float>(0) = obj->mCuboid3D.lenth / 2;
+        axe.at<float>(1) = obj->mCuboid3D.width / 2;
+        axe.at<float>(2) = obj->mCuboid3D.height / 2;
+
+        // object pose (world).
+        cv::Mat Twq = obj->mCuboid3D.pose_mat;//Converter::toCvMat(obj_3ds_new[i]->mCuboid3D.pose);
+
+        // draw params
+        cv::Scalar sc = colors[ obj->mnClass % 6];
+        int nLatitudeNum = 7, nLongitudeNum = 6;
+        bool isGT=true;
+        int nLineWidth = 2;
+
+        // generate angluar grid -> xyz grid (vertical half sphere)
+        vector<float> vfAngularLatitude;  // (-90, 90)
+        vector<float> vfAngularLongitude; // [0, 180]
+        cv::Mat pointGrid(nLatitudeNum + 2, nLongitudeNum + 1, CV_32FC4);
+
+        for (int i = 0; i < nLatitudeNum + 2; i++)
+        {
+            float fThetaLatitude = -M_PI_2 + i * M_PI / (nLatitudeNum + 1);
+            cv::Vec4f *p = pointGrid.ptr<cv::Vec4f>(i);
+            for (int j = 0; j < nLongitudeNum + 1; j++)
+            {
+                float fThetaLongitude = j * M_PI / nLongitudeNum;
+                p[j][0] = axe.at<float>(0, 0) * cos(fThetaLatitude) * cos(fThetaLongitude);
+                p[j][1] = axe.at<float>(1, 0) * cos(fThetaLatitude) * sin(fThetaLongitude);
+                p[j][2] = axe.at<float>(2, 0) * sin(fThetaLatitude);
+                p[j][3] = 1.;
+            }
+        }
+
+        // draw latitude
+        for (int i = 0; i < pointGrid.rows; i++)
+        {
+            cv::Vec4f *p = pointGrid.ptr<cv::Vec4f>(i);
+            // [0, 180]
+            for (int j = 0; j < pointGrid.cols - 1; j++)
+            {
+                cv::Mat spherePt0 = (cv::Mat_<float>(4, 1) << p[j][0], p[j][1], p[j][2], p[j][3]);
+                cv::Mat spherePt1 = (cv::Mat_<float>(4, 1) << p[j + 1][0], p[j + 1][1], p[j + 1][2], p[j + 1][3]);
+                cv::Mat conicPt0 = Pfw * Twq * spherePt0;
+                cv::Mat conicPt1 = Pfw * Twq * spherePt1;
+                cv::Point pt0(conicPt0.at<float>(0, 0) / conicPt0.at<float>(2, 0), conicPt0.at<float>(1, 0) / conicPt0.at<float>(2, 0));
+                cv::Point pt1(conicPt1.at<float>(0, 0) / conicPt1.at<float>(2, 0), conicPt1.at<float>(1, 0) / conicPt1.at<float>(2, 0));
+                cv::line(imRGB, pt0, pt1, sc, nLineWidth); // [0, 180]
+            }
+            // [180, 360]
+            for (int j = 0; j < pointGrid.cols - 1; j++)
+            {
+                cv::Mat spherePt0 = (cv::Mat_<float>(4, 1) << -p[j][0], -p[j][1], p[j][2], p[j][3]);
+                cv::Mat spherePt1 = (cv::Mat_<float>(4, 1) << -p[j + 1][0], -p[j + 1][1], p[j + 1][2], p[j + 1][3]);
+                cv::Mat conicPt0 = Pfw * Twq * spherePt0;
+                cv::Mat conicPt1 = Pfw * Twq * spherePt1;
+                cv::Point pt0(conicPt0.at<float>(0, 0) / conicPt0.at<float>(2, 0), conicPt0.at<float>(1, 0) / conicPt0.at<float>(2, 0));
+                cv::Point pt1(conicPt1.at<float>(0, 0) / conicPt1.at<float>(2, 0), conicPt1.at<float>(1, 0) / conicPt1.at<float>(2, 0));
+                cv::line(imRGB, pt0, pt1, sc, nLineWidth); // [180, 360]
+            }
+        }
+
+        // draw longitude
+        cv::Mat pointGrid_t = pointGrid.t();
+        for (int i = 0; i < pointGrid_t.rows; i++)
+        {
+            cv::Vec4f *p = pointGrid_t.ptr<cv::Vec4f>(i);
+            // [0, 180]
+            for (int j = 0; j < pointGrid_t.cols - 1; j++)
+            {
+                cv::Mat spherePt0 = (cv::Mat_<float>(4, 1) << p[j][0], p[j][1], p[j][2], p[j][3]);
+                cv::Mat spherePt1 = (cv::Mat_<float>(4, 1) << p[j + 1][0], p[j + 1][1], p[j + 1][2], p[j + 1][3]);
+                cv::Mat conicPt0 = Pfw * Twq * spherePt0;
+                cv::Mat conicPt1 = Pfw * Twq * spherePt1;
+                cv::Point pt0(conicPt0.at<float>(0, 0) / conicPt0.at<float>(2, 0), conicPt0.at<float>(1, 0) / conicPt0.at<float>(2, 0));
+                cv::Point pt1(conicPt1.at<float>(0, 0) / conicPt1.at<float>(2, 0), conicPt1.at<float>(1, 0) / conicPt1.at<float>(2, 0));
+                cv::line(imRGB, pt0, pt1, sc, nLineWidth); // [0, 180]
+            }
+            // [180, 360]
+            for (int j = 0; j < pointGrid_t.cols - 1; j++)
+            {
+                cv::Mat spherePt0 = (cv::Mat_<float>(4, 1) << -p[j][0], -p[j][1], p[j][2], p[j][3]);
+                cv::Mat spherePt1 = (cv::Mat_<float>(4, 1) << -p[j + 1][0], -p[j + 1][1], p[j + 1][2], p[j + 1][3]);
+                cv::Mat conicPt0 = Pfw * Twq * spherePt0;
+                cv::Mat conicPt1 = Pfw * Twq * spherePt1;
+                cv::Point pt0(conicPt0.at<float>(0, 0) / conicPt0.at<float>(2, 0), conicPt0.at<float>(1, 0) / conicPt0.at<float>(2, 0));
+                cv::Point pt1(conicPt1.at<float>(0, 0) / conicPt1.at<float>(2, 0), conicPt1.at<float>(1, 0) / conicPt1.at<float>(2, 0));
+                cv::line(imRGB, pt0, pt1, sc, nLineWidth); // [180, 360]
+            }
+        }
+    }
+
+    return imRGB;
+}
+
+cv::Mat FrameDrawer::DrawYoloInfo(cv::Mat &im, bool bText)
+{
+    for (auto&box : Dboxes)
+    {
+        if(bText)
+        {
+            cv::putText(im,
+                        class_names[box.m_class],
+                        box.tl(),
+                        cv::FONT_HERSHEY_DUPLEX  ,
+                        1.0,
+                        colors[box.m_class%4],
+                        // cv::Scalar(0,255,0),
+                        2);
+        }
+
+        // draw lines in the box
+        for(int obj_id = 0; obj_id < DObjsLines.size(); obj_id ++)
+        {
+            for(int line_id = 0; line_id < DObjsLines[obj_id].rows(); line_id++)
+            {
+                cv::Scalar lineColor;
+                int R = ( rand() % (int) ( 255 + 1 ) );
+                int G = ( rand() % (int) ( 255 + 1 ) );
+                int B = ( rand() % (int) ( 255 + 1 ) );
+                lineColor = cv::Scalar( R, G, B );
+
+                cv::line(   im,
+                            cv::Point2f( DObjsLines[obj_id](line_id, 0), DObjsLines[obj_id](line_id, 1)),
+                            cv::Point2f( DObjsLines[obj_id](line_id, 2), DObjsLines[obj_id](line_id, 3)),
+                            cv::Scalar( 255, 255, 0 ),
+                            //lineColor,
+                            2.0);
+            }
+        }
+
+        // draw bounding box.
+        cv::rectangle(  im,
+                        box,
+                        colors[box.m_class%6],
+                        2);
+
+        // cv::putText( im, text, cv::Point(x, y + label_size.height),
+        //             cv::FONT_HERSHEY_SIMPLEX, 0.4, colors[box.m_class % 4], 1);
+    }
+
+    return im;
 }
 
 } //namespace ORB_SLAM
