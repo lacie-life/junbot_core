@@ -35,7 +35,7 @@
 1. ROS Noetic
 
 - vision_msgs 
-  - sudo apt-get installros-noetic-vision-msgs
+  - sudo apt-get install ros-noetic-vision-msgs
 - [turtlebot3_msgs](https://github.com/ROBOTIS-GIT/turtlebot3_msgs)
 - [octomap_mapping](https://github.com/OctoMap/octomap_mapping)
 - [octomap_rviz_plugins](https://github.com/OctoMap/octomap_rviz_plugins)
