@@ -8,7 +8,6 @@
 namespace ORB_SLAM3
 {
 
-
 mutex Object_2D::mGlobalMutex;  //crash bug
 mutex Object_Map::mMutex_front_back;
 
@@ -56,7 +55,7 @@ void Object_2D::ComputeMeanAndDeviation()
     for (pMP = mvMapPonits.begin();
          pMP != mvMapPonits.end();)
     {
-        cv::Mat pos = (*pMP)->GetWorldPos();
+        cv::Mat pos = Converter::toCvMat((*pMP)->GetWorldPos());
         if ((*pMP)->isBad())
         {
             //sum_pos_3d -= pos;
@@ -96,9 +95,12 @@ void Object_2D::RemoveOutlier_ByHeightorDepth()
 {
     unique_lock<mutex> lock(mMutexObjMapPoints);
     const cv::Mat Rcw = cv::Mat::zeros(3,3,CV_32F);
-    const cv::Mat tcw = cv::Mat::eye(3,1,CV_32F);  
-    mpCurrentFrame->mTcw.rowRange(0, 3).colRange(0, 3).copyTo(Rcw);
-    mpCurrentFrame->mTcw.rowRange(0, 3).col(3).copyTo(tcw);
+    const cv::Mat tcw = cv::Mat::eye(3,1,CV_32F);
+
+    cv::Mat Tcw_ = Converter::toCvMat(mpCurrentFrame->GetPose());
+
+    Tcw_.rowRange(0, 3).colRange(0, 3).copyTo(Rcw);
+    Tcw_.rowRange(0, 3).col(3).copyTo(tcw);
 
     // world -> camera.
     vector<float> x_c;
@@ -108,7 +110,7 @@ void Object_2D::RemoveOutlier_ByHeightorDepth()
     {
         MapPoint *pMP = mvMapPonits[i];
 
-        cv::Mat PointPosWorld = pMP->GetWorldPos();
+        cv::Mat PointPosWorld = Converter::toCvMat(pMP->GetWorldPos());
         cv::Mat PointPosCamera = Rcw * PointPosWorld + tcw;
 
         x_c.push_back(PointPosCamera.at<float>(0));
@@ -134,7 +136,7 @@ void Object_2D::RemoveOutlier_ByHeightorDepth()
     for (pMP = mvMapPonits.begin();
          pMP != mvMapPonits.end();)
     {
-        cv::Mat PointPosWorld = (*pMP)->GetWorldPos();
+        cv::Mat PointPosWorld = Converter::toCvMat((*pMP)->GetWorldPos());
         cv::Mat PointPosCamera = Rcw * PointPosWorld + tcw;
         float z = PointPosCamera.at<float>(2);
         
@@ -156,13 +158,13 @@ void Object_2D::MergeTwo_Obj2D(Object_2D *Old_Object2D)
         bool bNewPoint = true;
 
         MapPoint *pMPLast = Old_Object2D->mvMapPonits[m];
-        cv::Mat PosLast = pMPLast->GetWorldPos();
+        cv::Mat PosLast = Converter::toCvMat(pMPLast->GetWorldPos());
 
         // whether a new points.
         for (size_t n = 0; n < this->mvMapPonits.size(); ++n)
         {
             MapPoint *pMPCurr = this->mvMapPonits[n];
-            cv::Mat PosCurr = pMPCurr->GetWorldPos();
+            cv::Mat PosCurr = Converter::toCvMat(pMPCurr->GetWorldPos());
 
             if (cv::countNonZero(PosLast - PosCurr) == 0)
             {
@@ -185,9 +187,12 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
     std::cout << "Check if it is connected to the old object" << std::endl;
     const cv::Mat image = mpCurrentFrame->mColorImage.clone();
     const cv::Mat Rcw = cv::Mat::zeros(3,3,CV_32F);
-    const cv::Mat tcw = cv::Mat::eye(3,1,CV_32F);  
-    mpCurrentFrame->mTcw.rowRange(0, 3).colRange(0, 3).copyTo(Rcw);
-    mpCurrentFrame->mTcw.rowRange(0, 3).col(3).copyTo(tcw);
+    const cv::Mat tcw = cv::Mat::eye(3,1,CV_32F);
+
+    cv::Mat Tcw_ = Converter::toCvMat(mpCurrentFrame->GetPose());
+
+    Tcw_.rowRange(0, 3).colRange(0, 3).copyTo(Rcw);
+    Tcw_.rowRange(0, 3).col(3).copyTo(tcw);
 
     cv::Rect RectCurrent = mBox_cvRect;     // object bounding box in current frame.
     cv::Rect RectPredict;                   // predicted bounding box according to last frame and next to last frame.
@@ -814,7 +819,7 @@ int Object_2D::NoParaDataAssociation(Object_Map *Object3D)
                     continue;
                 }
 
-                cv::Mat x3D2 = p2->GetWorldPos();
+                cv::Mat x3D2 = Converter::toCvMat(p2->GetWorldPos());
                 x_pt.push_back(x3D2.at<float>(0, 0));
                 y_pt.push_back(x3D2.at<float>(1, 0));
                 z_pt.push_back(x3D2.at<float>(2, 0));
@@ -841,7 +846,7 @@ int Object_2D::NoParaDataAssociation(Object_Map *Object3D)
                     continue;
                 }
 
-                cv::Mat x3D2 = p2->GetWorldPos();
+                cv::Mat x3D2 = Converter::toCvMat(p2->GetWorldPos());
                 x_pt_map_sample.push_back(x3D2.at<float>(0, 0));
                 y_pt_map_sample.push_back(x3D2.at<float>(1, 0));
                 z_pt_map_sample.push_back(x3D2.at<float>(2, 0));
@@ -870,7 +875,7 @@ int Object_2D::NoParaDataAssociation(Object_Map *Object3D)
         if (p1->isBad() )
             continue;
 
-        cv::Mat x3D1 = p1->GetWorldPos();
+        cv::Mat x3D1 = Converter::toCvMat(p1->GetWorldPos());
         double x_2d = x3D1.at<float>(0, 0);
         double y_2d = x3D1.at<float>(1, 0);
         double z_2d = x3D1.at<float>(2, 0);
@@ -958,7 +963,7 @@ void Object_2D::AddObjectPoint(ORB_SLAM3::MapPoint *pMP) {
     unique_lock<mutex> lock2(mGlobalMutex);
     unique_lock<mutex> lock(mMutexPos);
     mvMapPonits.push_back(pMP);
-    const cv::Mat PointPosWorld = pMP->GetWorldPos();                 // world frame.
+    const cv::Mat PointPosWorld = Converter::toCvMat(pMP->GetWorldPos());                 // world frame.
     sum_pos_3d += PointPosWorld;  
 }
 
@@ -976,7 +981,7 @@ void Object_2D::AddPotentialAssociatedObjects( vector<Object_Map*> obj3ds, int A
 }
 
 // ************************************
-// object3d 通用函数部分 *
+// object3d
 // ************************************
 void Object_Map::ComputeMeanAndDeviation_3D() {
     mSumPointsPos = cv::Mat::zeros(3,1,CV_32F);
@@ -990,7 +995,7 @@ void Object_Map::ComputeMeanAndDeviation_3D() {
         {
             i++;
 
-            cv::Mat pos = (*pMP)->GetWorldPos();
+            cv::Mat pos = Converter::toCvMat((*pMP)->GetWorldPos());
 
             if ((*pMP)->isBad()) {
                 pMP = mvpMapObjectMappoints.erase(pMP);
@@ -1004,11 +1009,11 @@ void Object_Map::ComputeMeanAndDeviation_3D() {
     // step 0. mean(3d center).
     mAveCenter3D = mSumPointsPos / (mvpMapObjectMappoints.size());
 
-    // step 1. 特征点簇中心在xyz上的偏差 standard deviation in 3 directions.
+    // step 1. standard deviation in 3 directions.
     float sum_x2 = 0, sum_y2 = 0, sum_z2 = 0;
     vector<float> x_pt, y_pt, z_pt;
     for (size_t i = 0; i < mvpMapObjectMappoints.size(); i++) {
-        cv::Mat pos = mvpMapObjectMappoints[i]->GetWorldPos();
+        cv::Mat pos = Converter::toCvMat(mvpMapObjectMappoints[i]->GetWorldPos());
         cv::Mat pos_ave = mAveCenter3D;
 
         // （x-x^）^2
@@ -1027,7 +1032,7 @@ void Object_Map::ComputeMeanAndDeviation_3D() {
     if (x_pt.size() == 0)
         return;
 
-    // step 2. 特征点簇中心与各object2d中的点簇中心的偏差 standard deviation of centroids (observations from different frames).
+    // step 2. standard deviation of centroids (observations from different frames).
     float sum_x2_c = 0, sum_y2_c = 0, sum_z2_c = 0;
     vector<float> x_c, y_c, z_c;
     for (size_t i = 0; i < this->mvObject_2ds.size(); i++)
@@ -1044,7 +1049,7 @@ void Object_Map::ComputeMeanAndDeviation_3D() {
     mCenterStandar_y = sqrt(sum_y2_c / (this->mvObject_2ds.size()));
     mCenterStandar_z = sqrt(sum_z2_c / (this->mvObject_2ds.size()));
 
-    // step 3. 生成Cuboid3D的中心和尺寸  update object center and scale.
+    // step 3. update object center and scale.
     if (this->mvObject_2ds.size() < 5)
     {
         sort(x_pt.begin(), x_pt.end());
@@ -1053,7 +1058,7 @@ void Object_Map::ComputeMeanAndDeviation_3D() {
 
         if ((x_pt.size() == 0) || (y_pt.size() == 0) || (z_pt.size() == 0)) {
             this->bad_3d = true;
-            std::cout<<"object->bad 点数为0" <<std::endl;
+            std::cout<<"object->bad Points are 0" <<std::endl;
             return;
         }
 
@@ -1066,7 +1071,7 @@ void Object_Map::ComputeMeanAndDeviation_3D() {
         float z_min = z_pt[0];
         float z_max = z_pt[z_pt.size() - 1];
 
-        // centre. 这是点集外包框的中心
+        // centre.
         mCuboid3D.cuboidCenter = Eigen::Vector3d((x_max + x_min) / 2, (y_max + y_min) / 2, (z_max + z_min) / 2);
 
         mCuboid3D.x_min = x_min;
@@ -1099,16 +1104,16 @@ void Object_Map::ComputeMeanAndDeviation_3D() {
         mCuboid3D.corner_8_w = Eigen::Vector3d(x_min, y_max, z_max);
     }
 
-    // step 4. update object pose。  更新物体在世界下的坐标
+    // step 4. update object pose
     Update_Twobj();
 
 
-    // step 5. 计算8个定点的世界坐标
+    // step 5. Calculate the world coordinates of 8 fixed points
     vector<float> x_pt_obj, y_pt_obj, z_pt_obj;
     g2o::SE3Quat pose =  Converter::toSE3Quat(this->mCuboid3D.pose_mat);
     for (size_t i = 0; i < mvpMapObjectMappoints.size(); i++) {
         // world frame.
-        Eigen::Vector3d PointPos_world = Converter::toVector3d(mvpMapObjectMappoints[i]->GetWorldPos());
+        Eigen::Vector3d PointPos_world = Converter::toVector3d(Converter::toCvMat(mvpMapObjectMappoints[i]->GetWorldPos()));
 
         // object frame.   Twobj.inv * point = Tobjw * point
         Eigen::Vector3d PointPos_object = pose.inverse() * PointPos_world;
@@ -1156,7 +1161,7 @@ void Object_Map::ComputeMeanAndDeviation_3D() {
     //mCuboid3D.corner_8_w = pose_without_yaw * Eigen::Vector3d(x_min_obj, y_max_obj, z_max_obj);
 
 
-    // step 6. 计算cubic的长宽高和半径
+    // step 6. Calculate the length, width, height and radius of the cubic
     this->mCuboid3D.lenth = x_max_obj - x_min_obj;
     this->mCuboid3D.width = y_max_obj - y_min_obj;
     this->mCuboid3D.height = z_max_obj - z_min_obj;
@@ -1194,7 +1199,7 @@ void Object_Map::ComputeMeanAndDeviation_3D() {
     mCuboid3D.mfRMax = fRMax;
 
 
-    // step 7. 计算cubic中心, 与各object2d点云簇中心, 在直线距离上的偏差
+    // step 7. Calculate the deviation between the cubic center and the center of each object2d point cloud cluster on the straight-line distance
     // standard deviation of distance.
     float dis = 0;
     for (size_t i = 0; i < mvObject_2ds.size(); i++) {
@@ -1218,9 +1223,9 @@ void Object_Map::ComputeMeanAndDeviation_3D() {
     this->ComputeIE();
 }
 
-// 移除object3d中的outliers，重新优化物体的坐标和尺度
-// 疑问： 这和ComputeMeanAndStandard有什么区别？
-// 答：似乎是专属于biForest下的ComputeMeanAndStandard
+// Remove the outliers in object3d and re-optimize the coordinates and scale of the object
+// Question: What is the difference between this and ComputeMeanAndStandard?
+// Answer: It seems to be exclusive to ComputeMeanAndStandard under biForest
 // remove outliers and refine the object position and scale by IsolationForest.
 void Object_Map::IsolationForestDeleteOutliers(){
     if(!iforest_flag)
@@ -1233,18 +1238,18 @@ void Object_Map::IsolationForestDeleteOutliers(){
     if (this->mnClass == 62)
         th = 0.65;
 
-    // notes: 相对于传统的srand()，std::mt19937拥有更好的性能。
+    // notes: Compared with the traditional srand(), std::mt19937 has better performance.
     //std::mt19937 rng(12345);
     std::vector<std::array<float, 3>> data; // uint32_t
 
     if (mvpMapObjectMappoints.size() < 30)
         return;
 
-    // 将point的坐标，从cv::mat转为std::array
+    // Convert the coordinates of point from cv::mat to std::array
     for (size_t i = 0; i < mvpMapObjectMappoints.size(); i++)
     {
         MapPoint *pMP = mvpMapObjectMappoints[i];
-        cv::Mat pos = pMP->GetWorldPos();
+        cv::Mat pos = Converter::toCvMat(pMP->GetWorldPos());
 
         std::array<float, 3> temp;
         temp[0] = pos.at<float>(0);
@@ -1253,20 +1258,17 @@ void Object_Map::IsolationForestDeleteOutliers(){
         data.push_back(temp);
     }
 
-    // 删除很多 被注释的内容
-
-
-    // STEP 3 构建随机森林 筛选器
+    // STEP 3 Build a random forest filter
     iforest::IsolationForest<float, 3> forest; // uint32_t
     if (!forest.Build(50, 12345, data, ((int)mvpMapObjectMappoints.size() / 2)))
-                 //数的数量, ??, 输入的数据,  采样的数量(此处是data的一半)
+                 // Number of numbers, ??, input data, number of samples (here is half of data)
     {
         std::cerr << "Failed to build Isolation Forest.\n";
         return;
     }
     std::vector<double> anomaly_scores;
 
-    // STEP 4 计算Anomaly_score, 并将大于阈值的point, 标记为outlier
+    // STEP 4 Calculate Anomaly_score, and mark the point greater than the threshold as outlier
     if (!forest.GetAnomalyScores(data, anomaly_scores))
     {
         std::cerr << "Failed to calculate anomaly scores.\n";
@@ -1275,7 +1277,7 @@ void Object_Map::IsolationForestDeleteOutliers(){
     std::vector<int> outlier_ids;
     for (uint32_t i = 0; i < (int)mvpMapObjectMappoints.size(); i++)
     {
-        // 如果Anomaly_score大于阈值, 则认为是outlier
+        // If Anomaly_score is greater than the threshold, it is considered outlier
         if (anomaly_scores[i] > th)
             outlier_ids.push_back(i);
     }
@@ -1283,7 +1285,7 @@ void Object_Map::IsolationForestDeleteOutliers(){
     if (outlier_ids.empty())
         return;
 
-    // step 5. 将 outliers 从object3d的mvpMapObjectMappoints 中移除.
+    // step 5. Remove outliers from mvpMapObjectMapppoints of object3d.
     int id_Mappoint = -1;
     int id_MOutpoint_out = 0;
     unique_lock<mutex> lock(mMutexMapPoints); // lock.
@@ -1291,10 +1293,10 @@ void Object_Map::IsolationForestDeleteOutliers(){
     for (pMP = mvpMapObjectMappoints.begin();
          pMP != mvpMapObjectMappoints.end();)
     {
-        // pMP和numMappoint, 从头开始递加, 依次检阅
+        // pMP and numMappoint, increment from the beginning, review in turn
         id_Mappoint++;
 
-        cv::Mat pos = (*pMP)->GetWorldPos();
+        cv::Mat pos = Converter::toCvMat((*pMP)->GetWorldPos());
 
         if (id_Mappoint == outlier_ids[id_MOutpoint_out])
         {
@@ -1310,10 +1312,8 @@ void Object_Map::IsolationForestDeleteOutliers(){
     }
 }
 
-void Object_Map::Update_Twobj()      //更新物体在世界下的坐标
+void Object_Map::Update_Twobj()      // Update the coordinates of the object in the world
 {
-
-
     // Rotation matrix.
     float cp = cos(mCuboid3D.rotP);
     float sp = sin(mCuboid3D.rotP);
@@ -1371,14 +1371,15 @@ void Object_Map::Update_Twobj()      //更新物体在世界下的坐标
 
 void Object_Map::ComputeProjectRectFrameToCurrentFrame(Frame &Frame)
 {
-    const cv::Mat Rcw = Frame.mTcw.rowRange(0, 3).colRange(0, 3);
-    const cv::Mat tcw = Frame.mTcw.rowRange(0, 3).col(3);
+    cv::Mat Tcw_ = Converter::toCvMat(Frame.GetPose());
+    const cv::Mat Rcw = Tcw_.rowRange(0, 3).colRange(0, 3);
+    const cv::Mat tcw = Tcw_.rowRange(0, 3).col(3);
     vector<float> x_pt;
     vector<float> y_pt;
     for (int j = 0; j < mvpMapObjectMappoints.size(); j++)
     {
         MapPoint *pMP = mvpMapObjectMappoints[j];
-        cv::Mat PointPosWorld = pMP->GetWorldPos();
+        cv::Mat PointPosWorld = Converter::toCvMat(pMP->GetWorldPos());
 
         cv::Mat PointPosCamera = Rcw * PointPosWorld + tcw;
 
@@ -1446,8 +1447,6 @@ vector<MapPoint* > Object_Map::GetNewObjectMappoints(){
     return vector<MapPoint* >(mvpMapObjectMappoints_NewForActive.begin(), mvpMapObjectMappoints_NewForActive.end());
 }
 
-
-
 // ************************************
 // object3d track
 // ************************************
@@ -1460,8 +1459,9 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
     if (Object_2d->mclass_id != mnClass)
         return false;
 
-    const cv::Mat Rcw = mCurrentFrame.mTcw.rowRange(0, 3).colRange(0, 3);
-    const cv::Mat tcw = mCurrentFrame.mTcw.rowRange(0, 3).col(3);
+    cv::Mat Tcw_ = Converter::toCvMat(mCurrentFrame.GetPose());
+    const cv::Mat Rcw = Tcw_.rowRange(0, 3).colRange(0, 3);
+    const cv::Mat tcw = Tcw_.rowRange(0, 3).col(3);
 
     // step 1. whether the box projected into the image changes greatly after the new point cloud is associated.
     if ((Flag != MotionIou) && (Flag != ProIou))
@@ -1485,7 +1485,7 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
         for (int i = 0; i < Object_2d->mvMapPonits.size(); ++i)
         {
             MapPoint *pMP = Object_2d->mvMapPonits[i];
-            cv::Mat PointPosWorld = pMP->GetWorldPos();
+            cv::Mat PointPosWorld = Converter::toCvMat(pMP->GetWorldPos());
             cv::Mat PointPosCamera = Rcw * PointPosWorld + tcw;
 
             const float xc = PointPosCamera.at<float>(0);
@@ -1501,7 +1501,7 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
         for (int j = 0; j < mvpMapObjectMappoints.size(); ++j)
         {
             MapPoint *pMP = mvpMapObjectMappoints[j];
-            cv::Mat PointPosWorld = pMP->GetWorldPos();
+            cv::Mat PointPosWorld = Converter::toCvMat(pMP->GetWorldPos());
             cv::Mat PointPosCamera = Rcw * PointPosWorld + tcw;
 
             const float xc = PointPosCamera.at<float>(0);
@@ -1535,7 +1535,7 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
         // projected bounding box2.
         ProjectRect_3Dand2D = cv::Rect(x_min, y_min, x_max - x_min, y_max - y_min);
 
-        // 4. 计算 Iou
+        // 4. Calculate Iou
         float fIou = Converter::bboxOverlapratio(ProjectRect_3D, ProjectRect_3Dand2D);
         float fIou2 = Converter::bboxOverlapratioFormer(ProjectRect_3Dand2D, Object_2d->mBox_cvRect);
         if ((fIou < 0.5) && (fIou2 < 0.8))  
@@ -1563,7 +1563,7 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
     {
         MapPoint *pMP = Object_2d->mvMapPonits[j];
 
-        cv::Mat pointPos = pMP->GetWorldPos();
+        cv::Mat pointPos = Converter::toCvMat(pMP->GetWorldPos());
         cv::Mat mDis = mAveCenter3D - pointPos;
         float fDis = sqrt(mDis.at<float>(0) * mDis.at<float>(0) + mDis.at<float>(1) * mDis.at<float>(1) + mDis.at<float>(2) * mDis.at<float>(2));
 
@@ -1599,8 +1599,8 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
             // old points.
             for (size_t m = 0; m < mvpMapObjectMappoints.size(); ++m)
             {
-                cv::Mat obj_curr_pos = pMP->GetWorldPos();
-                cv::Mat obj_map_pos = mvpMapObjectMappoints[m]->GetWorldPos();
+                cv::Mat obj_curr_pos = Converter::toCvMat(pMP->GetWorldPos());
+                cv::Mat obj_map_pos = Converter::toCvMat(mvpMapObjectMappoints[m]->GetWorldPos());
 
                 if (cv::countNonZero(obj_curr_pos - obj_map_pos) == 0)
                 {
@@ -1616,7 +1616,7 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
 
                 mvpMapObjectMappoints_NewForActive.push_back(pMP);
 
-                cv::Mat x3d = pMP->GetWorldPos();
+                cv::Mat x3d = Converter::toCvMat(pMP->GetWorldPos());
                 mSumPointsPos += x3d;
             }
         }
@@ -1647,7 +1647,7 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
                 continue;
             }
 
-            cv::Mat PointPosWorld = (*pMP)->GetWorldPos();
+            cv::Mat PointPosWorld = Converter::toCvMat((*pMP)->GetWorldPos());
             cv::Mat PointPosCamera = Rcw * PointPosWorld + tcw;
 
             const float xc = PointPosCamera.at<float>(0);
@@ -1692,7 +1692,6 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
 }
 
 
-
 bool Object_Map::WhetherOverlap(Object_Map *CompareObj)
 {
     // distance between two centers.
@@ -1710,7 +1709,6 @@ bool Object_Map::WhetherOverlap(Object_Map *CompareObj)
     else
         return false;
 }
-
 
 // ************************************
 // object3d localmap
@@ -1832,7 +1830,7 @@ void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
         if(pMP->isBad())
             continue;
 
-        cv::Mat pointPos = pMP->GetWorldPos();
+        cv::Mat pointPos = Converter::toCvMat(pMP->GetWorldPos());
         Eigen::Vector3d scale = Converter::toSE3Quat(this->mCuboid3D.pose_mat).inverse() * Converter::toVector3d(pointPos);
         if ((abs(scale[0]) > 1.1 * this->mCuboid3D.lenth / 2) ||
             (abs(scale[1]) > 1.1 * this->mCuboid3D.width / 2) ||
@@ -1863,8 +1861,8 @@ void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
             // old points.
             for (size_t m = 0; m < mvpMapObjectMappoints.size(); ++m)
             {
-                cv::Mat obj_curr_pos = pMP->GetWorldPos();
-                cv::Mat obj_map_pos = mvpMapObjectMappoints[m]->GetWorldPos();
+                cv::Mat obj_curr_pos = Converter::toCvMat(pMP->GetWorldPos());
+                cv::Mat obj_map_pos = Converter::toCvMat(mvpMapObjectMappoints[m]->GetWorldPos());
 
                 if (cv::countNonZero(obj_curr_pos - obj_map_pos) == 0)
                 {
@@ -1879,7 +1877,7 @@ void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
             {
                 mvpMapObjectMappoints.push_back(pMP);
                 mvpMapObjectMappoints_NewForActive.push_back(pMP);
-                cv::Mat x3d = pMP->GetWorldPos();
+                cv::Mat x3d = Converter::toCvMat(pMP->GetWorldPos());
                 mSumPointsPos += x3d;
             }
         }
@@ -2251,7 +2249,7 @@ void Object_Map::BigToSmall_fll(Object_Map *SmallObj, float overlap_x, float ove
         for (pMP = mvpMapObjectMappoints.begin();
              pMP != mvpMapObjectMappoints.end();)
         {
-            cv::Mat PointPosWorld = (*pMP)->GetWorldPos();
+            cv::Mat PointPosWorld = Converter::toCvMat((*pMP)->GetWorldPos());
 
             // points in the smaller object.
             if ((PointPosWorld.at<float>(0) > SmallObj->mCuboid3D.x_min) && (PointPosWorld.at<float>(0) < SmallObj->mCuboid3D.x_max) &&
@@ -2279,7 +2277,7 @@ void Object_Map::DivideEquallyTwoObjs_fll(Object_Map *AnotherObj, float overlap_
         for (pMP = mvpMapObjectMappoints.begin();
              pMP != mvpMapObjectMappoints.end();)
         {
-            cv::Mat PointPosWorld = (*pMP)->GetWorldPos();
+            cv::Mat PointPosWorld = Converter::toCvMat((*pMP)->GetWorldPos());
             float cuboidCenter0_ano = (AnotherObj->mCuboid3D.corner_2[0] + AnotherObj->mCuboid3D.corner_8[0])/2.0;
             float cuboidCenter1_ano = (AnotherObj->mCuboid3D.corner_2[1] + AnotherObj->mCuboid3D.corner_8[1]) / 2.0;
             float cuboidCenter2_ano = (AnotherObj->mCuboid3D.corner_2[2] + AnotherObj->mCuboid3D.corner_8[2])/2.0 ;
@@ -2387,7 +2385,7 @@ cv::Mat Object_Map::compute_pointnum_eachgrid(){
     zero_vec = T_w2o* zero_vec;
 
     for (int i = 0; i < mvpMapObjectMappoints.size(); ++i) {
-        cv::Mat point_pose = mvpMapObjectMappoints[i]->GetWorldPos();
+        cv::Mat point_pose = Converter::toCvMat(mvpMapObjectMappoints[i]->GetWorldPos());
         Eigen::Vector3d point_vec( point_pose.at<float>(0)-center_x, point_pose.at<float>(1)-center_y, point_pose.at<float>(2)-center_z);
         int x = -1 , y = -1;
         compute_grid_xy(zero_vec, point_vec, x, y);
@@ -2472,7 +2470,7 @@ void Object_Map::ComputeIE(){
 
     double main_x, main_y, main_z;
     for (int i = 0; i < mvpMapObjectMappoints.size(); ++i) {
-        cv::Mat point_pose = mvpMapObjectMappoints[i]->GetWorldPos();
+        cv::Mat point_pose = Converter::toCvMat(mvpMapObjectMappoints[i]->GetWorldPos());
         main_x +=  point_pose.at<float>(0) - this->mCuboid3D.cuboidCenter(0) ;
         main_y +=  point_pose.at<float>(1) - this->mCuboid3D.cuboidCenter(1) ;
         main_z +=  point_pose.at<float>(2) - this->mCuboid3D.cuboidCenter(2) ;
@@ -2486,12 +2484,9 @@ void Object_Map::ComputeIE(){
 }
 
 
-
 double Object_Map::get_information_entroy(){
     return mIE;
 }
-
-
 
 // ************************************
 // object3d Filter Candidates
@@ -2505,7 +2500,7 @@ bool Object_Map::WheatherInRectFrameOf(const cv::Mat &Tcw, const float &fx, cons
     for (int j = 0; j < mvpMapObjectMappoints.size(); j++)
     {
         MapPoint *pMP = mvpMapObjectMappoints[j];
-        cv::Mat PointPosWorld = pMP->GetWorldPos();
+        cv::Mat PointPosWorld = Converter::toCvMat(pMP->GetWorldPos());
 
         cv::Mat PointPosCamera = Rcw * PointPosWorld + tcw;
 
