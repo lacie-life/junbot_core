@@ -11,4 +11,7 @@ local_costmap:
   width: 3
   height: 3
   resolution: 0.05
+  plugins:
+    - { name: object_layer, type: "object_layer::ObjectLayer" }
+    - { name: inflation_layer, type: "costmap_2d::InflationLayer" }
   

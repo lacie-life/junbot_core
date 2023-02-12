@@ -32,7 +32,7 @@ endif ()
 
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
-set(OpenCV_DIR "/home/lacie/opencv-4.5.2/build")
+set(OpenCV_DIR "/home/hn/opencv-4.5.2/build")
 find_package(OpenCV 4.5 REQUIRED NO_MODULE PATHS /usr/local NO_DEFAULT_PATH)
 if (NOT OpenCV_FOUND)
     message(FATAL_ERROR "OpenCV 4.5 not found.")
