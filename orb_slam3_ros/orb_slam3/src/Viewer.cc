@@ -31,10 +31,12 @@ Viewer::Viewer(System* pSystem, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer
 {
     if(settings)
     {
+        std::cout << "Here \n";
         newParameterLoader(settings);
     }
     else
     {
+        std::cout << "Normal reading \n";
         cv::FileStorage fSettings(strSettingPath, cv::FileStorage::READ);
 
         bool is_correct = ParseViewerParamFile(fSettings);
@@ -80,6 +82,8 @@ void Viewer::newParameterLoader(Settings *settings) {
     run_rviz = settings->runRviz();
     read_local_object = settings->readLocalObject();
     show_object3d_frame = settings->showObject3DFrame();
+
+    std::cout << "Show object 3D frame mode: " << show_object3d_frame << "\n";
 
 }
 
@@ -162,6 +166,51 @@ bool Viewer::ParseViewerParamFile(cv::FileStorage &fSettings)
     else
     {
         std::cerr << "*Viewer.ViewpointF parameter doesn't exist or is not a real number*" << std::endl;
+        b_miss_params = true;
+    }
+
+    // For 3D cuboid testing
+    node = fSettings["Viewer.pangolin"];
+    if(!node.empty())
+    {
+        run_pangolin = (int)node.real();
+    }
+    else
+    {
+        std::cerr << "*Viewer.pangolin parameter doesn't exist or is not a real number*" << std::endl;
+        b_miss_params = true;
+    }
+
+    node = fSettings["Viewer.rviz"];
+    if(!node.empty())
+    {
+        run_rviz = (int)node.real();
+    }
+    else
+    {
+        std::cerr << "*Viewer.rviz parameter doesn't exist or is not a real number*" << std::endl;
+        b_miss_params = true;
+    }
+
+    node = fSettings["Viewer.readlocalobject"];
+    if(!node.empty())
+    {
+        read_local_object = (int)node.real();
+    }
+    else
+    {
+        std::cerr << "*Viewer.readlocalobject parameter doesn't exist or is not a real number*" << std::endl;
+        b_miss_params = true;
+    }
+
+    node = fSettings["Viewer.show_object3d_frame"];
+    if(!node.empty())
+    {
+        show_object3d_frame = (int)node.real();
+    }
+    else
+    {
+        std::cerr << "*Viewer.show_object3d_frame parameter doesn't exist or is not a real number*" << std::endl;
         b_miss_params = true;
     }
 
@@ -390,11 +439,16 @@ void Viewer::Run()
 
         // For 3D cuboid
         if(show_object3d_frame) {
+            std::cout << "Visual Quadric Projection \n";
             cv::Mat QuadricImage = mpFrameDrawer->GetQuadricImage();
             if (!QuadricImage.empty()) {
                 cv::Mat resizeimg;
                 cv::resize(QuadricImage, resizeimg, cv::Size(640 * 0.7, 480 * 0.7), 0, 0, cv::INTER_CUBIC);
                 cv::imshow("Quadric Projection", resizeimg);
+            }
+            else
+            {
+                std::cout << "QuadricImage is empty \n";
             }
         }
 

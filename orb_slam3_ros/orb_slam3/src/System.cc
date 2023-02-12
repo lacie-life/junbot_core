@@ -203,7 +203,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
         // Initialize pointcloud mapping
         // mpPointCloudMapping = boost::make_shared<PointCloudMapping>(resolution, modelPath);
 
-        std::cout << "Here \n";
+        std::cout << "Pointcloud only \n";
         mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer,
                                  mpAtlas, mpPointCloudMapping, mpKeyFrameDatabase,
                                  strSettingsFile, mSensor, settings_,
@@ -211,10 +211,11 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     }
     else
     {
+        std::cout << "3D Cuboid testing \n";
+
         mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer,
                                  mpAtlas, mpKeyFrameDatabase,
                                  strSettingsFile, mSensor, settings_, strSequence);
-
         mpTracker->SetDetector(mpDetector);
     }
 

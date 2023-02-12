@@ -70,6 +70,11 @@ Viewer.ViewpointY: -0.7
 Viewer.ViewpointZ: -1.8
 Viewer.ViewpointF: 500
 
+Viewer.pangolin: 1
+Viewer.rviz: 0
+Viewer.readlocalobject: 0
+Viewer.show_object3d_frame: 1
+
 #--------------------------------------------------------------------------------------------
 # PointCloud Mapping
 #--------------------------------------------------------------------------------------------
@@ -94,7 +99,9 @@ Dynamic.flow: 10.0
 #--------------------------------------------------------------------------------------------
 # 3D cuboid
 #--------------------------------------------------------------------------------------------
-Viewer.pangolin: 1
-Viewer.rviz: 0
-Viewer.readlocalobject: 0
-Viewer.show_object3d_frame: 0
+IE.rows: 18
+IE.cols: 18
+IE.P_occ: 0.6
+IE.P_free: 0.4
+IE.P_prior: 0.5
+IE.Threshold: 5

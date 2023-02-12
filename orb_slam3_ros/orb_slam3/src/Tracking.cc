@@ -121,6 +121,19 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
         }
     }
 
+    // 3D cuboid testing
+    bool use_LSD_algorithm = false;
+    bool save_to_imgs = false;
+    bool save_to_txts = false;
+    int numOfOctave_ = 1;
+    float Octave_ratio = 2.0;
+    line_lbd_ptr = new line_lbd_detect(numOfOctave_, Octave_ratio);
+    line_lbd_ptr->use_LSD = use_LSD_algorithm;
+    line_lbd_ptr->save_imgs = save_to_imgs;
+    line_lbd_ptr->save_txts = save_to_txts;
+    line_lbd_ptr->line_length_thres = 15; // the threshold of removing short line.
+    // line detect ------------------------------------------------
+
 #ifdef REGISTER_TIMES
     vdRectStereo_ms.clear();
     vdResizeImage_ms.clear();
@@ -218,16 +231,16 @@ Tracking::Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer,
     }
 
     // 3D cuboid testing
-    bool use_LSD_algorithm = false;
-    bool save_to_imgs = false;
-    bool save_to_txts = false;
-    int numOfOctave_ = 1;
-    float Octave_ratio = 2.0;
-    line_lbd_ptr = new line_lbd_detect(numOfOctave_, Octave_ratio);
-    line_lbd_ptr->use_LSD = use_LSD_algorithm;
-    line_lbd_ptr->save_imgs = save_to_imgs;
-    line_lbd_ptr->save_txts = save_to_txts;
-    line_lbd_ptr->line_length_thres = 15; // the threshold of removing short line.
+    // bool use_LSD_algorithm = false;
+    // bool save_to_imgs = false;
+    // bool save_to_txts = false;
+    // int numOfOctave_ = 1;
+    // float Octave_ratio = 2.0;
+    // line_lbd_ptr = new line_lbd_detect(numOfOctave_, Octave_ratio);
+    // line_lbd_ptr->use_LSD = use_LSD_algorithm;
+    // line_lbd_ptr->save_imgs = save_to_imgs;
+    // line_lbd_ptr->save_txts = save_to_txts;
+    // line_lbd_ptr->line_length_thres = 15; // the threshold of removing short line.
     // line detect ------------------------------------------------
 
 #ifdef REGISTER_TIMES
@@ -3593,7 +3606,10 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
 //    }
 
     // insert Key Frame into point cloud viewer
-    mpPointCloudMapping->insertKeyFrame(pKF, this->mImRGB, this->mImDepth);
+    if (!mpSystem->isYoloDetection)
+    {
+        mpPointCloudMapping->insertKeyFrame(pKF, this->mImRGB, this->mImDepth);
+    }
 
     mnLastKeyFrameId = mCurrentFrame.mnId;
     mpLastKeyFrame = pKF;

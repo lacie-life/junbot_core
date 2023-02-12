@@ -116,12 +116,10 @@ class Object_2D {
         //mappoint
         std::vector<MapPoint*>  mvMapPonits;             // object points in current frame. 
 
-        
         int mnId;                                   // object ID.
         int confidence;
         bool bad = false;
 
-        
         int nMayRepeat = 0;
         std::map<int, float> mReIdAndIou;           // potential objects.
 
@@ -144,10 +142,6 @@ class Object_2D {
     // line.
     public:
         Eigen::MatrixXd mObjLinesEigen;   
-
-
-
-
 
 };
 
@@ -245,11 +239,9 @@ public:
     std::vector< MapPoint*> mvpMapObjectMappoints;
     std::vector< MapPoint*> mvpMapObjectMappoints_NewForActive;     
 
-    
     std::map<int, int> mReObj;                                      
     std::map<int, int> mmAppearSametime;                            
 
-    
     std::vector<Eigen::Matrix<float,5,1>, Eigen::aligned_allocator<Eigen::Matrix<float,5,1>> > mvAngleTimesAndScore;    // Score of sampling angle.
 
     void ComputeMeanAndDeviation_3D();
@@ -292,7 +284,6 @@ public:
     Eigen::Vector3d mMainDirection;                         
     double mStatistics = 1;                                 
 
-    
     double mP_occ;
     double mP_free;
     double mP_prior;
@@ -320,7 +311,6 @@ protected:
 public:
     bool WheatherInRectFrameOf(const cv::Mat &Tcw, const float &fx, const float &fy, const float &cx, const float &cy, const float &ImageWidth, const float &ImageHeight);  //计算到任意帧的投影
 };
-
 
 }
 

@@ -577,7 +577,11 @@ cv::Mat FrameDrawer::DrawQuadricImage()
     Map* mpMap = mpAtlas->GetCurrentMap();
 
     const std::vector<Object_Map*> obj_3ds_new = mpMap->GetObjects();
-    for(int i = (int)obj_3ds_new.size() - 1; i >= 0; i--){
+
+    std::cout << "Obj 3D in Map: " << obj_3ds_new.size() << "\n";
+
+    for(int i = (int)obj_3ds_new.size() - 1; i >= 0; i--)
+    {
 
         //cv::Mat DrawQuadricProject( cv::Mat &im,
         //                        const cv::Mat &P,
@@ -697,8 +701,8 @@ cv::Mat FrameDrawer::DrawQuadricImage()
 
 cv::Mat FrameDrawer::GetQuadricImage()
 {
-    cv::Mat imRGB;
-    mQuadricIm.copyTo(imRGB);
+    cv::Mat imRGB = DrawQuadricImage();
+
     return imRGB;
 }
 
