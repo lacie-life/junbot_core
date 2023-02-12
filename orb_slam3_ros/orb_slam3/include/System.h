@@ -43,6 +43,7 @@
 // #include "Detector.h"
 #include "PointCloudMapping.h"
 #include "YoloDetection.h"
+#include "MapPublisher.h"
 
 class PointCloudMapping;
 // class Detector;
@@ -85,6 +86,7 @@ class Tracking;
 class LocalMapping;
 class LoopClosing;
 class Settings;
+class MapPublisher;
 
 class System
 {
@@ -245,6 +247,7 @@ private:
     Viewer* mpViewer;
     FrameDrawer* mpFrameDrawer;
     MapDrawer* mpMapDrawer;
+    MapPublisher* mpMapPublisher;
 
     // System threads: Local Mapping, Loop Closing, Viewer.
     // The Tracking thread "lives" in the main execution thread that creates the System object.

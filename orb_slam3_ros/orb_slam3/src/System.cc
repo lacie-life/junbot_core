@@ -177,7 +177,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     // mpFrameDrawer = new FrameDrawer(mpAtlas);
     mpMapDrawer = new MapDrawer(mpAtlas, strSettingsFile, settings_);
     mpFrameDrawer = new FrameDrawer(mpAtlas, mpMapDrawer, strSettingsFile);
-
+    mpMapPublisher = new MapPublisher(mpAtlas, strSettingsFile);
     // Yolo
     if(model == 0)
     {
@@ -215,7 +215,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 
         mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer,
                                  mpAtlas, mpKeyFrameDatabase,
-                                 strSettingsFile, mSensor, settings_, strSequence);
+                                 strSettingsFile, mSensor, settings_, mpMapPublisher, strSequence);
         mpTracker->SetDetector(mpDetector);
     }
 
@@ -257,7 +257,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     if(bUseViewer)
     //if(false) // TODO
     {
-        mpViewer = new Viewer(this, mpFrameDrawer,mpMapDrawer,mpTracker,strSettingsFile,settings_);
+        mpViewer = new Viewer(this, mpFrameDrawer, mpMapDrawer, mpTracker, strSettingsFile, settings_, mpMapPublisher);
         mptViewer = new thread(&Viewer::Run, mpViewer);
         mpTracker->SetViewer(mpViewer);
         mpLoopCloser->mpViewer = mpViewer;

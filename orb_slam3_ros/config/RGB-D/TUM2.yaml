@@ -71,7 +71,7 @@ Viewer.ViewpointZ: -1.8
 Viewer.ViewpointF: 500
 
 Viewer.pangolin: 1
-Viewer.rviz: 0
+Viewer.rviz: 1
 Viewer.readlocalobject: 0
 Viewer.show_object3d_frame: 1
 
@@ -105,3 +105,16 @@ IE.P_occ: 0.6
 IE.P_free: 0.4
 IE.P_prior: 0.5
 IE.Threshold: 5
+
+#--------------------------------------------------------------------------------------------
+# MapPublisher
+#--------------------------------------------------------------------------------------------
+# 1: robot_camera tf; 2: use imu
+ConstraintType: 1
+Trobot_camera.qx: 0.0003
+Trobot_camera.qy: 0.8617
+Trobot_camera.qz: -0.5072
+Trobot_camera.qw: -0.0145
+Trobot_camera.tx: 0.0 #-0.6832
+Trobot_camera.ty: 0.0 #2.6909
+Trobot_camera.tz: 1.7373

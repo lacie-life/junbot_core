@@ -25,9 +25,10 @@
 namespace ORB_SLAM3
 {
 
-Viewer::Viewer(System* pSystem, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer, Tracking *pTracking, const string &strSettingPath, Settings* settings):
+Viewer::Viewer(System* pSystem, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer, Tracking *pTracking,
+               const string &strSettingPath, Settings* settings, MapPublisher* mMapPublisher):
     both(false), mpSystem(pSystem), mpFrameDrawer(pFrameDrawer),mpMapDrawer(pMapDrawer), mpTracker(pTracking),
-    mbFinishRequested(false), mbFinished(true), mbStopped(true), mbStopRequested(false)
+    mbFinishRequested(false), mbFinished(true), mbStopped(true), mbStopRequested(false), mpMapPublisher(mMapPublisher)
 {
     if(settings)
     {
@@ -310,6 +311,17 @@ void Viewer::Run()
 
     while(1)
     {
+        if (run_rviz)
+        {
+            mpMapPublisher->Refresh();
+        }
+
+        if (read_local_object)
+        {
+            mpMapPublisher->PublishObject(vObjects);
+            mpMapPublisher->PublishIE(vObjects);
+        }
+
         if (run_pangolin)
         {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
