@@ -1,3 +1,4 @@
+## Point
 ```
 rostopic pub /virtual_costamp_layer/obsctacles custom_msgs/Obstacles "list: [form: [{x: 2.0, y: 1.0, z: 0.0}]]"
 ```
