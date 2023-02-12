@@ -71,7 +71,10 @@
         "cinttypes": "cpp",
         "typeindex": "cpp",
         "typeinfo": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "core": "cpp",
+        "numericaldiff": "cpp",
+        "specialfunctions": "cpp"
     },
     "python.autoComplete.extraPaths": [
         "/home/lacie/slam_ws/devel/lib/python3/dist-packages",

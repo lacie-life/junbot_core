@@ -217,6 +217,49 @@ bool YoloDetection::Detectv2(const cv::Mat &bgr_img, std::vector<Object> &object
     return true;
 }
 
+// For 3D cuboid
+bool YoloDetection::Detectv3(const cv::Mat &bgr_img, std::vector<BoxSE> &objects)
+{
+    cv::Mat img;
+
+    img = bgr_img.clone();
+
+    if(bgr_img.empty())
+    {
+        std::cout << "Read RGB failed!" << std::endl;
+        return false;
+    }
+
+    std::vector<Detection> res; 
+
+    mModel->detectObject(img, res);
+
+    // TODO: convert to BoxSE
+    for(int i = 0; i < res.size(); i++)
+    {
+        BoxSE ob;
+        cv::Rect rec = mModel->get_rect(img, res[i].bbox);
+
+        // BBox
+        ob.x = rec.x;
+        ob.y = rec.y;
+        ob.width = rec.width;
+        ob.height = rec.height;
+
+        std::cout << res[i].class_id << std::endl;
+        ob.m_class_name = mClassnames[(int)res[i].class_id];
+
+        ob.m_score = res[i].conf;
+        ob.m_class = res[i].class_id;
+
+        objects.push_back(ob);
+    }
+
+    std::sort(objects.begin(), objects.end(), [](BoxSE a, BoxSE b)->bool { return a.m_score > b.m_score; });
+
+    return true;
+}
+
 cv::Mat YoloDetection::display(std::vector<Object> &objects) {
 
     cv::Mat image = mRGB.clone();

@@ -34,10 +34,13 @@
 #include "ImuTypes.h"
 #include "Settings.h"
 
-#include "Detector.h"
+// #include "Detector.h"
 #include "PointCloudMapping.h"
 #include "Flow.h"
 #include "Geometry.h"
+#include "YoloDetection.h"
+#include "Object.h"
+#include "MapPublisher.h"
 
 #include "GeometricCamera.h"
 
@@ -50,8 +53,17 @@
 #include <mutex>
 #include <unordered_set>
 
+// cube
+#include "detect_3d_cuboid/matrix_utils.h"
+#include "detect_3d_cuboid/detect_3d_cuboid.h"
+#include "detect_3d_cuboid/object_3d_util.h"
+
+// line
+#include <line_lbd/line_descriptor.hpp>
+#include <line_lbd/line_lbd_allclass.h>
+
 class PointCloudMapping;
-class Detector;
+//class Detector;
 
 namespace ORB_SLAM3
 {
@@ -63,6 +75,8 @@ class LocalMapping;
 class LoopClosing;
 class System;
 class Settings;
+class Object_Map;
+class MapPublisher;
 
 class Tracking
 {  
@@ -70,12 +84,13 @@ class Tracking
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Atlas* pAtlas,
-             KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, Settings* settings, const string &_nameSeq=std::string());
+             KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, Settings* settings,
+             MapPublisher* pMapPublisher, const string &_nameSeq=std::string());
 
     Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Atlas* pAtlas,
              boost::shared_ptr<PointCloudMapping> pPointCloud,
              KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, Settings* settings, const string &_nameSeq=std::string()
-                     /*,std::shared_ptr<Detector> pDetector = nullptr*/
+             /*,std::shared_ptr<Detector> pDetector = nullptr*/
              );
 
     ~Tracking();
@@ -97,6 +112,7 @@ public:
     void SetViewer(Viewer* pViewer);
     void SetStepByStep(bool bSet);
     bool GetStepByStep();
+    void SetDetector(YoloDetection* pDetector);
 
     // Load new settings
     // The focal lenght should be similar or scale prediction will fail when projecting points
@@ -115,10 +131,6 @@ public:
     Sophus::SE3f GetImuTwb();
     Eigen::Vector3f GetImuVwb();
     bool isImuPreintegrated();
-
-//    cv::Mat kalmanFilter(cv::Mat m);
-//    cv::Mat fusion(cv::Mat m);
-//    Eigen::Quaternionf integrate();
 
     void CreateMapInAtlas();
     //std::mutex mMutexTracks;
@@ -263,8 +275,12 @@ protected:
     bool TrackLocalMap();
     void SearchLocalPoints();
 
-    bool NeedNewKeyFrame();
-    void CreateNewKeyFrame();
+    int NeedNewKeyFrame();
+    void CreateNewKeyFrame(bool CreateByObjs);
+
+    // For 3D cuboid
+    // int NeedNewKeyFrame();
+    // void CreateNewKeyFrame(bool CreateByObjs);
 
     // Perform preintegration from last frame
     void PreintegrateIMU();
@@ -324,6 +340,8 @@ protected:
     Viewer* mpViewer;
     FrameDrawer* mpFrameDrawer;
     MapDrawer* mpMapDrawer;
+    MapPublisher*  mpMapPublisher;
+
     bool bStepByStep;
 
     //Atlas
@@ -381,6 +399,7 @@ protected:
     // For point cloud viewing
     boost::shared_ptr<PointCloudMapping> mpPointCloudMapping;
     // std::shared_ptr<Detector> mpDetector;
+    YoloDetection* mpDetector;
     // Geometry mGeometry;
     Flow mFlow;
 
@@ -417,6 +436,35 @@ protected:
 
 public:
     cv::Mat mImRight;
+
+// 3d cuboid testing
+public:
+    void CreateObject_InTrackMotion();
+    void AssociateObjAndPoints(std::vector<Object_2D *> objs_2d);
+
+private:
+    std::string mStrSettingPath;
+    bool mbObjectIni = false;          // initialize the object map.
+    int mnObjectIniFrameID;
+
+    cv::Mat DrawQuadricProject( cv::Mat &im,
+                                const cv::Mat &P,
+                                const cv::Mat &axe,
+                                const cv::Mat &Twq,
+                                int nClassid,
+                                bool isGT=true,
+                                int nLatitudeNum = 7,
+                                int nLongitudeNum = 6);
+
+    void SampleObjYaw(Object_Map* obj3d);
+    cv::Point2f WorldToImg(cv::Mat &PointPosWorld);
+    static bool VIC(const Eigen::Matrix<float,5,1>& lhs, const Eigen::Matrix<float,5,1>& rhs)
+    {
+        return lhs[1] > rhs[1];
+    }
+
+    // line
+    line_lbd_detect* line_lbd_ptr;
 };
 
 } //namespace ORB_SLAM

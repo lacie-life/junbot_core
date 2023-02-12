@@ -25,6 +25,8 @@
 #include "Tracking.h"
 #include "System.h"
 #include "Settings.h"
+#include "Object.h"
+#include "MapPublisher.h"
 
 #include <mutex>
 
@@ -36,12 +38,15 @@ class FrameDrawer;
 class MapDrawer;
 class System;
 class Settings;
+class Object_Map;
+class MapPublisher;
 
 class Viewer
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    Viewer(System* pSystem, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Tracking *pTracking, const string &strSettingPath, Settings* settings);
+    Viewer(System* pSystem, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Tracking *pTracking,
+           const string &strSettingPath, Settings* settings, MapPublisher* mpMapPublisher);
 
     void newParameterLoader(Settings* settings);
 
@@ -81,6 +86,7 @@ private:
     FrameDrawer* mpFrameDrawer;
     MapDrawer* mpMapDrawer;
     Tracking* mpTracker;
+    MapPublisher* mpMapPublisher;
 
     // 1/fps in ms
     double mT;
@@ -100,6 +106,20 @@ private:
     std::mutex mMutexStop;
 
     bool mbStopTrack;
+
+    // For 3D cuboid testing
+    int run_pangolin = 1;
+    int run_rviz;
+    int read_local_object;
+    int show_object3d_frame;
+
+    void read_local_object_file();
+    void compute_corner(Object_Map* object);
+    // demo.
+    string mflag;
+    //nbv test
+    std::vector<ORB_SLAM3::Object_Map*> vObjects;
+    float mfx, mfy, mcx, mcy;
 
 };
 

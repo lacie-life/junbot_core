@@ -13,6 +13,34 @@
 #include <time.h>
 #include "yolov5_detection.h"
 
+class BoxSE : public cv::Rect
+{
+    public:
+	int m_class = -1;			// class id.
+	float m_score = 0.0F;		// probability.
+	std::string m_class_name;	// class name.
+
+	BoxSE()
+	{
+		m_class_name = "Unknown";
+	}
+
+	BoxSE(int c, float s, int _x, int _y, int _w, int _h, std::string name = "")
+		:m_class(c), m_score(s)
+	{
+		this->x = _x;
+		this->y = _y;
+		this->width = _w;
+		this->height = _h;
+		char const *lb[5] = { "th","st","nd","rd","th" };
+
+		if (name.length() == 0)
+		{
+			m_class_name = std::to_string(m_class) + lb[m_class < 4 ? m_class : 4] + " class";
+		}
+	}
+};
+
 typedef struct Object
 {
     cv::Rect_<float> rect;  // frame
@@ -34,6 +62,10 @@ public:
 
     bool Detect(const cv::Mat& bgr_img, std::vector<Object>& objects);
     bool Detectv2(const cv::Mat& bgr_img, std::vector<Object>& objects);
+    
+    // For 3d Cuboid
+    bool Detectv3(const cv::Mat& bgr_img, std::vector<BoxSE>& objects);
+
     cv::Mat display(std::vector<Object>& objects);
 
     void ClearArea();

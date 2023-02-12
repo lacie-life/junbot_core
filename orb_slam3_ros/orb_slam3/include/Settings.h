@@ -114,6 +114,12 @@ namespace ORB_SLAM3 {
         float octoMapRes() {return octoMapRes_;}
         float flowThreshold() {return flowThreshold_;}
 
+        // For 3D cuboid
+        int runPangolin() {return runPangolin_;}
+        int runRviz() {return runRviz_;}
+        int readLocalObject() {return readLocalObject_;}
+        int showObject3DFrame() {return showObject3DFrame_;}
+
         std::string atlasLoadFile() {return sLoadFrom_;}
         std::string atlasSaveFile() {return sSaveto_;}
 
@@ -221,6 +227,12 @@ namespace ORB_SLAM3 {
         float imageViewerScale_;
         float octoMapRes_;
         float flowThreshold_;
+
+        // For 3D cuboid testing
+        int runPangolin_;
+        int runRviz_;
+        int readLocalObject_;
+        int showObject3DFrame_;
 
         /*
          * Save & load maps
