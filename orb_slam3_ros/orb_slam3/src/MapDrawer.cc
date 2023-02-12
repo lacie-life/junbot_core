@@ -64,6 +64,25 @@ namespace ORB_SLAM3 {
         bIsLocalization = false;
         mpMerge2d3d = new(MergeSG);
 
+        // For 3D cuboid testing
+        box_colors.push_back(Vector3f(230, 0, 0) / 255.0);	 // red  0
+        box_colors.push_back(Vector3f(60, 180, 75) / 255.0);   // green  1
+        box_colors.push_back(Vector3f(0, 0, 255) / 255.0);	 // blue  2
+        box_colors.push_back(Vector3f(255, 0, 255) / 255.0);   // Magenta  3
+        box_colors.push_back(Vector3f(255, 165, 0) / 255.0);   // orange 4
+        box_colors.push_back(Vector3f(128, 0, 128) / 255.0);   //purple 5
+        box_colors.push_back(Vector3f(0, 255, 255) / 255.0);   //cyan 6
+        box_colors.push_back(Vector3f(210, 245, 60) / 255.0);  //lime  7
+        box_colors.push_back(Vector3f(250, 190, 190) / 255.0); //pink  8
+        box_colors.push_back(Vector3f(0, 128, 128) / 255.0);   //Teal  9
+
+        all_edge_pt_ids.resize(8, 2); // draw 8 edges except front face
+        all_edge_pt_ids << 2, 3, 3, 4, 4, 1, 3, 7, 4, 8, 6, 7, 7, 8, 8, 5;
+        all_edge_pt_ids.array() -= 1;
+        front_edge_pt_ids.resize(4, 2);
+        front_edge_pt_ids << 1, 2, 2, 6, 6, 5, 5, 1;
+        front_edge_pt_ids.array() -= 1;
+
         std::cout << "MapDrawer Init \n";
     }
 
@@ -453,6 +472,70 @@ namespace ORB_SLAM3 {
         glEnd();
     }
 
+    void MapDrawer::DrawMapCuboids()
+    {
+        Map* mpMap = mpAtlas->GetCurrentMap();
+
+        std::vector<Object_Map* > object_3d = mpMap->GetObjects();
+
+        for (size_t i = 0; i < object_3d.size(); i++)
+        {
+            if ((object_3d[i]->mvpMapObjectMappoints.size() < 10) || (object_3d[i]->bad_3d == true))
+            {
+                continue;
+            }
+
+            Cuboid3D cube = object_3d[i]->mCuboid3D;
+
+            glBegin(GL_LINES);
+            glLineWidth(5);
+            glColor3f(230 /255.0, 0.0, 0.0);
+
+            //     7------6
+            //    /|     /|
+            //   / |    / |
+            //  4------5  |
+            //  |  3---|--2
+            //  | /    | /
+            //  0------1
+            glVertex3f(cube.corner_1[0], cube.corner_1[1], cube.corner_1[2]);//
+            glVertex3f(cube.corner_2[0], cube.corner_2[1], cube.corner_2[2]);//
+
+            glVertex3f(cube.corner_2[0], cube.corner_2[1], cube.corner_2[2]);//
+            glVertex3f(cube.corner_3[0], cube.corner_3[1], cube.corner_3[2]);//
+
+            glVertex3f(cube.corner_3[0], cube.corner_3[1], cube.corner_3[2]);//
+            glVertex3f(cube.corner_4[0], cube.corner_4[1], cube.corner_4[2]);//
+
+            glVertex3f(cube.corner_4[0], cube.corner_4[1], cube.corner_4[2]);//
+            glVertex3f(cube.corner_1[0], cube.corner_1[1], cube.corner_1[2]);//
+
+            glVertex3f(cube.corner_1[0], cube.corner_1[1], cube.corner_1[2]);//
+            glVertex3f(cube.corner_5[0], cube.corner_5[1], cube.corner_5[2]);//
+
+            glVertex3f(cube.corner_2[0], cube.corner_2[1], cube.corner_2[2]);//
+            glVertex3f(cube.corner_6[0], cube.corner_6[1], cube.corner_6[2]);//
+
+            glVertex3f(cube.corner_3[0], cube.corner_3[1], cube.corner_3[2]);//
+            glVertex3f(cube.corner_7[0], cube.corner_7[1], cube.corner_7[2]);//
+
+            glVertex3f(cube.corner_4[0], cube.corner_4[1], cube.corner_4[2]);//
+            glVertex3f(cube.corner_8[0], cube.corner_8[1], cube.corner_8[2]);//
+
+            glVertex3f(cube.corner_5[0], cube.corner_5[1], cube.corner_5[2]);//
+            glVertex3f(cube.corner_6[0], cube.corner_6[1], cube.corner_6[2]);//
+
+            glVertex3f(cube.corner_6[0], cube.corner_6[1], cube.corner_6[2]);//
+            glVertex3f(cube.corner_7[0], cube.corner_7[1], cube.corner_7[2]);//
+
+            glVertex3f(cube.corner_7[0], cube.corner_7[1], cube.corner_7[2]);//
+            glVertex3f(cube.corner_8[0], cube.corner_8[1], cube.corner_8[2]);//
+
+            glVertex3f(cube.corner_8[0], cube.corner_8[1], cube.corner_8[2]);//
+            glVertex3f(cube.corner_5[0], cube.corner_5[1], cube.corner_5[2]);//
+            glEnd();
+        }
+    }
 
     void MapDrawer::SetCurrentCameraPose(const Sophus::SE3f &Tcw) {
         unique_lock<mutex> lock(mMutexCamera);

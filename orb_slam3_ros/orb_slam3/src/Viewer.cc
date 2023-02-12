@@ -409,6 +409,7 @@ void Viewer::Run()
             if(menuShowPoints)
             {
                 mpMapDrawer->DrawMapPoints();
+                mpMapDrawer->DrawMapCuboids();
             }
             else
             {
@@ -598,7 +599,7 @@ void Viewer::Release()
 
 void Viewer::Finalize(void)
 {
-    pangolin::BindToContext("ORB-SLAM3: Map Viewer");
+    pangolin::BindToContext("Object Map Viewer");
 }
 
 void Viewer::read_local_object_file(){
