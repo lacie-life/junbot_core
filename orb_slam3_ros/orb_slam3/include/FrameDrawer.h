@@ -203,7 +203,6 @@ public:
     std::vector< KeyLine> Dkeylines_raw_nouse, Dkeylines_out_nouse;
     double DTimeStamp_nouse;
     std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd> >  DObjsLines;    // object lines.  std::vector<Eigen::MatrixXd>
-
 };
 
 } //namespace ORB_SLAM

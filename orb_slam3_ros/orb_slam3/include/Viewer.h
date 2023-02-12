@@ -25,6 +25,7 @@
 #include "Tracking.h"
 #include "System.h"
 #include "Settings.h"
+#include "Object.h"
 
 #include <mutex>
 
@@ -36,6 +37,7 @@ class FrameDrawer;
 class MapDrawer;
 class System;
 class Settings;
+class Object_Map;
 
 class Viewer
 {
@@ -108,7 +110,7 @@ private:
     int show_object3d_frame;
 
     void read_local_object_file();
-    void cmpute_corner(Object_Map* object);
+    void compute_corner(Object_Map* object);
     // demo.
     string mflag;
     //nbv test

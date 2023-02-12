@@ -39,6 +39,7 @@
 #include "Flow.h"
 #include "Geometry.h"
 #include "YoloDetection.h"
+#include "Object.h"
 
 #include "GeometricCamera.h"
 
@@ -73,6 +74,7 @@ class LocalMapping;
 class LoopClosing;
 class System;
 class Settings;
+class Object_Map;
 
 class Tracking
 {  
@@ -458,7 +460,6 @@ private:
 
     // line
     line_lbd_detect* line_lbd_ptr;
-
 };
 
 } //namespace ORB_SLAM

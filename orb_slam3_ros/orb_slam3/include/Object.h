@@ -18,7 +18,8 @@
 #include <math.h>
 #include <assert.h>
 #include <iostream>
-#include "YOLOv3SE.h"
+
+#include "YoloDetection.h"
 #include "Thirdparty/g2o/g2o/types/types_seven_dof_expmap.h"
 #include "IsolationForest.h"
 

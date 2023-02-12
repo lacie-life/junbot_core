@@ -5,6 +5,16 @@
 #include "Object.h"
 #include "Converter.h"
 
+std::string WORK_SPACE_PATH = "";
+std::string yamlfile_object = "";
+bool MotionIou_flag = true;
+bool NoPara_flag = true;
+bool ProIou_flag = true;
+bool Ttest_flag = true;
+bool iforest_flag = true;
+bool little_mass_flag = true;
+bool ProIou_only30_flag = true;
+
 namespace ORB_SLAM3
 {
 

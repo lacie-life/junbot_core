@@ -246,10 +246,11 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale)
         }
     }
 
-    // cv::Mat imWithInfo;
+     cv::Mat imWithInfo;
     // DrawTextInfo(im,state, imWithInfo);
 
-    DrawYoloInfo(im, true);
+    imWithInfo = im.clone();
+    DrawYoloInfo(imWithInfo, true);
 
     return imWithInfo;
 }
@@ -504,7 +505,7 @@ void FrameDrawer::Update(Tracking *pTracker)
     //pTracker->mCurrentFrame.mColorImage.copyTo(mRGBIm);
     pTracker->mCurrentFrame.mQuadricImage.copyTo(mQuadricIm);
     Dboxes = pTracker->mCurrentFrame.boxes;
-    this->mTcw = pTracker->mCurrentFrame.mTcw;
+    this->mTcw = Converter::toCvMat(pTracker->mCurrentFrame.GetPose());
     this->mK = pTracker->mCurrentFrame.mK;
 
     //Variables for the new visualization
@@ -573,6 +574,8 @@ cv::Mat FrameDrawer::DrawQuadricImage()
     cv::Mat Pfw(3, 4, CV_32F);
     Pfw = mK * Pcw;
 
+    Map* mpMap = mpAtlas->GetCurrentMap();
+
     const std::vector<Object_Map*> obj_3ds_new = mpMap->GetObjects();
     for(int i = (int)obj_3ds_new.size() - 1; i >= 0; i--){
 
@@ -597,7 +600,7 @@ cv::Mat FrameDrawer::DrawQuadricImage()
         if(obj->bad_3d)
             continue;
 
-        // 尺寸
+        // Size
         cv::Mat axe = cv::Mat::zeros(3, 1, CV_32F);
         axe.at<float>(0) = obj->mCuboid3D.lenth / 2;
         axe.at<float>(1) = obj->mCuboid3D.width / 2;
@@ -689,6 +692,13 @@ cv::Mat FrameDrawer::DrawQuadricImage()
         }
     }
 
+    return imRGB;
+}
+
+cv::Mat FrameDrawer::GetQuadricImage()
+{
+    cv::Mat imRGB;
+    mQuadricIm.copyTo(imRGB);
     return imRGB;
 }
 

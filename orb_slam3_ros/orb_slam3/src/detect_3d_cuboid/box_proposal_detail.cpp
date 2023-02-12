@@ -15,7 +15,7 @@
 #include <ctime>
 
 // opencv pcl
-#include <opencv/cv.h>
+#include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include "opencv2/imgproc/imgproc.hpp"
@@ -77,7 +77,7 @@ void detect_3d_cuboid::detect_cuboid(	const cv::Mat& rgb_img,
 
     cv::Mat gray_img; 
     if (rgb_img.channels()==3)
-	  	cv::cvtColor(rgb_img, gray_img, CV_BGR2GRAY);
+	  	cv::cvtColor(rgb_img, gray_img, cv::COLOR_BGR2GRAY);
     else
 	  	gray_img = rgb_img;
 
@@ -235,7 +235,7 @@ void detect_3d_cuboid::detect_cuboid(	const cv::Mat& rgb_img,
 			cv::Mat im_canny; 
 			cv::Canny(gray_img(object_bbox),im_canny,80,200); // low thre, high thre    im_canny 0 or 255   [80 200  40 100]
 			cv::Mat dist_map; 
-			cv::distanceTransform(255 - im_canny, dist_map, CV_DIST_L2, 3); // dist_map is float datatype
+			cv::distanceTransform(255 - im_canny, dist_map, cv::DIST_L2, 3); // dist_map is float datatype
 
 			if (whether_plot_detail_images)
 			{

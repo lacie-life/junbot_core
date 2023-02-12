@@ -146,6 +146,7 @@ file(GLOB SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/cuda/*.cu
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/line_detect/libs/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/line_detect/libs/*.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/line_detect/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/detect_3d_cuboid/*.cpp
         )
 

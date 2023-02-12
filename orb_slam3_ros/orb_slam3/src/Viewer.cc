@@ -600,7 +600,7 @@ void Viewer::read_local_object_file(){
             istr >> temp;   obj->mCuboid3D.width = temp;
             istr >> temp;   obj->mCuboid3D.height = temp;
 
-            cmpute_corner(obj);
+            compute_corner(obj);
 
             vObjects.push_back( obj );
 
@@ -640,7 +640,7 @@ void Viewer::read_local_object_file(){
     }
 }
 
-void Viewer::cmpute_corner(Object_Map* object) {
+void Viewer::compute_corner(Object_Map* object) {
 
         float x_min_obj = (-0.5)*object->mCuboid3D.lenth;
         float x_max_obj = (0.5)*object->mCuboid3D.lenth;

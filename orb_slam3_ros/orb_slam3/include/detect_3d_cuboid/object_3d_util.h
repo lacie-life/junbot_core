@@ -12,7 +12,7 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-#include <opencv/cv.h>
+#include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 
 #include "detect_3d_cuboid/detect_3d_cuboid.h"

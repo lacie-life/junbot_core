@@ -1532,6 +1532,8 @@ void LocalMapping::UpdateObject()
 {
     unique_lock<mutex> lock(mMutexObject);
 
+    Map* mpMap = mpAtlas->GetCurrentMap();
+
     const vector<Object_Map*> &vObjs = mpMap->GetObjects();
 
     if(vObjs.empty())
@@ -1556,6 +1558,8 @@ void LocalMapping::UpdateObject()
 void LocalMapping::MergePotentialAssObjs()
 {
     unique_lock<mutex> lock(mMutexObject);
+
+    Map* mpMap = mpAtlas->GetCurrentMap();
 
     const vector<Object_Map*> &vObjs = mpMap->GetObjects();
 
@@ -1586,6 +1590,8 @@ void LocalMapping::MergePotentialAssObjs()
 void LocalMapping::WhetherOverlapObject()
 {
     unique_lock<mutex> lock(mMutexObject);
+
+    Map* mpMap = mpAtlas->GetCurrentMap();
 
     const vector<Object_Map*> &obj_3ds = mpMap->GetObjects();
 

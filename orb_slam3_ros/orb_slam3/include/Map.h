@@ -231,7 +231,7 @@ protected:
 
 public:
     void AddObject(Object_Map *pObj);
-    tsd::vector<Object_Map*> GetObjects();
+    std::vector<Object_Map*> GetObjects();
 };
 
 } //namespace ORB_SLAM3
