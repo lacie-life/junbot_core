@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/hn/junbot_ws/src/junbot_planner/junbot_adaptive/cmake-build-debug/devel/setup.sh

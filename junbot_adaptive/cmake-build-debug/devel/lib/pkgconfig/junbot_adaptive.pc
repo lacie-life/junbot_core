@@ -1,0 +1,8 @@
+prefix=/home/hn/junbot_ws/src/junbot_planner/junbot_adaptive/cmake-build-debug/devel
+
+Name: junbot_adaptive
+Description: Description of junbot_adaptive
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: custom_msgs geometry_msgs
