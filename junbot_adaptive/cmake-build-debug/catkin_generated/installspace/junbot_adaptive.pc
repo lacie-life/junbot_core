@@ -1,8 +1,0 @@
-prefix=/usr/local
-
-Name: junbot_adaptive
-Description: Description of junbot_adaptive
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: custom_msgs geometry_msgs
