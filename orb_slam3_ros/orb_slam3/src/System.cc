@@ -177,30 +177,33 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     // mpFrameDrawer = new FrameDrawer(mpAtlas);
     mpMapDrawer = new MapDrawer(mpAtlas, strSettingsFile, settings_);
     mpFrameDrawer = new FrameDrawer(mpAtlas, mpMapDrawer, strSettingsFile);
-
+    mpMapPublisher = new MapPublisher(mpAtlas, strSettingsFile);
     // Yolo
-//     if(model == 0)
-//     {
-//         cout << "Using YoLo detector \n";
-//         isYoloDetection = true;
-//         mpDetector = std::make_shared<Detector>(modelPath);
-//     }
-//     else{
-//         cout << "Defaut: YoLo detector \n";
-//         isYoloDetection = true;
-//         mpDetector = std::make_shared<Detector>(modelPath);
-//     }
+    if(model == 0)
+    {
+        cout << "Using YoLo detector \n";
+        isYoloDetection = true;
+        mpDetector = new YoloDetection(modelPath);
+    }
+    else{
+        cout << "Defaut: YoLo detector \n";
+        isYoloDetection = true;
+        mpDetector = new YoloDetection(modelPath);
+    }
 
     // Initialize pointcloud mapping
-    mpPointCloudMapping = boost::make_shared<PointCloudMapping>(resolution, modelPath);
+    // mpPointCloudMapping = boost::make_shared<PointCloudMapping>(resolution, modelPath);
 
     //Initialize the Tracking thread
     //(it will live in the main thread of execution, the one that called this constructor)
     cout << "Seq. Name: " << strSequence << endl;
 
-    if(isYoloDetection)
+    if(!isYoloDetection)
     {
-        std::cout << "Here \n";
+        // Initialize pointcloud mapping
+        // mpPointCloudMapping = boost::make_shared<PointCloudMapping>(resolution, modelPath);
+
+        std::cout << "Pointcloud only \n";
         mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer,
                                  mpAtlas, mpPointCloudMapping, mpKeyFrameDatabase,
                                  strSettingsFile, mSensor, settings_,
@@ -208,9 +211,12 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     }
     else
     {
+        std::cout << "3D Cuboid testing \n";
+
         mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer,
                                  mpAtlas, mpKeyFrameDatabase,
-                                 strSettingsFile, mSensor, settings_, strSequence);
+                                 strSettingsFile, mSensor, settings_, mpMapPublisher, strSequence);
+        mpTracker->SetDetector(mpDetector);
     }
 
     //Initialize the Local Mapping thread and launch
@@ -251,7 +257,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     if(bUseViewer)
     //if(false) // TODO
     {
-        mpViewer = new Viewer(this, mpFrameDrawer,mpMapDrawer,mpTracker,strSettingsFile,settings_);
+        mpViewer = new Viewer(this, mpFrameDrawer, mpMapDrawer, mpTracker, strSettingsFile, settings_, mpMapPublisher);
         mptViewer = new thread(&Viewer::Run, mpViewer);
         mpTracker->SetViewer(mpViewer);
         mpLoopCloser->mpViewer = mpViewer;

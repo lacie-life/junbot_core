@@ -87,6 +87,15 @@ public:
 
     MergeSG* mpMerge2d3d;
 
+// For 3D cuboid testing
+public:
+    void DrawMapCuboids();
+
+private:
+    std::vector<Eigen::Vector3f> box_colors;
+    Eigen::MatrixXd all_edge_pt_ids; // for object drawing
+    Eigen::MatrixXd front_edge_pt_ids;
+
 protected:
 
     void GeneratePointCloud(KeyFrame* kf,

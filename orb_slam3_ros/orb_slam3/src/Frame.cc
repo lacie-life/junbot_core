@@ -78,6 +78,7 @@ namespace ORB_SLAM3 {
               mTlr(frame.mTlr), mRlr(frame.mRlr), mtlr(frame.mtlr), mTrl(frame.mTrl),
               mTcw(frame.mTcw), mbHasPose(false), mbHasVelocity(false), mImDynm_mask(frame.mImDynm_mask),
               mIsKeyFrame(frame.mIsKeyFrame), mImDepth(frame.mImDepth) {
+
         for (int i = 0; i < FRAME_GRID_COLS; i++)
             for (int j = 0; j < FRAME_GRID_ROWS; j++) {
                 mGrid[i][j] = frame.mGrid[i][j];
@@ -380,6 +381,110 @@ namespace ORB_SLAM3 {
         monoRight = -1;
 
         AssignFeaturesToGrid();
+    }
+
+    Frame::Frame(const cv::Mat &imColor, const cv::Mat &imGray, const cv::Mat &imDepth,
+                 const cv::Mat &imMask, const double &timeStamp, ORBextractor *extractor,
+                 line_lbd_detect* line_lbd_ptr_frame, ORBVocabulary *voc,
+                 cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth, const std::vector<BoxSE> & bbox,
+                 GeometricCamera *pCamera,
+                 Frame *pPrevF, const IMU::Calib &ImuCalib)
+            : mpcpi(NULL), mpORBvocabulary(voc), mpORBextractorLeft(extractor),
+              mpORBextractorRight(static_cast<ORBextractor *>(NULL)),
+              mTimeStamp(timeStamp), mK(K.clone()), mK_(Converter::toMatrix3f(K)), mDistCoef(distCoef.clone()), mbf(bf),
+              mThDepth(thDepth),
+              mImuCalib(ImuCalib), mpImuPreintegrated(NULL), mpPrevFrame(pPrevF), mpImuPreintegratedFrame(NULL),
+              mpReferenceKF(static_cast<KeyFrame *>(NULL)), mbIsSet(false), mbImuPreintegrated(false),
+              mpCamera(pCamera), mpCamera2(nullptr), mbHasPose(false), mbHasVelocity(false), mImDynm_mask(imMask),
+              mColorImage(imColor.clone()), mQuadricImage(imColor.clone()) , mpline_lbd_ptr_frame(line_lbd_ptr_frame), boxes(bbox)
+              {
+        // Frame ID
+        mnId = nNextId++;
+
+        // Scale Level Info
+        mnScaleLevels = mpORBextractorLeft->GetLevels();
+        mfScaleFactor = mpORBextractorLeft->GetScaleFactor();
+        mfLogScaleFactor = log(mfScaleFactor);
+        mvScaleFactors = mpORBextractorLeft->GetScaleFactors();
+        mvInvScaleFactors = mpORBextractorLeft->GetInverseScaleFactors();
+        mvLevelSigma2 = mpORBextractorLeft->GetScaleSigmaSquares();
+        mvInvLevelSigma2 = mpORBextractorLeft->GetInverseScaleSigmaSquares();
+
+        // ORB extraction
+#ifdef REGISTER_TIMES
+        std::chrono::steady_clock::time_point time_StartExtORB = std::chrono::steady_clock::now();
+#endif
+        ExtractORB(0, imGray, 0, 0);
+#ifdef REGISTER_TIMES
+        std::chrono::steady_clock::time_point time_EndExtORB = std::chrono::steady_clock::now();
+
+        mTimeORB_Ext = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_EndExtORB - time_StartExtORB).count();
+#endif
+
+        N = mvKeys.size();
+
+        if (mvKeys.empty())
+            return;
+
+        UndistortKeyPoints();
+
+        ComputeStereoFromRGBD(imDepth);
+
+        mvpMapPoints = vector<MapPoint *>(N, static_cast<MapPoint *>(NULL));
+
+        mmProjectPoints.clear();
+        mmMatchedInImage.clear();
+
+        mvbOutlier = vector<bool>(N, false);
+
+        // This is done only for the first Frame (or after a change in the calibration)
+        if (mbInitialComputations) {
+            ComputeImageBounds(imGray);
+
+            mfGridElementWidthInv = static_cast<float>(FRAME_GRID_COLS) / static_cast<float>(mnMaxX - mnMinX);
+            mfGridElementHeightInv = static_cast<float>(FRAME_GRID_ROWS) / static_cast<float>(mnMaxY - mnMinY);
+
+            fx = K.at<float>(0, 0);
+            fy = K.at<float>(1, 1);
+            cx = K.at<float>(0, 2);
+            cy = K.at<float>(1, 2);
+            invfx = 1.0f / fx;
+            invfy = 1.0f / fy;
+
+            mbInitialComputations = false;
+        }
+
+        mb = mbf / fx;
+
+        if (pPrevF) {
+            if (pPrevF->HasVelocity())
+                SetVelocity(pPrevF->GetVelocity());
+        } else {
+            mVw.setZero();
+        }
+
+        mpMutexImu = new std::mutex();
+
+        //Set no stereo fisheye information
+        Nleft = -1;
+        Nright = -1;
+        mvLeftToRightMatch = vector<int>(0);
+        mvRightToLeftMatch = vector<int>(0);
+        mvStereo3Dpoints = vector<Eigen::Vector3f>(0);
+        monoLeft = -1;
+        monoRight = -1;
+
+        AssignFeaturesToGrid();
+
+        // For 3D cuboid
+        mpline_lbd_ptr_frame->detect_raw_lines(imColor, keylines_raw);
+        mpline_lbd_ptr_frame->filter_lines(keylines_raw, keylines_out);
+        keylines_to_mat(keylines_out, all_lines_mat,1);
+        Eigen::MatrixXd all_lines_raw(all_lines_mat.rows,4);
+        for (int rr=0;rr<all_lines_mat.rows;rr++)
+            for (int cc=0;cc<4;cc++)
+                all_lines_raw(rr,cc) = all_lines_mat.at<float>(rr,cc);
+        all_lines_eigen = all_lines_raw;
     }
 
 

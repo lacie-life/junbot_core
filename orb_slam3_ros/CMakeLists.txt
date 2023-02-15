@@ -133,6 +133,10 @@ file(GLOB HEADERS
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/*.hpp
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/CameraModels/*.h
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/cuda/*.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/line_lbd/*.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/line_lbd/*.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/line_lbd/line_descriptor/*.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/detect_3d_cuboid/*.h
         )
 
 file(GLOB SOURCES 
@@ -140,6 +144,10 @@ file(GLOB SOURCES
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/CameraModels/*.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/cuda/*.cu
+        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/line_detect/libs/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/line_detect/libs/*.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/line_detect/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/detect_3d_cuboid/*.cpp
         )
 
 source_group("Header Files" FILES ${HEADERS})

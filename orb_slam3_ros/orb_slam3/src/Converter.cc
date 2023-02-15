@@ -150,6 +150,11 @@ cv::Mat Converter::toCvMat(const Eigen::Matrix<float,3,1> &m)
     return cvMat.clone();
 }
 
+cv::Mat Converter::toCvMat(const Sophus::SE3f &T)
+{
+    return Converter::toCvMat(Converter::toSE3Quat(T));
+}
+
 cv::Mat Converter::toCvSE3(const Eigen::Matrix<double,3,3> &R, const Eigen::Matrix<double,3,1> &t)
 {
     cv::Mat cvMat = cv::Mat::eye(4,4,CV_32F);
@@ -325,6 +330,93 @@ Sophus::SE3<float> Converter::toSophus(const cv::Mat &T) {
 Sophus::Sim3f Converter::toSophus(const g2o::Sim3& S) {
     return Sophus::Sim3f(Sophus::RxSO3d((float)S.scale(), S.rotation().matrix()).cast<float>() ,
                          S.translation().cast<float>());
+}
+
+// For 3D cuboid testing
+float Converter::bboxOverlapratio(const cv::Rect& rect1, const cv::Rect& rect2)
+{
+    int overlap_area = (rect1&rect2).area();
+    return (float)overlap_area/((float)(rect1.area()+rect2.area()-overlap_area));
+}
+
+float Converter::bboxOverlapratioLatter(const cv::Rect& rect1, const cv::Rect& rect2)
+{
+    int overlap_area = (rect1&rect2).area();
+    return (float)overlap_area/((float)(rect2.area()));
+}
+
+float Converter::bboxOverlapratioFormer(const cv::Rect& rect1, const cv::Rect& rect2)
+{
+    int overlap_area = (rect1&rect2).area();
+    return (float)overlap_area/((float)(rect1.area()));
+}
+
+Eigen::Matrix4d Converter::cvMattoMatrix4d(const cv::Mat &cvMat4) {
+    Eigen::Matrix4d M;
+
+    M << cvMat4.at<float>(0, 0), cvMat4.at<float>(0, 1), cvMat4.at<float>(0, 2), cvMat4.at<float>(0, 3),
+         cvMat4.at<float>(1, 0), cvMat4.at<float>(1, 1), cvMat4.at<float>(1, 2), cvMat4.at<float>(1, 3),
+         cvMat4.at<float>(2, 0), cvMat4.at<float>(2, 1), cvMat4.at<float>(2, 2), cvMat4.at<float>(2, 3),
+         cvMat4.at<float>(3, 0), cvMat4.at<float>(3, 1), cvMat4.at<float>(3, 2), cvMat4.at<float>(3, 3);
+
+    return M;
+}
+
+
+Eigen::Matrix4d Converter::Quation2Eigen(const double qx, const double qy, const double qz, const double qw, const double tx,
+                                 const double ty, const double tz) {
+
+    Eigen::Quaterniond quaternion(Eigen::Vector4d(qx, qy, qz, qw));
+    Eigen::AngleAxisd rotation_vector(quaternion);
+    Eigen::Isometry3d T = Eigen::Isometry3d::Identity();
+    T.rotate(rotation_vector);
+    T.pretranslate(Eigen::Vector3d(tx, ty, tz));
+    Eigen::Matrix4d Pose_eigen = T.matrix();
+    return Pose_eigen;
+}
+
+cv::Mat Converter::Quation2CvMat(const double qx, const double qy, const double qz, const double qw, const double tx, const double ty, const double tz  ) {
+    return toCvMat(
+            Quation2Eigen(qx, qy, qz, qw, tx, ty, tz )
+    );
+}
+
+Eigen::Isometry3d  Converter::Matrix4dtoIsometry3d(const Eigen::Matrix4d &matrix) {
+    Eigen::Isometry3d Iso=Eigen::Isometry3d::Identity();                
+
+    Iso(0, 0) = matrix(0, 0), Iso(0, 1) = matrix(0, 1), Iso(0, 2) = matrix(0, 2), Iso(0, 3) = matrix(0, 3);
+    Iso(1, 0) = matrix(1, 0), Iso(1, 1) = matrix(1, 1), Iso(1, 2) = matrix(1, 2), Iso(1, 3) = matrix(1, 3);
+    Iso(2, 0) = matrix(2, 0), Iso(2, 1) = matrix(2, 1), Iso(2, 2) = matrix(2, 2), Iso(2, 3) = matrix(2, 3);
+    Iso(3, 0) = matrix(3, 0), Iso(3, 1) = matrix(3, 1), Iso(3, 2) = matrix(3, 2), Iso(3, 3) = matrix(3, 3);
+
+    return Iso;
+}
+
+Eigen::Matrix4d Converter::Isometry3dtoMatrix4d(const Eigen::Isometry3d &Iso ){
+    return Iso.matrix();
+}
+
+Eigen::Isometry3d Converter::cvMattoIsometry3d(const cv::Mat &cvMat4){
+    return Matrix4dtoIsometry3d(
+            cvMattoMatrix4d( cvMat4 )
+            );
+}
+
+Eigen::Quaterniond Converter::ExtractQuaterniond(const Eigen::Isometry3d &Iso){
+    Eigen::Quaterniond q = Eigen::Quaterniond(Iso.rotation());
+    return q;
+}
+
+Eigen::Quaterniond Converter::ExtractQuaterniond(const Eigen::Matrix4d &matrix ){
+    return ExtractQuaterniond(
+            Matrix4dtoIsometry3d(matrix)
+    );
+}
+
+Eigen::Quaterniond Converter::ExtractQuaterniond(const cv::Mat &mat ){
+    return ExtractQuaterniond(
+            cvMattoIsometry3d(mat)
+    );
 }
 
 } //namespace ORB_SLAM

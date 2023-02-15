@@ -40,11 +40,13 @@
 #include "ImuTypes.h"
 #include "Settings.h"
 
-#include "Detector.h"
+// #include "Detector.h"
 #include "PointCloudMapping.h"
+#include "YoloDetection.h"
+#include "MapPublisher.h"
 
 class PointCloudMapping;
-class Detector;
+// class Detector;
 
 namespace ORB_SLAM3
 {
@@ -84,6 +86,7 @@ class Tracking;
 class LocalMapping;
 class LoopClosing;
 class Settings;
+class MapPublisher;
 
 class System
 {
@@ -244,6 +247,7 @@ private:
     Viewer* mpViewer;
     FrameDrawer* mpFrameDrawer;
     MapDrawer* mpMapDrawer;
+    MapPublisher* mpMapPublisher;
 
     // System threads: Local Mapping, Loop Closing, Viewer.
     // The Tracking thread "lives" in the main execution thread that creates the System object.
@@ -280,7 +284,7 @@ private:
 
     // Point cloud mapping
     boost::shared_ptr<PointCloudMapping> mpPointCloudMapping;
-    // YoloDetection* mpDetector;
+    YoloDetection* mpDetector;
     // std::shared_ptr<Detector> mpDetector;
 public:
     bool isYoloDetection = true;
