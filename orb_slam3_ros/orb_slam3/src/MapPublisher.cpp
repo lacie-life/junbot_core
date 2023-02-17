@@ -8,6 +8,9 @@
 #include "Atlas.h"
 #include "Converter.h"
 
+#include <vision_msgs/BoundingBox3DArray.h>
+#include <vision_msgs/ObjectHypothesis.h>
+
 namespace ORB_SLAM3
 {
 
@@ -101,6 +104,7 @@ namespace ORB_SLAM3
         publisher_KF = nh.advertise<visualization_msgs::Marker>("KeyFrame", 1000);
         publisher_CoView = nh.advertise<visualization_msgs::Marker>("CoView", 1000);
         publisher_object = nh.advertise<visualization_msgs::Marker>("objectmap", 1000);
+        publisher_object2map = nh.advertise<vision_msgs::BoundingBox3DArray>("detect_array", 1000);
         publisher_object_points = nh.advertise<visualization_msgs::Marker>("objectPoints", 1000);
         publisher_IE = nh.advertise<visualization_msgs::Marker>("object_ie", 1000);
         publisher_robotpose = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("initialpose", 1000);
@@ -141,6 +145,7 @@ namespace ORB_SLAM3
             PublishMapPoints(vMapPoints, vRefMapPoints);
             PublishKeyFrames(vKeyFrames);
             PublishObject(vMapObjects);
+            PublishObject2Map(vMapObjects);
             PublishIE(vMapObjects);
         }
     }
@@ -576,6 +581,43 @@ namespace ORB_SLAM3
             // std::cout << "[rviz debug:2 ]" << marker2.points.size() << std::endl;
             publisher_object_points.publish(marker2);
         }
+    }
+
+    void MapPublisher::PublishObject2Map(const std::vector<Object_Map *> &vpObjs)
+    {
+        if(vpObjs.size() <= 0)
+        {
+            return;
+        }
+
+        vision_msgs::BoundingBox3DArray objDB;
+
+        for(size_t i = 0; i < vpObjs.size(); i++)
+        {
+            if((vpObjs[i]->mvpMapObjectMappoints.size() < 10) || (vpObjs[i]->bad_3d == true))
+            {
+                continue;
+            }
+
+            vision_msgs::BoundingBox3D obj;
+            Object_Map* temp = vpObjs[i];
+
+            obj.center.position.x = temp->mCuboid3D.cuboidCenter[0];   // 1 + 4/2
+            obj.center.position.y = temp->mCuboid3D.cuboidCenter[1]; // 2 + 5/2
+            obj.center.position.z = temp->mCuboid3D.cuboidCenter[2];   // 3 + 6/2
+            obj.center.orientation.x = 0;
+            obj.center.orientation.y = 0;
+            obj.center.orientation.z = 0;
+            obj.center.orientation.w = 1;
+            obj.size.x = temp->mCuboid3D.x_max - temp->mCuboid3D.x_min;
+            obj.size.y = temp->mCuboid3D.y_max - temp->mCuboid3D.y_min;
+            obj.size.z = temp->mCuboid3D.z_max - temp->mCuboid3D.z_min;
+
+            objDB.boxes.push_back(obj);
+        }
+        objDB.header = std_msgs::Header();
+
+        publisher_object2map.publish(objDB);
     }
 
 
