@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   custom_msgs
+  vision_msgs
   tf
 )
 
@@ -42,7 +43,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES costmap_objects_layer
-  CATKIN_DEPENDS costmap_2d dynamic_reconfigure roscpp rospy std_msgs tf custom_msgs
+  CATKIN_DEPENDS costmap_2d dynamic_reconfigure roscpp rospy std_msgs tf custom_msgs vision_msgs
   DEPENDS
 )
 

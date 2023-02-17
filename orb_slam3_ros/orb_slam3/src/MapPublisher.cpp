@@ -8,8 +8,9 @@
 #include "Atlas.h"
 #include "Converter.h"
 
-#include <vision_msgs/BoundingBox3DArray.h>
-#include <vision_msgs/ObjectHypothesis.h>
+#include <vision_msgs/ObjectHypothesisWithPose.h>
+#include <vision_msgs/Detection3D.h>
+#include <vision_msgs/Detection3DArray.h>
 
 namespace ORB_SLAM3
 {
@@ -104,7 +105,7 @@ namespace ORB_SLAM3
         publisher_KF = nh.advertise<visualization_msgs::Marker>("KeyFrame", 1000);
         publisher_CoView = nh.advertise<visualization_msgs::Marker>("CoView", 1000);
         publisher_object = nh.advertise<visualization_msgs::Marker>("objectmap", 1000);
-        publisher_object2map = nh.advertise<vision_msgs::BoundingBox3DArray>("detect_array", 1000);
+        publisher_object2map = nh.advertise<vision_msgs::Detection3DArray>("detect_array", 1000);
         publisher_object_points = nh.advertise<visualization_msgs::Marker>("objectPoints", 1000);
         publisher_IE = nh.advertise<visualization_msgs::Marker>("object_ie", 1000);
         publisher_robotpose = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("initialpose", 1000);
@@ -590,7 +591,7 @@ namespace ORB_SLAM3
             return;
         }
 
-        vision_msgs::BoundingBox3DArray objDB;
+        vision_msgs::Detection3DArray objDB;
 
         for(size_t i = 0; i < vpObjs.size(); i++)
         {
@@ -599,21 +600,27 @@ namespace ORB_SLAM3
                 continue;
             }
 
-            vision_msgs::BoundingBox3D obj;
+            vision_msgs::Detection3D obj;
             Object_Map* temp = vpObjs[i];
 
-            obj.center.position.x = temp->mCuboid3D.cuboidCenter[0];   // 1 + 4/2
-            obj.center.position.y = temp->mCuboid3D.cuboidCenter[1]; // 2 + 5/2
-            obj.center.position.z = temp->mCuboid3D.cuboidCenter[2];   // 3 + 6/2
-            obj.center.orientation.x = 0;
-            obj.center.orientation.y = 0;
-            obj.center.orientation.z = 0;
-            obj.center.orientation.w = 1;
-            obj.size.x = temp->mCuboid3D.x_max - temp->mCuboid3D.x_min;
-            obj.size.y = temp->mCuboid3D.y_max - temp->mCuboid3D.y_min;
-            obj.size.z = temp->mCuboid3D.z_max - temp->mCuboid3D.z_min;
+            obj.bbox.center.position.x = temp->mCuboid3D.cuboidCenter[0];   // 1 + 4/2
+            obj.bbox.center.position.y = temp->mCuboid3D.cuboidCenter[1]; // 2 + 5/2
+            obj.bbox.center.position.z = temp->mCuboid3D.cuboidCenter[2];   // 3 + 6/2
+            obj.bbox.center.orientation.x = 0;
+            obj.bbox.center.orientation.y = 0;
+            obj.bbox.center.orientation.z = 0;
+            obj.bbox.center.orientation.w = 1;
+            obj.bbox.size.x = temp->mCuboid3D.x_max - temp->mCuboid3D.x_min;
+            obj.bbox.size.y = temp->mCuboid3D.y_max - temp->mCuboid3D.y_min;
+            obj.bbox.size.z = temp->mCuboid3D.z_max - temp->mCuboid3D.z_min;
 
-            objDB.boxes.push_back(obj);
+            vision_msgs::ObjectHypothesisWithPose hypo;
+            hypo.id = temp->mnClass;
+            hypo.score = 1;
+
+            obj.results.push_back(hypo);
+
+            objDB.detections.push_back(obj);
         }
         objDB.header = std_msgs::Header();
 
