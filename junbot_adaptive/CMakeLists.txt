@@ -20,3 +20,7 @@ add_executable(add_layer src/add_layer.cpp)
 target_link_libraries(add_layer ${catkin_LIBRARIES})
 add_dependencies(add_layer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+add_executable(adaptiveControl src/adaptiveControl.cpp)
+target_link_libraries(adaptiveControl ${catkin_LIBRARIES})
+add_dependencies(adaptiveControl ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
