@@ -51,6 +51,7 @@ namespace ORB_SLAM3
         void PublishKeyFrames(const std::vector<KeyFrame*> &vpKFs);
         void PublishCurrentCamera(const cv::Mat &Tcw);
         void PublishObject(const vector<Object_Map*> &vpObjs );
+        void PublishObject2Map(const std::vector<Object_Map*> &vpObjs);
         void PublishIE(const vector<Object_Map*> &vObjs );
         geometry_msgs::Point corner_to_marker(Eigen::Vector3d& v);
         geometry_msgs::Point corner_to_marker(const std::vector<float>& v);
@@ -69,6 +70,7 @@ namespace ORB_SLAM3
         ros::Publisher publisher_KF;
         ros::Publisher publisher_CoView;
         ros::Publisher publisher_object;
+        ros::Publisher publisher_object2map;
         ros::Publisher publisher_object_points;
         ros::Publisher publisher_IE;
         ros::Publisher publisher_robotpose;
