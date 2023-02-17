@@ -28,6 +28,8 @@
    - [ ] How to represent map with object for navigation stack ? (Grid map / OctoMap) ? 
       - [x] CostMap layer? ([Ref](http://wiki.ros.org/costmap_2d/Tutorials/Creating%20a%20New%20Layer))
    - [ ] Planner? Which param need to change?
+      - [ ] CostMap param?
+      - [ ] Planner param?
    - [ ] ....
 
 # Install 
