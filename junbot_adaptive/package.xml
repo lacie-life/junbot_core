@@ -2,7 +2,7 @@
 <package format="2">
   <name>junbot_adaptive</name>
   <version>0.0.0</version>
-  <description>The turtlebot3_adaptive package</description>
+  <description>The junbot_adaptive package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
