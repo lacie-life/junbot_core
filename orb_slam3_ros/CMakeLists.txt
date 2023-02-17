@@ -172,7 +172,7 @@ target_link_libraries(${PROJECT_NAME}
         ${CUDA_CUDART_LIBRARY}
         ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/DBoW2/lib/libDBoW2.so
         ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/g2o/lib/libg2o.so
-         ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/yolov5/lib/libyolov5-detector.so
+        ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/yolov5/lib/libyolov5-detector.so
         -lboost_serialization
         -lcrypto
          nvToolsExt
