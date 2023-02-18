@@ -2559,6 +2559,7 @@ void Tracking::Track()
 #ifdef REGISTER_TIMES
             std::chrono::steady_clock::time_point time_StartNewKF = std::chrono::steady_clock::now();
 #endif
+            // Different output with origin version
             int bNeedKF = NeedNewKeyFrame();
 
             // Check if we need to insert a new keyframe
@@ -3284,7 +3285,6 @@ bool Tracking::TrackWithMotionModel()
 
 bool Tracking::TrackLocalMap()
 {
-    // TODO: Adding here
     // We have an estimation of the camera pose and some map points tracked in the frame.
     // We retrieve the local map and try to find matches to points in the local map.
     mTrackedFr++;
@@ -3498,12 +3498,13 @@ int Tracking::NeedNewKeyFrame()
     const bool c2 = (((mnMatchesInliers<nRefMatches*thRefRatio || bNeedToInsertClose)) && mnMatchesInliers>15);
 
     // std::cout << "NeedNewKF: c1a=" << c1a << "; c1b=" << c1b << "; c1c=" << c1c << "; c2=" << c2 << std::endl;
-    
-    bool c1d = false;
-    if(mCurrentFrame.AppearNewObject)
-    {
-        c1d = true;
-    }
+
+    // TODO: REMEMBER HERE
+//    bool c1d = false;
+//    if(mCurrentFrame.AppearNewObject)
+//    {
+//        c1d = true;
+//    }
     
     // Temporal condition for Inertial cases
     bool c3 = false;
@@ -3552,31 +3553,47 @@ int Tracking::NeedNewKeyFrame()
             }
         }
     }
-    // else
-    //     return false;
+     else
+         return false;
 
-    if (c1d)
-    {
-        if (bLocalMappingIdle)
-        {
-            return 2;
-        }
-        else
-        {
-            mpLocalMapper->InterruptBA();
-            if (mSensor != System::MONOCULAR)
-            {
-                if (mpLocalMapper->KeyframesInQueue() < 3)
-                    return 2;
-                else
-                    return 0;
-            }
-            else
-                return 0;
-        }
-    }
+    // TODO: REMEMBER HERE
+//    if (c1d)
+//    {
+//        if (bLocalMappingIdle)
+//        {
+//            return 2;
+//        }
+//        else
+//        {
+//            mpLocalMapper->InterruptBA();
+//            if (mSensor != System::MONOCULAR)
+//            {
+//                if (mpLocalMapper->KeyframesInQueue() < 3)
+//                    return 2;
+//                else
+//                    return 0;
+//            }
+//            else
+//                return 0;
+//        }
+//    }
 
     return 0;
+}
+
+template <class BidiIter> //Fisher-Yates shuffle
+BidiIter random_unique2(BidiIter begin, BidiIter end, int num_random)
+{
+    size_t left = std::distance(begin, end);
+    while (num_random--)
+    {
+        BidiIter r = begin;
+        std::advance(r, rand() % left);
+        std::swap(*begin, *r);
+        ++begin;
+        --left;
+    }
+    return begin;
 }
 
 void Tracking::CreateNewKeyFrame(bool CreateByObjs)
@@ -3586,7 +3603,6 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
 
     if(!mpLocalMapper->SetNotStop(true))
         return;
-
 
     KeyFrame* pKF;
     if(mSensor == System::RGBD || mSensor == System::IMU_RGBD)
@@ -3606,11 +3622,21 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
     mpReferenceKF = pKF;
     mCurrentFrame.mpReferenceKF = pKF;
 
-    // For 3D cuboid
-    if(CreateByObjs)
+    // For 3D cuboid testing (optimize)
+    std::cout << "\033[33m Created new keyframe!  " << pKF->mnId << " local cuboid " << pKF->local_cuboids.size()
+              << "   total ID  " << pKF->mnFrameId << "\033[0m" << std::endl;
+    if (whether_detect_object)
     {
-        pKF->mbByNewObj = true;
+        DetectCuboid(pKF);
+        AssociateCuboids(pKF);
     }
+
+    // TODO: REMEMBER HERE
+    // For 3D cuboid
+//    if(CreateByObjs)
+//    {
+//        pKF->mbByNewObj = true;
+//    }
 
     if(mpLastKeyFrame)
     {
@@ -3713,6 +3739,8 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
             //Verbose::PrintMess("new mps for stereo KF: " + to_string(nPoints), Verbose::VERBOSITY_NORMAL);
         }
     }
+
+    // TODO: Adding here
 
     pKF->mvDynamicArea = mCurrentFrame.mvDynamicArea;
 
