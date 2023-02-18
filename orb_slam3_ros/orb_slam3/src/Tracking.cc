@@ -203,25 +203,25 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
 
     if(whether_detect_object)
     {
-        if(!whether_read_offline_cuboidtxt)
-        {
-            detect_cuboid_obj = new detect_3d_cuboid();
-            detect_cuboid_obj->print_details = false;
-            detect_cuboid_obj->set_calibration(Kalib);
-        }
+//        if(!whether_read_offline_cuboidtxt)
+//        {
+//            detect_cuboid_obj = new detect_3d_cuboid();
+//            detect_cuboid_obj->print_details = false;
+//            detect_cuboid_obj->set_calibration(Kalib);
+//        }
+//
+//        if (!whether_read_offline_cuboidtxt)
+//        {
+//            if (whether_save_online_detected_cuboids)
+//            {
+//                std::string save_object_pose_txt = base_data_folder + "/slam_output/orb_live_pred_objs_temp.txt";
+//                save_online_detected_cuboids.open(save_object_pose_txt.c_str());
+//            }
+//        }
 
-        if (!whether_read_offline_cuboidtxt)
-        {
-            if (whether_save_online_detected_cuboids)
-            {
-                std::string save_object_pose_txt = base_data_folder + "/slam_output/orb_live_pred_objs_temp.txt";
-                save_online_detected_cuboids.open(save_object_pose_txt.c_str());
-            }
-        }
-
-        if (whether_read_offline_cuboidtxt) {
-            // Offline detection version
-        }
+//        if (whether_read_offline_cuboidtxt) {
+//            // Offline detection version
+//        }
     }
 
     if (whether_detect_object)
@@ -831,7 +831,7 @@ void Tracking::newParameterLoader(Settings *settings) {
     Sophus::SE3f Tbc = settings->Tbc();
     mInsertKFsLost = settings->insertKFsWhenLost();
     mImuFreq = settings->imuFrequency();
-    mImuPer = 0.001; //1.0 / (double) mImuFreq;     //TODO: ESTO ESTA BIEN?
+    mImuPer = 0.001; //1.0 / (double) mImuFreq;
     float Ng = settings->noiseGyro();
     float Na = settings->noiseAcc();
     float Ngw = settings->gyroWalk();
@@ -1771,14 +1771,14 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
     mImRGB = imRGB;
 
     // TODO: REMEMBER HERE
-//    std::vector<BoxSE> objects;
-//    if (mpSystem->isYoloDetection)
-//    {
-//        // Yolo
-//        cv::Mat InputImage;
-//        InputImage = imRGB.clone();
-//        mpDetector->Detectv3(InputImage, objects);
-//    }
+    std::vector<BoxSE> objects;
+    if (mpSystem->isYoloDetection)
+    {
+        // Yolo
+        cv::Mat InputImage;
+        InputImage = imRGB.clone();
+        mpDetector->Detectv3(InputImage, objects);
+    }
 
     if(mImGray.channels()==3)
     {
@@ -1847,18 +1847,18 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
     // TODO: REMEMBER HERE
     else if (mSensor == System::RGBD && mpSystem->isYoloDetection)
     {
-//        mCurrentFrame = Frame(imRGB, mImGray, mImDepth, mImMask, timestamp,
-//                              mpORBextractorLeft, line_lbd_ptr, mpORBVocabulary,
-//                              mK, mDistCoef, mbf, mThDepth, objects, mpCamera);
-        mCurrentFrame = Frame(mImGray,mImDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera);
+        mCurrentFrame = Frame(imRGB, mImGray, mImDepth, mImMask, timestamp,
+                              mpORBextractorLeft, line_lbd_ptr, mpORBVocabulary,
+                              mK, mDistCoef, mbf, mThDepth, objects, mpCamera);
+//        mCurrentFrame = Frame(mImGray,mImDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera);
 
     }
     else if (mSensor == System::IMU_RGBD && mpSystem->isYoloDetection)
     {
-//        mCurrentFrame = Frame(imRGB, mImGray, mImDepth, mImMask, timestamp,
-//                              mpORBextractorLeft, line_lbd_ptr, mpORBVocabulary,
-//                              mK, mDistCoef, mbf, mThDepth, objects, mpCamera, &mLastFrame,*mpImuCalib);
-        mCurrentFrame = Frame(mImGray,mImDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,&mLastFrame,*mpImuCalib);
+        mCurrentFrame = Frame(imRGB, mImGray, mImDepth, mImMask, timestamp,
+                              mpORBextractorLeft, line_lbd_ptr, mpORBVocabulary,
+                              mK, mDistCoef, mbf, mThDepth, objects, mpCamera, &mLastFrame,*mpImuCalib);
+//        mCurrentFrame = Frame(mImGray,mImDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,&mLastFrame,*mpImuCalib);
     }
 
     if(mCurrentFrame.mnId == 0)
@@ -3245,7 +3245,7 @@ bool Tracking::TrackWithMotionModel()
 
     // For 3D cuboid
     // TODO: REMEMBER HERE
-    // CreateObject_InTrackMotion();
+     CreateObject_InTrackMotion();
 
     // Optimize frame pose with all matches
     Optimizer::PoseOptimization(&mCurrentFrame);
@@ -3505,11 +3505,11 @@ int Tracking::NeedNewKeyFrame()
     // std::cout << "NeedNewKF: c1a=" << c1a << "; c1b=" << c1b << "; c1c=" << c1c << "; c2=" << c2 << std::endl;
 
     // TODO: REMEMBER HERE
-//    bool c1d = false;
-//    if(mCurrentFrame.AppearNewObject)
-//    {
-//        c1d = true;
-//    }
+    bool c1d = false;
+    if(mCurrentFrame.AppearNewObject)
+    {
+        c1d = true;
+    }
     
     // Temporal condition for Inertial cases
     bool c3 = false;
@@ -3562,26 +3562,26 @@ int Tracking::NeedNewKeyFrame()
          return false;
 
     // TODO: REMEMBER HERE
-//    if (c1d)
-//    {
-//        if (bLocalMappingIdle)
-//        {
-//            return 2;
-//        }
-//        else
-//        {
-//            mpLocalMapper->InterruptBA();
-//            if (mSensor != System::MONOCULAR)
-//            {
-//                if (mpLocalMapper->KeyframesInQueue() < 3)
-//                    return 2;
-//                else
-//                    return 0;
-//            }
-//            else
-//                return 0;
-//        }
-//    }
+    if (c1d)
+    {
+        if (bLocalMappingIdle)
+        {
+            return 2;
+        }
+        else
+        {
+            mpLocalMapper->InterruptBA();
+            if (mSensor != System::MONOCULAR)
+            {
+                if (mpLocalMapper->KeyframesInQueue() < 3)
+                    return 2;
+                else
+                    return 0;
+            }
+            else
+                return 0;
+        }
+    }
 
     return 0;
 }
@@ -3638,10 +3638,10 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
 
     // TODO: REMEMBER HERE
     // For 3D cuboid
-//    if(CreateByObjs)
-//    {
-//        pKF->mbByNewObj = true;
-//    }
+    if(CreateByObjs)
+    {
+        pKF->mbByNewObj = true;
+    }
 
     if(mpLastKeyFrame)
     {
@@ -5484,6 +5484,9 @@ void Tracking::DetectCuboid(KeyFrame *pKF)
     std::vector<double> all_box_confidence;
     vector<int> truth_tracklet_ids;
 
+    pKF->local_cuboids.clear();
+
+//    std::vector<Object_Map*> all_obj = pKF->
 
 }
 
@@ -5494,6 +5497,10 @@ void Tracking::CreateObject_InTrackMotion(){
     // STEP 1. construct 2D object *
     // *****************************
     vector<Object_2D *> obj_2ds;
+
+    // 3D object to add in keyframe from this frame
+    mCurrentFrame.mvObject_3ds.clear();
+
     cv::Mat ColorImage = mCurrentFrame.mColorImage.clone();
     Map* mpMap = mpAtlas->GetCurrentMap();
     for (auto &box : mCurrentFrame.boxes)
@@ -5758,8 +5765,6 @@ void Tracking::CreateObject_InTrackMotion(){
             ++it;
     }
 
-
-
     // *************************************************************
     // STEP 7. copy objects in the last frame after initialization.*
     // *************************************************************
@@ -5772,7 +5777,6 @@ void Tracking::CreateObject_InTrackMotion(){
         if (!mLastFrame.mvLastObject_2ds.empty())
             mCurrentFrame.mvLastLastObject_2ds = mLastFrame.mvLastObject_2ds;
     }
-
 
     // *******************************************************************************
     // STEP 8. Merges objects with 5-10 points  between two adjacent frames.
@@ -5875,6 +5879,7 @@ void Tracking::CreateObject_InTrackMotion(){
         }
     }
 
+    // TODO: ADD OBJECT_MAP TO KEYFRAME
     // **************************************************************
     // STEP 10. Data association and create objects*
     // **************************************************************
@@ -5886,7 +5891,7 @@ void Tracking::CreateObject_InTrackMotion(){
         // The point in the project is projected into the Currentframe, 
         // and the projection bounding box of obj3d in the Currentframe is calculated, 
         // and stored in mRectProject_forDataAssociate2D of obj3d
-        // To view obje3d, you can associate objects in Currentframe
+        // To view obj3d, you can associate objects in Currentframe
         const std::vector<Object_Map*> obj_3ds = mpMap->GetObjects();
         for (int i = 0; i < (int)obj_3ds.size(); i++)
         {

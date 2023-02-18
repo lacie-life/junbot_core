@@ -235,7 +235,6 @@ public:
     float mCenterStandar_x, mCenterStandar_y, mCenterStandar_z;
     float mCenterStandar;
 
-    
     std::vector< MapPoint*> mvpMapObjectMappoints;
     std::vector< MapPoint*> mvpMapObjectMappoints_NewForActive;     
 

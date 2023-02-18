@@ -37,7 +37,7 @@
 #include <mutex>
 #include <opencv2/opencv.hpp>
 
-#include "Eigen/Core"
+#include <Eigen/Core>
 #include "sophus/se3.hpp"
 
 // line
@@ -59,6 +59,7 @@ class ConstraintPoseImu;
 class GeometricCamera;
 class ORBextractor;
 class Object_2D;
+class Object_Map;
 
 class Frame
 {
@@ -401,6 +402,7 @@ public:
     std::vector<Object_2D*> mvObject_2ds;           // 2d object in current frame.
     std::vector<Object_2D*> mvLastObject_2ds;       // last frame.
     std::vector<Object_2D*> mvLastLastObject_2ds;   // last last frame.
+    std::vector<Object_Map*> mvObject_3ds;          // Object 3D BBox
     bool AppearNewObject = false;                   // Whether new objects appear in the current frame.
     cv::Mat mColorImage;
     cv::Mat mQuadricImage;                          // On the basis of mColorImage, the ellipsoid is drawn
