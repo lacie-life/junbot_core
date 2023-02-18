@@ -5486,8 +5486,7 @@ void Tracking::DetectCuboid(KeyFrame *pKF)
 
     pKF->local_cuboids.clear();
 
-//    std::vector<Object_Map*> all_obj = pKF->
-
+    std::vector<Object_Map*> all_obj = pKF->obj_3ds;
 }
 
 // TODO: This function should be placed in the constructor of object
@@ -5902,13 +5901,17 @@ void Tracking::CreateObject_InTrackMotion(){
             // object appeared in the last 30 frames.
             if(ProIou_only30_flag) {
                 if (obj3d->mnLastAddID > mCurrentFrame.mnId - 30)
+                {
                     obj3d->ComputeProjectRectFrameToCurrentFrame(mCurrentFrame);  // Project the point in obj3d to the current frame and calculate the projected bounding box
+                    mCurrentFrame.mvObject_3ds.push_back(obj_3ds[i]);
+                }
                 else {
                     obj3d->mRect_byProjectPoints = cv::Rect(0, 0, 0, 0);
                 }
             }
             else{
                 obj3d->ComputeProjectRectFrameToCurrentFrame(mCurrentFrame);  // Project the point in obj3d to the current frame and calculate the projected bounding box
+                mCurrentFrame.mvObject_3ds.push_back(obj3d);
             }
         }
 

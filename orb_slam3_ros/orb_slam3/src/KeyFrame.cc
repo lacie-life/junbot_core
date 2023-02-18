@@ -147,6 +147,8 @@ KeyFrame::KeyFrame(Frame &F, Map *pMap, KeyFrameDatabase *pKFDB):
         SetPose(F.GetPose());
 
         mnOriginMapId = pMap->GetId();
+
+        obj_3ds = F.mvObject_3ds;
     }
 
 void KeyFrame::ComputeBoW()

@@ -51,6 +51,7 @@ class Frame;
 class KeyFrameDatabase;
 class GeometricCamera;
 class MapCuboidObject;
+class Object_Map;
 
 class KeyFrame
 {
@@ -560,6 +561,7 @@ protected:
 public:
     std::vector<Object_2D*> obj_2ds;     // 2d objects.
     bool mbByNewObj = false;           // keyframe created by keyframe.
+    std::vector<Object_Map*> obj_3ds;
 
 public:
     GeometricCamera* mpCamera, *mpCamera2;
