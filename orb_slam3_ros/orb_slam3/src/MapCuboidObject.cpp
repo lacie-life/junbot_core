@@ -84,6 +84,16 @@ namespace ORB_SLAM3
         return vector<MapPoint *>(mappoints_potential_own.begin(), mappoints_potential_own.end());
     }
 
+    Map *MapCuboidObject::GetMap() {
+        unique_lock<mutex> lock(mMutexMap);
+        return mpMap;
+    }
+
+    void MapCuboidObject::UpdateMap(Map *pMap) {
+        unique_lock<mutex> lock(mMutexMap);
+        mpMap = pMap;
+    }
+
     void MapCuboidObject::AddPotentialMapPoint(MapPoint *pMP)
     {
         unique_lock<mutex> lock(mMutexFeatures);

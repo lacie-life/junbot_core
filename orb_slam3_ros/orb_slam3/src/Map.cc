@@ -375,7 +375,6 @@ namespace ORB_SLAM3 {
         if (mpKFlowerID) {
             mnBackupKFlowerID = mpKFlowerID->mnId;
         }
-
     }
 
     void
@@ -451,6 +450,39 @@ namespace ORB_SLAM3 {
     {
         unique_lock<mutex> lock(mMutexMap);
         return vector<Object_Map*>(mvObjectMap.begin(), mvObjectMap.end());
+    }
+
+    void Map::AddMapObject(MapCuboidObject *pMO)
+    {
+        unique_lock<mutex> lock(mMutexMap);
+        mspMapObjects.insert(pMO);
+    }
+
+    void Map::EraseMapObject(MapCuboidObject *pMO)
+    {
+        unique_lock<mutex> lock(mMutexMap);
+        mspMapObjects.erase(pMO);
+    }
+
+    vector<MapCuboidObject *> Map::GetAllMapObjects()
+    {
+        unique_lock<mutex> lock(mMutexMap);
+        return vector<MapCuboidObject *>(mspMapObjects.begin(), mspMapObjects.end());
+    }
+
+    vector<MapCuboidObject *> Map::GetGoodMapObjects()
+    {
+        vector<MapCuboidObject *> res;
+        for (set<MapCuboidObject *>::iterator sit = mspMapObjects.begin(), send = mspMapObjects.end(); sit != send; sit++)
+            if ((*sit)->isGood)
+                res.push_back(*sit);
+        return res;
+    }
+
+    long unsigned int Map::MapObjectsInMap()
+    {
+        unique_lock<mutex> lock(mMutexMap);
+        return mspMapObjects.size();
     }
 
     // TODO: Testing

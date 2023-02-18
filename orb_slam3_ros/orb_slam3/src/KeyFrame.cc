@@ -19,6 +19,7 @@
 #include "KeyFrame.h"
 #include "Converter.h"
 #include "ImuTypes.h"
+#include "MapCuboidObject.h"
 #include <mutex>
 
 namespace ORB_SLAM3
@@ -77,8 +78,6 @@ KeyFrame::KeyFrame(Frame &F, Map *pMap, KeyFrameDatabase *pKFDB):
             }
         }
     }
-
-
 
     if(!F.HasVelocity()) {
         mVw.setZero();
@@ -870,6 +869,74 @@ void KeyFrame::SetNewBias(const IMU::Bias &b)
     mImuBias = b;
     if(mpImuPreintegrated)
         mpImuPreintegrated->SetNewBias(b);
+}
+
+bool KeyFrame::PosInGrid(int ptx, int pty, int &posX, int &posY)
+{
+    posX = round((ptx - mnMinX) * mfGridElementWidthInv);
+    posY = round((pty - mnMinY) * mfGridElementHeightInv);
+
+    //Keypoint's coordinates are undistorted, which could cause to go out of the image
+    if (posX < 0 || posX >= FRAME_GRID_COLS || posY < 0 || posY >= FRAME_GRID_ROWS)
+        return false;
+
+    return true;
+}
+
+bool KeyFrame::PosInGrid(const cv::KeyPoint &kp, int &posX, int &posY)
+{
+    posX = round((kp.pt.x - mnMinX) * mfGridElementWidthInv);
+    posY = round((kp.pt.y - mnMinY) * mfGridElementHeightInv);
+
+    //Keypoint's coordinates are undistorted, which could cause to go out of the image
+    if (posX < 0 || posX >= FRAME_GRID_COLS || posY < 0 || posY >= FRAME_GRID_ROWS)
+        return false;
+
+    return true;
+}
+
+vector<MapPoint *> KeyFrame::GetHarrisMapPointMatches()
+{
+    unique_lock<mutex> lock(mMutexFeatures);
+    return mvpMapPointsHarris;
+}
+
+cv::Mat KeyFrame::UnprojectPixelDepth(cv::Point2f &pt, float depth)
+{
+    const float z = depth;
+    if (z > 0)
+    {
+        const float u = pt.x;
+        const float v = pt.y;
+        const float x = (u - cx) * z * invfx;
+        const float y = (v - cy) * z * invfy;
+        cv::Mat x3Dc = (cv::Mat_<float>(3, 1) << x, y, z);
+
+        unique_lock<mutex> lock(mMutexPose);
+        cv::Mat Twc = Converter::toCvMat(mTcw);
+        return Twc.rowRange(0, 3).colRange(0, 3) * x3Dc + Twc.rowRange(0, 3).col(3);
+    }
+    else
+        return cv::Mat();
+}
+
+void KeyFrame::EraseMapObjectMatch(const size_t &idx)
+{
+    unique_lock<mutex> lock(mMutexFeatures);
+    cuboids_landmark[idx] = static_cast<MapCuboidObject *>(NULL);
+}
+
+void KeyFrame::EraseMapObjectMatch(MapCuboidObject *pMP)
+{
+    int idx = pMP->GetIndexInKeyFrame(this);
+    if (idx >= 0)
+        cuboids_landmark[idx] = static_cast<MapCuboidObject *>(NULL);
+}
+
+void KeyFrame::EraseHarrisMapPointMatch(const size_t &idx)
+{
+    unique_lock<mutex> lock(mMutexFeatures);
+    mvpMapPointsHarris[idx] = static_cast<MapPoint *>(NULL);
 }
 
 Eigen::Vector3f KeyFrame::GetGyroBias()

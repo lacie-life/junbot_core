@@ -60,6 +60,9 @@ namespace ORB_SLAM3
         void SetReferenceKeyFrame(KeyFrame *refkf);
         KeyFrame *GetLatestKeyFrame();
 
+        Map* GetMap();
+        void UpdateMap(Map* pMap);
+
         void SetBadFlag();
         bool isBad(); // whether definitly bad.
         bool isGood;  // whether definitely good.
@@ -141,6 +144,7 @@ namespace ORB_SLAM3
         std::mutex mMutexPos;
         std::mutex mMutexFeatures;
         std::mutex mMutexParam;
+        std::mutex mMutexMap;
 
         std::set<MapPoint *> mappoints_unique_own;    // uniquedly owned by this object.
         std::set<MapPoint *> mappoints_potential_own; // potentially owned
