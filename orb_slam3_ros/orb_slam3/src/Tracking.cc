@@ -2843,7 +2843,6 @@ void Tracking::MonocularInitialization()
 
 void Tracking::CreateInitialMapMonocular()
 {
-    // TODO: Adding here
     // Create KeyFrames
     KeyFrame* pKFini = new KeyFrame(mInitialFrame,mpAtlas->GetCurrentMap(),mpKeyFrameDB);
     KeyFrame* pKFcur = new KeyFrame(mCurrentFrame,mpAtlas->GetCurrentMap(),mpKeyFrameDB);
@@ -2857,6 +2856,14 @@ void Tracking::CreateInitialMapMonocular()
     // Insert KFs in the map
     mpAtlas->AddKeyFrame(pKFini);
     mpAtlas->AddKeyFrame(pKFcur);
+
+    if (whether_detect_object)
+    {
+        DetectCuboid(pKFini);
+        AssociateCuboids(pKFini);
+        DetectCuboid(pKFcur);
+        AssociateCuboids(pKFcur);
+    }
 
     for(size_t i=0; i<mvIniMatches.size();i++)
     {
@@ -2884,7 +2891,6 @@ void Tracking::CreateInitialMapMonocular()
         //Add to Map
         mpAtlas->AddMapPoint(pMP);
     }
-
 
     // Update Connections
     pKFini->UpdateConnections();
@@ -3232,7 +3238,8 @@ bool Tracking::TrackWithMotionModel()
     }
 
     // For 3D cuboid
-    CreateObject_InTrackMotion();
+    // TODO: REMEMBER HERE
+    // CreateObject_InTrackMotion();
 
     // Optimize frame pose with all matches
     Optimizer::PoseOptimization(&mCurrentFrame);
@@ -3277,7 +3284,7 @@ bool Tracking::TrackWithMotionModel()
 
 bool Tracking::TrackLocalMap()
 {
-
+    // TODO: Adding here
     // We have an estimation of the camera pose and some map points tracked in the frame.
     // We retrieve the local map and try to find matches to points in the local map.
     mTrackedFr++;
