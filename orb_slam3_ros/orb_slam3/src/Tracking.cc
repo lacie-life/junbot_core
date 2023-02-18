@@ -1770,14 +1770,15 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
     mImDepth = imD;
     mImRGB = imRGB;
 
-    std::vector<BoxSE> objects;
-    if (mpSystem->isYoloDetection)
-    {
-        // Yolo
-        cv::Mat InputImage;
-        InputImage = imRGB.clone();
-        mpDetector->Detectv3(InputImage, objects);
-    }
+    // TODO: REMEMBER HERE
+//    std::vector<BoxSE> objects;
+//    if (mpSystem->isYoloDetection)
+//    {
+//        // Yolo
+//        cv::Mat InputImage;
+//        InputImage = imRGB.clone();
+//        mpDetector->Detectv3(InputImage, objects);
+//    }
 
     if(mImGray.channels()==3)
     {
@@ -1843,17 +1844,21 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
         mCurrentFrame = Frame(mImGray,mImDepth,mImMask,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,&mLastFrame,*mpImuCalib);
     }
     // For 3D cuboid
+    // TODO: REMEMBER HERE
     else if (mSensor == System::RGBD && mpSystem->isYoloDetection)
     {
-        mCurrentFrame = Frame(imRGB, mImGray, mImDepth, mImMask, timestamp,
-                              mpORBextractorLeft, line_lbd_ptr, mpORBVocabulary,
-                              mK, mDistCoef, mbf, mThDepth, objects, mpCamera);
+//        mCurrentFrame = Frame(imRGB, mImGray, mImDepth, mImMask, timestamp,
+//                              mpORBextractorLeft, line_lbd_ptr, mpORBVocabulary,
+//                              mK, mDistCoef, mbf, mThDepth, objects, mpCamera);
+        mCurrentFrame = Frame(mImGray,mImDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera);
+
     }
     else if (mSensor == System::IMU_RGBD && mpSystem->isYoloDetection)
     {
-        mCurrentFrame = Frame(imRGB, mImGray, mImDepth, mImMask, timestamp,
-                              mpORBextractorLeft, line_lbd_ptr, mpORBVocabulary,
-                              mK, mDistCoef, mbf, mThDepth, objects, mpCamera, &mLastFrame,*mpImuCalib);
+//        mCurrentFrame = Frame(imRGB, mImGray, mImDepth, mImMask, timestamp,
+//                              mpORBextractorLeft, line_lbd_ptr, mpORBVocabulary,
+//                              mK, mDistCoef, mbf, mThDepth, objects, mpCamera, &mLastFrame,*mpImuCalib);
+        mCurrentFrame = Frame(mImGray,mImDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,&mLastFrame,*mpImuCalib);
     }
 
     if(mCurrentFrame.mnId == 0)
@@ -3740,7 +3745,561 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
         }
     }
 
-    // TODO: Adding here
+    //copied from localMapping, only for dynamic object
+    if (mono_allframe_Obj_depth_init && whether_dynamic_object)
+    {
+        KeyFrame *mpCurrentKeyFrame = pKF;
+
+        const vector<MapPoint *> vpMapPointMatches = mpCurrentKeyFrame->GetMapPointMatches();
+
+        double total_feature_pts = vpMapPointMatches.size();
+        double raw_depth_pts = 0; // point already have depth
+        double plane_object_initialized_pts = 0;
+        std::vector<int> raw_pixels_no_depth_inds;
+
+        if (triangulate_dynamic_pts)
+        {
+            vector<MapPoint *> frameMapPointMatches;
+            if (use_dynamic_klt_features)
+                frameMapPointMatches = mCurrentFrame.mvpMapPointsHarris;
+            else
+                frameMapPointMatches = mpCurrentKeyFrame->GetMapPointMatches();
+
+            cv::Mat Tcw_last = Converter::toCvMat(mpLastKeyFrame->GetPose());
+            cv::Mat Tcw_now = Converter::toCvMat(mpCurrentKeyFrame->GetPose());
+            const float &cx1 = mpCurrentKeyFrame->cx;
+            const float &cy1 = mpCurrentKeyFrame->cy;
+            const float &invfx1 = mpCurrentKeyFrame->invfx;
+            const float &invfy1 = mpCurrentKeyFrame->invfy;
+            for (size_t i = 0; i < frameMapPointMatches.size(); i++)
+            {
+                MapPoint *pMP = frameMapPointMatches[i];
+                if (pMP && pMP->is_dynamic) // the point is matched to this frame, and also dynamic.
+                {
+                    // check if this point is created by last keyframe, if yes, triangulate it with this frame!   if created earlier, not need
+                    if (!pMP->is_triangulated) // if not Triangulated
+                    {
+                        int pixelindLastKf = get<0>(pMP->GetIndexInKeyFrame(mpLastKeyFrame));
+                        if (pixelindLastKf == -1)
+                        {
+                            std::cout << "Point frame observation not added yet" << std::endl;
+                            continue;
+                        }
+                        MapCuboidObject *objectLastframe;
+                        if (use_dynamic_klt_features)
+                            objectLastframe = mpLastKeyFrame->local_cuboids[mpLastKeyFrame->keypoint_associate_objectID_harris[pixelindLastKf]];
+                        else
+                            objectLastframe = mpLastKeyFrame->local_cuboids[mpLastKeyFrame->keypoint_associate_objectID[pixelindLastKf]];
+                        g2o::cuboid cube_pose_lastkf;
+                        if (objectLastframe->already_associated)
+                            cube_pose_lastkf = objectLastframe->associated_landmark->allDynamicPoses[mpLastKeyFrame].first;
+                        else
+                            cube_pose_lastkf = objectLastframe->GetWorldPos();
+                        // get new cube pose in this frame??? based on keypoint object asscoiate id.
+                        MapCuboidObject *objectThisframe;
+                        if (use_dynamic_klt_features)
+                            objectThisframe = mpCurrentKeyFrame->local_cuboids[mCurrentFrame.keypoint_associate_objectID_harris[i]];
+                        else
+                            objectThisframe = mpCurrentKeyFrame->local_cuboids[mpCurrentKeyFrame->keypoint_associate_objectID[i]];
+                        g2o::cuboid cube_pose_now = objectThisframe->GetWorldPos(); //current obj pose, not BA optimimized
+                        // check truth tracklet id.
+                        if (use_truth_trackid)
+                            if (objectLastframe->truth_tracklet_id != objectThisframe->truth_tracklet_id)
+                            {
+                                std::cout << "Different object tracklet id, possibly due to wrong KLT point tracking" << std::endl;
+                                continue;
+                            }
+                        g2o::SE3Quat objecttransform = cube_pose_now.pose * cube_pose_lastkf.pose.inverse();
+                        cv::Mat Tcw_now_withdynamic = Tcw_now * Converter::toCvMat(objecttransform);
+
+                        cv::KeyPoint kp1, kp2;
+                        if (use_dynamic_klt_features)
+                        {
+                            kp1 = mpLastKeyFrame->mvKeysHarris[pixelindLastKf];
+                            kp2 = mCurrentFrame.mvKeysHarris[i];
+                        }
+                        else
+                        {
+                            kp1 = mpLastKeyFrame->mvKeysUn[pixelindLastKf];
+                            kp2 = mpCurrentKeyFrame->mvKeysUn[i];
+                        }
+                        // Check parallax between rays
+                        cv::Mat xn1 = (cv::Mat_<float>(3, 1) << (kp1.pt.x - cx1) * invfx1, (kp1.pt.y - cy1) * invfy1, 1.0);
+                        cv::Mat xn2 = (cv::Mat_<float>(3, 1) << (kp2.pt.x - cx1) * invfx1, (kp2.pt.y - cy1) * invfy1, 1.0);
+
+                        cv::Mat x3D;
+                        {
+                            // Linear Triangulation Method
+                            cv::Mat A(4, 4, CV_32F);
+                            A.row(0) = xn1.at<float>(0) * Tcw_last.row(2) - Tcw_last.row(0);
+                            A.row(1) = xn1.at<float>(1) * Tcw_last.row(2) - Tcw_last.row(1);
+                            A.row(2) = xn2.at<float>(0) * Tcw_now_withdynamic.row(2) - Tcw_now_withdynamic.row(0);
+                            A.row(3) = xn2.at<float>(1) * Tcw_now_withdynamic.row(2) - Tcw_now_withdynamic.row(1);
+
+                            cv::Mat w, u, vt;
+                            cv::SVD::compute(A, w, u, vt, cv::SVD::MODIFY_A | cv::SVD::FULL_UV);
+
+                            x3D = vt.row(3).t();
+
+                            if (x3D.at<float>(3) == 0)
+                                continue;
+
+                            // Euclidean coordinates
+                            x3D = x3D.rowRange(0, 3) / x3D.at<float>(3);
+                        }
+
+                        if ((Converter::toVector3f(x3D) - pMP->GetWorldPosVec()).norm() > 5) // if too far from object center, not good triangulation.
+                        {
+                            continue;
+                        }
+                        pMP->is_triangulated = true;
+                        pMP->PosToObj = Converter::toCvMat(cube_pose_now.pose.inverse().map(Converter::toVector3d(x3D)));
+                    }
+                }
+            }
+        }
+
+        if (1) // randomly select N points, don't initialize all of them
+        {
+            bool actually_use_obj_depth = false;
+            if (mono_allframe_Obj_depth_init && whether_detect_object && associate_point_with_object)
+                if (mpCurrentKeyFrame->keypoint_associate_objectID.size() > 0)
+                    actually_use_obj_depth = true;
+
+            if (actually_use_obj_depth)
+            {
+                cout << "Tracking just about to initialize object depth point" << endl;
+
+                // detect new KLF feature points   away from existing featute points.
+                if (use_dynamic_klt_features)
+                {
+                    // loop over all mappoints, create circle mask
+                    // 		    objmask_img:  0 background, >0 object areas   change to--->   255 object areas. 0 background.
+                    int MIN_DIST = 10;															// or 10  20
+                    cv::Mat good_mask;															//area to generate new features.
+                    threshold(mCurrentFrame.objmask_img, good_mask, 0, 255, cv::THRESH_BINARY); // threshold to be 0,255
+
+                    // final existing object mappoints.
+                    vector<pair<int, cv::Point2f>> exist_obj_mappts; //point, obverse time
+
+                    for (size_t i = 0; i < mCurrentFrame.mvpMapPointsHarris.size(); i++)
+                    {
+                        MapPoint *pMP = mCurrentFrame.mvpMapPointsHarris[i]; //TODO later should be separate mappoint for dynamic
+                        if (pMP && pMP->is_dynamic)
+                        {
+                            exist_obj_mappts.push_back(make_pair(pMP->Observations(), mCurrentFrame.mvKeysHarris[i].pt));
+                        }
+                    }
+                    // sort(exist_obj_mappts.begin(), exist_obj_mappts.end(), [](MapPoint *a, MapPoint *b) { return a->Observations() > b->Observations(); });
+                    sort(exist_obj_mappts.begin(), exist_obj_mappts.end(), [](const pair<int, cv::Point2f> &a, const pair<int, cv::Point2f> &b) { return a.first > b.first; });
+
+                    for (auto &it : exist_obj_mappts)
+                    {
+                        if (good_mask.at<uchar>(it.second) == 255)
+                        {
+                            cv::circle(good_mask, it.second, MIN_DIST, 0, -1);
+                        }
+                    }
+                    cout << "mCurrentFrame.mvpMapPointsHarris size   " << mCurrentFrame.mvpMapPointsHarris.size() << "  " << exist_obj_mappts.size() << endl;
+
+                    int max_new_pts = 200; //100
+                    vector<cv::Point2f> corners;
+                    cv::goodFeaturesToTrack(mpCurrentKeyFrame->raw_img, corners, max_new_pts, 0.1, MIN_DIST, good_mask);
+
+                    int numTracked = mCurrentFrame.mvKeysHarris.size();
+                    int numNewfeat = corners.size();
+                    int totalfeat = numTracked + numNewfeat;
+
+                    mpCurrentKeyFrame->mvKeysHarris = mCurrentFrame.mvKeysHarris;
+                    mpCurrentKeyFrame->mvKeysHarris.resize(totalfeat);
+                    mpCurrentKeyFrame->mvpMapPointsHarris = mCurrentFrame.mvpMapPointsHarris;
+                    mpCurrentKeyFrame->mvpMapPointsHarris.resize(totalfeat);
+                    mpCurrentKeyFrame->keypoint_associate_objectID_harris = mCurrentFrame.keypoint_associate_objectID_harris;
+                    mpCurrentKeyFrame->keypoint_associate_objectID_harris.resize(totalfeat);
+
+                    //create and append new detected features.
+                    for (int new_fea_ind = 0; new_fea_ind < numNewfeat; new_fea_ind++)
+                    {
+                        int maskval = int(mCurrentFrame.objmask_img.at<uchar>(corners[new_fea_ind])); //0 background, >0 object id
+                        int pixelcubeid = maskval - 1;
+                        if (maskval == 0)
+                        {
+                            std::cout << "Get invalid pixel object index" << std::endl;
+                            exit(0);
+                        }
+                        cv::KeyPoint keypt;
+                        keypt.pt = corners[new_fea_ind];
+                        mpCurrentKeyFrame->mvKeysHarris[new_fea_ind + numTracked] = keypt;
+                        mpCurrentKeyFrame->keypoint_associate_objectID_harris[new_fea_ind + numTracked] = pixelcubeid;
+
+                        float point_depth = mpCurrentKeyFrame->local_cuboids[pixelcubeid]->cube_meas.translation()[2]; // camera z
+                        cv::Mat x3D = mpCurrentKeyFrame->UnprojectPixelDepth(corners[new_fea_ind], point_depth);
+
+                        MapPoint *pNewMP = new MapPoint(Converter::toVector3f(x3D), mpCurrentKeyFrame, mpAtlas->GetCurrentMap());
+                        pNewMP->is_dynamic = true;
+                        mpCurrentKeyFrame->SetupSimpleMapPoints(pNewMP, new_fea_ind + numTracked); // add to frame observation, add to map.
+                        //also changed mvpMapPointsHarris
+                        pNewMP->is_triangulated = false;
+                        pNewMP->SetWorldPos(Converter::toVector3f(x3D)); // compute dynamic point to object pose
+                    }
+                    cout << "tracked/new_created features   " << numTracked << "  " << numNewfeat << endl;
+
+                    //update total features in mCurrentFrame
+                    mCurrentFrame.mvKeysHarris = mpCurrentKeyFrame->mvKeysHarris;
+                    mCurrentFrame.mvpMapPointsHarris = mpCurrentKeyFrame->mvpMapPointsHarris;
+                    mCurrentFrame.keypoint_associate_objectID_harris = mpCurrentKeyFrame->keypoint_associate_objectID_harris;
+                }
+                else
+                {
+                    std::vector<int> has_object_depth_pixel_inds; // points with no depth yet but with matching object and plane
+
+                    bool gridsHasMappt[FRAME_GRID_COLS][FRAME_GRID_ROWS];
+                    for (int i = 0; i < FRAME_GRID_COLS; i++)
+                        for (int j = 0; j < FRAME_GRID_ROWS; j++)
+                            gridsHasMappt[i][j] = false;
+                    for (size_t i = 0; i < vpMapPointMatches.size(); i++)
+                    {
+                        MapPoint *pMP = vpMapPointMatches[i];
+                        if (!pMP) //no map point yet. not associated yet
+                        {
+                            int gridx, gridy;
+                            if (mpCurrentKeyFrame->PosInGrid(mpCurrentKeyFrame->mvKeys[i], gridx, gridy))
+                            {
+                                if (gridsHasMappt[gridx][gridy])
+                                    continue;
+                            }
+                            else
+                                continue;
+
+                            if (mpCurrentKeyFrame->keypoint_associate_objectID[i] > -1) // have associated object
+                                if (mpCurrentKeyFrame->mvKeys[i].octave < 3)			//HACK for KLT tracking, better just use first octave
+                                {
+                                    has_object_depth_pixel_inds.push_back(i);
+                                    gridsHasMappt[gridx][gridy] = true;
+                                }
+                        }
+                        else
+                            raw_depth_pts++;
+                    }
+                    bool whether_actually_planeobj_init_pt = false;
+
+                    double depth_point_ration_now = raw_depth_pts / total_feature_pts;
+                    int max_initialize_pts = 0;
+                    if (depth_point_ration_now < 0.30) //0.3
+                        whether_actually_planeobj_init_pt = true;
+                    max_initialize_pts = std::min(int(total_feature_pts * 0.30) - int(raw_depth_pts), int(has_object_depth_pixel_inds.size()));
+                    max_initialize_pts = std::min(max_initialize_pts, 80);
+
+                    cout << "all points to initilaze  " << has_object_depth_pixel_inds.size() << "  initialized " << max_initialize_pts << endl;
+                    int nPoints = 0;
+
+                    if (whether_actually_planeobj_init_pt)
+                    {
+                        srand(time(NULL));
+                        // 		    random_shuffle ( has_object_depth_pixel_inds.begin(), has_object_depth_pixel_inds.end() );
+                        random_unique2(has_object_depth_pixel_inds.begin(), has_object_depth_pixel_inds.end(), max_initialize_pts);
+
+                        int vector_counter = 0;
+                        while ((nPoints < max_initialize_pts) && (vector_counter < (int)has_object_depth_pixel_inds.size()))
+                        {
+                            int pixel_ind = has_object_depth_pixel_inds[vector_counter];
+                            float point_depth = -1;
+                            cv::Mat x3D;
+
+                            if ((point_depth < 0))
+                            {
+                                if (mpCurrentKeyFrame->keypoint_associate_objectID[pixel_ind] > -1)
+                                {
+                                    point_depth = mpCurrentKeyFrame->local_cuboids[mpCurrentKeyFrame->keypoint_associate_objectID[pixel_ind]]->cube_meas.translation()[2]; // camera z
+                                    x3D = mpCurrentKeyFrame->UnprojectDepth(pixel_ind, point_depth);
+                                }
+                            }
+                            if (point_depth > 0)
+                            {
+                                MapPoint *pNewMP = new MapPoint(Converter::toVector3f(x3D), mpCurrentKeyFrame, mpAtlas->GetCurrentMap());
+                                mpCurrentKeyFrame->SetupSimpleMapPoints(pNewMP, pixel_ind); // add to frame observation, add to map.
+                                pNewMP->is_triangulated = false;
+                                nPoints++;
+                                if (whether_dynamic_object)
+                                {
+                                    pNewMP->is_dynamic = true;
+                                }
+                            }
+                            else
+                            {
+                                //NOTE projected point is negative. remove association? because this point is bad
+                            }
+                            vector_counter++;
+                        }
+                        plane_object_initialized_pts = nPoints;
+                        std::cout << "Online depth create mappoints!!!!!!!!  " << nPoints << std::endl;
+                    }
+                }
+            }
+        }
+
+        // 	std::cout<<"Finish create my map points!!!!"<<std::endl;
+        mCurrentFrame.mvpMapPoints = mpCurrentKeyFrame->GetMapPointMatches();
+        // mCurrentFrame.mvpMapPoints indepent of new created mappoints in localmapping
+    }
+
+    if (enable_ground_height_scale)
+    {
+        float img_width = float(mpAtlas->img_width);
+        float img_height = float(mpAtlas->img_height);
+
+        // do it in every frame, otherwise may take longer time when do it together for many frames.
+        for (size_t iMP = 0; iMP < mCurrentFrame.mvpMapPoints.size(); iMP++)
+            if (pKF->mvKeysUn[iMP].pt.x > img_width / ground_roi_middle && pKF->mvKeysUn[iMP].pt.x < img_width / ground_roi_middle * (ground_roi_middle - 1))
+                if (pKF->mvKeysUn[iMP].pt.y > img_height / ground_roi_lower * (ground_roi_lower - 1)) // lower 1/3, I checked kitti sequence, roughly true.
+                {
+                    bool not_in_object = true;
+                    if (pKF->keypoint_inany_object.size() > 0)
+                        if (pKF->keypoint_inany_object[iMP])
+                            not_in_object = false;
+                    if (not_in_object)
+                        pKF->ground_region_potential_pts.push_back(iMP); // used for latter adjacent frame ground fitting
+                }
+
+        std::cout << "Tracking: estimate ground: potential_pts: " << pKF->ground_region_potential_pts.size()
+                  << " pKF->mnId: " << pKF->mnId << " ground_everyKFs: " << ground_everyKFs << std::endl;
+        if (pKF->mnId % ground_everyKFs == 0)
+        {
+            unsigned long anchor_frame_kfid = 0;
+            if (int(pKF->mnId) > ground_everyKFs)
+                anchor_frame_kfid = pKF->mnId - ground_everyKFs;
+            KeyFrame *first_keyframe = nullptr;
+            std::vector<KeyFrame *> ground_local_KFs;
+            unsigned long minKFid = pKF->mnId;
+            for (size_t ii = 0; ii < mvpLocalKeyFrames.size(); ii++)
+            {
+                KeyFrame *pKFi = mvpLocalKeyFrames[ii];
+                if (pKFi->mnId >= anchor_frame_kfid)
+                {
+                    ground_local_KFs.push_back(pKFi);
+                    pKFi->mnGroundFittingForKF = pKF->mnId;
+                    if (pKFi->mnId < minKFid)
+                    {
+                        minKFid = pKFi->mnId; // the original anchor frame id might not exist due to culling.
+                        first_keyframe = pKFi;
+                    }
+                }
+            }
+            if (first_keyframe == nullptr)
+            {
+                std::cout << "Not found first keyframe!!!  " << std::endl;
+                exit(0);
+            }
+            ground_local_KFs.push_back(pKF);
+            anchor_frame_kfid = pKF->mnId;
+            int initializer_starting_frame_id = (*mlpReferences.begin())->mnFrameId; // a fixed value
+
+            KeyFrame *median_keyframe = nullptr; // scale relative to the center frames instead of the begining frame? more accurate?
+            // added benchun 20201210
+            if (pKF->mnId == 20)
+                height_esti_history.push_back(2.25);
+            std::cout << "Tracking: height_esti_history.size() " << height_esti_history.size() << std::endl;
+            if (height_esti_history.size() > 0)
+            {
+                vector<unsigned> range_kf_ids;
+                for (size_t i = 0; i < ground_local_KFs.size(); i++)
+                    range_kf_ids.push_back(ground_local_KFs[i]->mnId);
+                sort(range_kf_ids.begin(), range_kf_ids.end());
+                unsigned median_frameid = range_kf_ids[range_kf_ids.size() / 2];
+                for (size_t i = 0; i < ground_local_KFs.size(); i++)
+                    if (ground_local_KFs[i]->mnId == median_frameid)
+                    {
+                        median_keyframe = ground_local_KFs[i];
+                        break;
+                    }
+                if (median_keyframe == nullptr)
+                {
+                    std::cout << "Not found median keyframe!!!  " << std::endl;
+                    exit(0);
+                }
+            }
+            else
+                median_keyframe = first_keyframe; // still want to scale at the very first fram
+
+            bool recently_have_object = false;
+            if (recently_have_object)
+                std::cout << "Found cuboid landmark in this range" << std::endl;
+            if ((!recently_have_object) || (height_esti_history.size() < 1))
+            {
+                pcl::PointCloud<pcl::PointXYZ> cloud;
+                pcl::PointXYZ pt;
+                cloud.points.reserve(mvpLocalMapPoints.size());
+                vector<MapPoint *> potential_plane_points;
+                for (size_t i = 0; i < ground_local_KFs.size(); i++)
+                {
+                    std::vector<MapPoint *> framepointmatches = ground_local_KFs[i]->GetMapPointMatches();
+                    for (size_t j = 0; j < ground_local_KFs[i]->ground_region_potential_pts.size(); j++)
+                    {
+                        MapPoint *pMP = framepointmatches[ground_local_KFs[i]->ground_region_potential_pts[j]];
+                        if (pMP)
+                            if (!pMP->isBad())
+                                if (pMP->mnGroundFittingForKF != pKF->mnId)
+                                {
+                                    // std::cout << "Check" << std::endl;
+                                    cv::Mat point_position = Converter::toCvMat(pMP->GetWorldPos()); // fit plane in global frame, then tranform plane. saving time for point transformation
+                                    pt.x = point_position.at<float>(0);
+                                    pt.y = point_position.at<float>(1);
+                                    pt.z = point_position.at<float>(2);
+                                    cloud.points.push_back(pt);
+                                    potential_plane_points.push_back(pMP);
+                                    pMP->mnGroundFittingForKF = pKF->mnId;
+                                }
+                    }
+                }
+                std::cout << "Tracking: Potential plane pt size    " << potential_plane_points.size() << "   " << ground_local_KFs.size() << std::endl;
+
+                if (potential_plane_points.size()>=4)
+                {
+                    // TODO can we directly search height plane to find points supporting it?? not using ransac. Song used it.
+                    pcl::SACSegmentation<pcl::PointXYZ> *seg = new pcl::SACSegmentation<pcl::PointXYZ>();
+                    seg->setOptimizeCoefficients(true);
+                    seg->setModelType(pcl::SACMODEL_PLANE);
+                    seg->setMethodType(pcl::SAC_RANSAC);
+                    if (height_esti_history.size() > 0)
+                        seg->setDistanceThreshold(ground_dist_ratio * height_esti_history.back());
+                    else
+                        seg->setDistanceThreshold(0.005); // the raw map is scaled to mean 1.
+                    pcl::ModelCoefficients coefficients;
+                    pcl::PointIndices inliers;
+                    seg->setInputCloud(cloud.makeShared());
+                    // ca::Profiler::tictoc("pcl plane fitting time");
+                    seg->segment(inliers, coefficients);
+
+                    Eigen::Vector4f global_fitted_plane(coefficients.values[0], coefficients.values[1], coefficients.values[2], coefficients.values[3]);
+                    float cam_plane_dist, angle_diff_normal;
+
+                    // transform to anchor frame
+                    KeyFrame *anchor_frame = first_keyframe; // first_keyframe  median_keyframe  pKF;
+                    cv::Mat anchor_Tcw = Converter::toCvMat(anchor_frame->GetPose());
+                    cv::Mat anchor_Twc = Converter::toCvMat(anchor_frame->GetPoseInverse());
+
+                    // take averge of all camera pose dist to plane,  not just wrt anchor frame
+                    if (1)
+                    {
+                        float sum_cam_dist = 0;
+                        float sum_angle_diff = 0;
+                        vector<float> temp_dists;
+                        for (size_t i = 0; i < ground_local_KFs.size(); i++)
+                        {
+                            KeyFrame *localkf = ground_local_KFs[i];
+                            cv::Mat cam_Twc = Converter::toCvMat(localkf->GetPoseInverse());
+                            Eigen::Matrix4f cam_Twc_eig = Converter::toMatrix4f(cam_Twc);
+                            Eigen::Vector4f local_kf_plane = cam_Twc_eig.transpose() * global_fitted_plane;
+                            local_kf_plane = local_kf_plane / local_kf_plane.head<3>().norm(); // normalize the plane.
+
+                            float local_cam_plane_dist = fabs(local_kf_plane(3));
+                            float local_angle_diff_normal = acos(local_kf_plane.head(3).dot(Vector3f(0, 1, 0))) * 180.0 / M_PI; // 0~pi
+                            if (local_angle_diff_normal > 90)
+                                local_angle_diff_normal = 180.0 - local_angle_diff_normal;
+                            sum_cam_dist += local_cam_plane_dist;
+                            sum_angle_diff += local_angle_diff_normal;
+                            temp_dists.push_back(local_cam_plane_dist);
+                        }
+                        cam_plane_dist = sum_cam_dist / float(ground_local_KFs.size());
+                        angle_diff_normal = sum_angle_diff / float(ground_local_KFs.size());
+                    }
+
+                    std::cout << "Tracking: find Potential plane pt size   " << potential_plane_points.size()
+                              << " Find init plane  dist  " << cam_plane_dist << "  angle  " << angle_diff_normal << "   inliers  " << inliers.indices.size() << std::endl;
+
+                    if (int(inliers.indices.size()) > ground_inlier_pts) // or ratio
+                    {
+                        if (angle_diff_normal < 10)
+                        {
+                            // for kitti 02, unstale initialization. needs more times
+                            if ((fabs(cam_plane_dist - nominal_ground_height) < 0.6) || (height_esti_history.size() < 4)) // or compare with last time?
+                            {
+                                height_esti_history.push_back(cam_plane_dist);
+
+                                if (height_esti_history.size() == 1)
+                                {
+                                    first_absolute_scale_frameid = first_keyframe->mnFrameId;
+                                    first_absolute_scale_framestamp = first_keyframe->mTimeStamp;
+                                }
+
+                                for (size_t i = 0; i < inliers.indices.size(); i++)
+                                    potential_plane_points[inliers.indices[i]]->ground_fitted_point = true;
+
+                                float final_filter_height = cam_plane_dist;
+                                // take average or recent tow/three frames. or median filter? is this correct if object scale???
+                                if (height_esti_history.size() > 2)
+                                {
+                                    final_filter_height = 0.6 * height_esti_history.back() + 0.4 * filtered_ground_height;
+                                }
+                                filtered_ground_height = final_filter_height;
+
+                                float scaling_ratio = nominal_ground_height / final_filter_height;
+                                if (height_esti_history.size() > 1) // ignore the first time.
+                                {
+                                    // don't want too large scaling, which might be wrong...
+                                    scaling_ratio = std::min(std::max(scaling_ratio, 0.7f), 1.3f);
+                                }
+                                std::cout << "Actually scale map and frames~~~~~~~~~~~~~~~~" << std::endl;
+
+                                if (enable_ground_height_scale)
+                                {
+                                    for (size_t iMP = 0; iMP < mvpLocalMapPoints.size(); iMP++) // approximatedly. actually mvpLocalMapPoints has much more points
+                                    {
+                                        cv::Mat poseLocalMapPoint = Converter::toCvMat(mvpLocalMapPoints[iMP]->GetWorldPos());
+                                        cv::Mat local_pt = anchor_Tcw.rowRange(0, 3).colRange(0, 3) * poseLocalMapPoint + anchor_Tcw.rowRange(0, 3).col(3);
+                                        cv::Mat scaled_global_pt = anchor_Twc.rowRange(0, 3).colRange(0, 3) * (local_pt * scaling_ratio) + anchor_Twc.rowRange(0, 3).col(3);
+                                        mvpLocalMapPoints[iMP]->SetWorldPos(Converter::toVector3f(scaled_global_pt));
+                                    }
+                                    for (size_t iKF = 0; iKF < ground_local_KFs.size(); iKF++)
+                                    {
+                                        cv::Mat anchor_to_pose = Converter::toCvMat(ground_local_KFs[iKF]->GetPose()) * anchor_Twc;
+                                        anchor_to_pose.col(3).rowRange(0, 3) = anchor_to_pose.col(3).rowRange(0, 3) * scaling_ratio;
+                                        ground_local_KFs[iKF]->SetPose(Converter::toSophus(anchor_to_pose * anchor_Tcw));
+                                    }
+                                    cv::Mat _Tcw = Converter::toCvMat(mLastFrame.GetPose());
+                                    cv::Mat anchor_to_pose = _Tcw * anchor_Twc;
+                                    anchor_to_pose.col(3).rowRange(0, 3) = anchor_to_pose.col(3).rowRange(0, 3) * scaling_ratio;
+                                    mLastFrame.SetPose(Converter::toSophus(anchor_to_pose * anchor_Tcw));
+                                    mCurrentFrame.SetPose(pKF->GetPose());
+
+                                    cv::Mat vec = Converter::toCvMat(mVelocity);
+                                    vec.col(3).rowRange(0, 3) = vec.col(3).rowRange(0, 3) * scaling_ratio;
+                                    mVelocity = Converter::toSophus(vec);
+
+                                    // loop over mlpReferences, if any frames' references frames lie in this range, scale the relative poses accordingly
+                                    // mlpReferences doesn't include the initialization stage... // if it is bad...??
+
+                                    for (size_t ind = first_keyframe->mnFrameId - initializer_starting_frame_id; ind < mlpReferences.size(); ind++)
+                                    {
+                                        list<ORB_SLAM3::KeyFrame*>::iterator lRit = mlpReferences.begin();
+                                        list<Sophus::SE3f>::iterator it = mlRelativeFramePoses.begin();
+                                        for(int i = 0; i< ind; i++){
+                                            ++lRit;
+                                            ++it;
+                                        }
+                                        if ((*lRit)->mnGroundFittingForKF == pKF->mnId)
+                                        {
+                                            cv::Mat Tcr = Converter::toCvMat((*it)); // reference to current
+                                            Tcr.col(3).rowRange(0, 3) = Tcr.col(3).rowRange(0, 3) * scaling_ratio;
+                                            (*it) = Converter::toSophus(Tcr);
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                                std::cout << "\033[31m Too large change compared to last time. \033[0m" << cam_plane_dist << "   last  " << filtered_ground_height << std::endl;
+                        }
+                        else
+                            std::cout << "\033[31m Bad ground orientation. \033[0m" << std::endl;
+                    }
+                    else
+                        std::cout << "\033[31m Not enough inliers. \033[0m" << std::endl;
+                }
+                else
+                    std::cout << "\033[31m Not enough Potential plane. \033[0m" << std::endl;
+            }
+        }
+    }
 
     pKF->mvDynamicArea = mCurrentFrame.mvDynamicArea;
 
@@ -4914,6 +5473,18 @@ void Tracking::UpdateFrameIMU(const float s, const IMU::Bias &b, KeyFrame* pCurr
     }
 
     mnFirstImuFrameId = mCurrentFrame.mnId;
+}
+
+// TODO: Adding here
+void Tracking::DetectCuboid(KeyFrame *pKF)
+{
+    cv::Mat pop_pose_to_ground;
+    std::vector<ObjectSet> all_obj_cubes;
+    std::vector<Vector4d> all_obj2d_bbox;
+    std::vector<double> all_box_confidence;
+    vector<int> truth_tracklet_ids;
+
+
 }
 
 // TODO: This function should be placed in the constructor of object
