@@ -52,6 +52,7 @@
 
 #include <mutex>
 #include <unordered_set>
+#include <unordered_map>
 
 // cube
 #include "detect_3d_cuboid/matrix_utils.h"
@@ -64,6 +65,7 @@
 
 class PointCloudMapping;
 //class Detector;
+class detect_3d_cuboid;
 
 namespace ORB_SLAM3
 {
@@ -77,6 +79,7 @@ class System;
 class Settings;
 class Object_Map;
 class MapPublisher;
+class MapCuboidObject;
 
 class Tracking
 {  
@@ -465,6 +468,51 @@ private:
 
     // line
     line_lbd_detect* line_lbd_ptr;
+
+// For 3D cuboid testing (optimize)
+public:
+    Eigen::Matrix3d Kalib;
+    Eigen::Matrix3f Kalib_f;
+    Eigen::Matrix3d invKalib;
+    Eigen::Matrix3f invKalib_f;
+    cv::Mat InitToGround, GroundToInit;                     // orb's init camera frame to my ground
+    Eigen::Matrix4f InitToGround_eigen, GroundToInit_eigen; // ground to init frame
+
+    void DetectCuboid(KeyFrame *pKF);
+    void AssociateCuboids(KeyFrame *pKF); // compare with keypoint feature inside box
+    // void MonoObjDepthInitialization();    // initilize mono SLAM based on depth map.
+
+    detect_3d_cuboid *detect_cuboid_obj;
+    double obj_det_2d_thre;
+
+    int start_msg_seq_id = -1;
+
+    Eigen::MatrixXd kitti_sequence_img_to_object_detect_ind;
+    std::string kitti_raw_sequence_name;
+
+    bool whether_save_online_detected_cuboids;
+    bool whether_save_final_optimized_cuboids;
+    std::ofstream save_online_detected_cuboids;
+    std::ofstream save_final_optimized_cuboids;
+    // void SaveOptimizedCuboidsToTxt();
+    bool done_save_obj_to_txt = false;
+    unsigned int final_object_record_frame_ind;
+
+    // ground detection
+    float nominal_ground_height;
+    float filtered_ground_height;
+    std::vector<float> height_esti_history;
+    float ground_roi_middle; // 4 for middle 1/2  3 for middle 1/3
+    float ground_roi_lower;
+    int ground_inlier_pts;
+    float ground_dist_ratio;
+    int ground_everyKFs;
+    unsigned int first_absolute_scale_frameid;
+    unsigned int first_absolute_scale_framestamp;
+
+    bool use_truth_trackid; // for (dynamic) object assocition, testing.
+    unordered_map<int, MapCuboidObject *> trackletid_to_landmark;
+    bool triangulate_dynamic_pts;
 };
 
 } //namespace ORB_SLAM

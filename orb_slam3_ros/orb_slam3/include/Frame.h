@@ -411,6 +411,25 @@ public:
     Eigen::MatrixXd all_lines_eigen;
     std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd> > vObjsLines;
     line_lbd_detect* mpline_lbd_ptr_frame;
+
+// For 3D Cuboid testing (optimize)
+public:
+    cv::Mat raw_img;
+    std::vector<bool> KeysStatic;
+    std::vector<int> keypoint_associate_objectID;
+    int numobject;
+    cv::Mat objmask_img; //there is only two object of frame in whole system (curentFrame/lastFrame), so no worry of a big matrix here.
+
+    // detect harris corners for dynamic objects
+    std::vector<int> keypoint_associate_objectID_harris; //all point's object id, by looking up objmask_img   tracked + new created (if keyframe)
+    std::vector<cv::KeyPoint> mvKeysHarris;              //all harris features    tracked + new created (if keyframe)
+    std::vector<MapPoint *> mvpMapPointsHarris;          //all mappoints, 	  tracked + new created (if keyframe)
+
+    // for harris debug
+    std::vector<MapPoint *> mvpMapPoints_lasttracked;
+    std::vector<cv::KeyPoint> mvpMapPoints_inlastframe;
+    std::vector<cv::Point2f> featuresklt_lastframe;
+    std::vector<cv::Point2f> featuresklt_thisframe;
 };
 
 }// namespace ORB_SLAM

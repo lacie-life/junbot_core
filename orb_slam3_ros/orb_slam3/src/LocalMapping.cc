@@ -23,6 +23,7 @@
 #include "Optimizer.h"
 #include "Converter.h"
 #include "GeometricTools.h"
+#include "MapCuboidObject.h"
 
 #include <mutex>
 #include <chrono>
@@ -435,6 +436,8 @@ void LocalMapping::CreateNewMapPoints()
     int countStereoGoodProj = 0;
     int countStereoAttempt = 0;
     int totalStereoPts = 0;
+    int nnew=0;
+
     // Search matches with epipolar restriction and triangulate
     for(size_t i=0; i<vpNeighKFs.size(); i++)
     {
@@ -712,8 +715,12 @@ void LocalMapping::CreateNewMapPoints()
 
             mpAtlas->AddMapPoint(pMP);
             mlpRecentAddedMapPoints.push_back(pMP);
+
+            nnew++;
         }
-    }    
+    }
+
+    std::cout << "LocalMapping: New Triangulated pt num:   " << nnew << std::endl;
 }
 
 void LocalMapping::SearchInNeighbors()

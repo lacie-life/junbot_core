@@ -30,6 +30,7 @@
 #include "GeometricTools.h"
 
 #include "YoloDetection.h"
+#include "Parameter.h"
 
 #include <iostream>
 
@@ -145,6 +146,107 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     vdNewKF_ms.clear();
     vdTrackTotal_ms.clear();
 #endif
+
+    // For 3D Cuboid testing (optimize)
+    // TODO: Check param
+    InitToGround = cv::Mat::eye(4, 4, CV_32F);
+    // set initial camera pose wrt ground. by default camera parallel to ground, height=1.7 (kitti)
+    double init_x, init_y, init_z, init_qx, init_qy, init_qz, init_qw;
+    init_x = 0.0;
+    init_y = 0.0;
+    init_z = 2.25/2.0;
+    init_qx = -0.7071;
+    init_qy = 0.0;
+    init_qz = 0.0;
+    init_qw = 0.7071;
+    Eigen::Quaternionf pose_quat(init_qw, init_qx, init_qy, init_qz);
+    Eigen::Matrix3f rot = pose_quat.toRotationMatrix(); // 	The quaternion is required to be normalized
+    for (int row = 0; row < 3; row++)
+        for (int col = 0; col < 3; col++)
+            InitToGround.at<float>(row, col) = rot(row, col);
+
+    InitToGround.at<float>(0, 3) = init_x;
+    InitToGround.at<float>(1, 3) = init_y;
+    InitToGround.at<float>(2, 3) = init_z;
+    nominal_ground_height = init_z;
+
+    cv::Mat R = InitToGround.rowRange(0, 3).colRange(0, 3);
+    cv::Mat t = InitToGround.rowRange(0, 3).col(3);
+    cv::Mat Rinv = R.t();
+    cv::Mat Ow = -Rinv * t;
+    GroundToInit = cv::Mat::eye(4, 4, CV_32F);
+    Rinv.copyTo(GroundToInit.rowRange(0, 3).colRange(0, 3));
+    Ow.copyTo(GroundToInit.rowRange(0, 3).col(3));
+
+    std::cout << "InitToGround_eigen: \n" << InitToGround_eigen << std::endl;
+    InitToGround_eigen = Converter::toMatrix4f(InitToGround);
+    GroundToInit_eigen = Converter::toMatrix4f(GroundToInit);
+    std::cout << "InitToGround_eigen: \n" << InitToGround_eigen << std::endl;
+
+    mpAtlas->InitToGround = InitToGround;
+    mpAtlas->GroundToInit = GroundToInit.clone();
+    mpAtlas->InitToGround_eigen = InitToGround_eigen;
+    mpAtlas->InitToGround_eigen_d = InitToGround_eigen.cast<double>();
+    mpAtlas->GroundToInit_eigen_d = GroundToInit_eigen.cast<double>();
+    mpAtlas->GroundToInit_opti = GroundToInit.clone();
+    mpAtlas->InitToGround_opti = InitToGround.clone();
+    mpAtlas->RealGroundToMine_opti = cv::Mat::eye(4, 4, CV_32F);
+    mpAtlas->MineGroundToReal_opti = cv::Mat::eye(4, 4, CV_32F);
+
+    // For 3D cuboid testing (optimize)
+    // TODO: Add to settings
+    use_truth_trackid = false; // whether use ground truth tracklet ID.
+    whether_detect_object = true;
+    whether_read_offline_cuboidtxt = false;
+    whether_save_online_detected_cuboids = false;
+    whether_save_final_optimized_cuboids = false;
+
+    if(whether_detect_object)
+    {
+        if(!whether_read_offline_cuboidtxt)
+        {
+            detect_cuboid_obj = new detect_3d_cuboid();
+            detect_cuboid_obj->print_details = false;
+            detect_cuboid_obj->set_calibration(Kalib);
+        }
+
+        if (!whether_read_offline_cuboidtxt)
+        {
+            if (whether_save_online_detected_cuboids)
+            {
+                std::string save_object_pose_txt = base_data_folder + "/slam_output/orb_live_pred_objs_temp.txt";
+                save_online_detected_cuboids.open(save_object_pose_txt.c_str());
+            }
+        }
+
+        if (whether_read_offline_cuboidtxt) {
+            // Offline detection version
+        }
+    }
+
+    if (whether_detect_object)
+    {
+        if (whether_save_final_optimized_cuboids)
+        {
+            if (final_object_record_frame_ind == 1e5)
+            {
+                std::cout << "Please set final_object_record_frame_ind!!!" << std::endl;
+                whether_save_final_optimized_cuboids = false;
+            }
+        }
+    }
+
+    filtered_ground_height = 0;
+    first_absolute_scale_frameid = 0;
+    first_absolute_scale_framestamp = 0;
+
+    ground_everyKFs = 10;
+    ground_roi_middle = 3.0;    //# 3(1/3) or 4(1/2)
+    ground_roi_lower = 3.0;      //# 2 or 3
+    ground_inlier_pts = 20;
+    ground_dist_ratio = 0.08;
+    std::cout << "Tracking:  Initial finish" << std::endl;
+
 }
 
 Tracking::Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Atlas* pAtlas,
@@ -905,6 +1007,20 @@ bool Tracking::ParseCamParamFile(cv::FileStorage &fSettings)
         mK_(1,1) = fy;
         mK_(0,2) = cx;
         mK_(1,2) = cy;
+
+        // For 3D Cuboid testing (optimize)
+        // TODO: Check usage Kalib param
+        Kalib.setIdentity();
+        Kalib(0, 0) = fx;
+        Kalib(0, 2) = cx;
+        Kalib(1, 1) = fy;
+        Kalib(1, 2) = cy;
+        Kalib_f = Kalib.cast<float>();
+        invKalib = Kalib.inverse();
+        invKalib_f = Kalib_f.inverse();
+        mpAtlas->Kalib = Kalib;
+        mpAtlas->Kalib_f = Kalib_f;
+        mpAtlas->invKalib_f = invKalib_f;
     }
     else if(sCameraName == "KannalaBrandt8")
     {
@@ -1739,6 +1855,15 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
                               mpORBextractorLeft, line_lbd_ptr, mpORBVocabulary,
                               mK, mDistCoef, mbf, mThDepth, objects, mpCamera, &mLastFrame,*mpImuCalib);
     }
+
+    if(mCurrentFrame.mnId == 0)
+    {
+        mpAtlas->img_height = mImGray.rows;
+        mpAtlas->img_width = mImGray.cols;
+    }
+
+    // For 3D cuboid testing (optimize)
+    mCurrentFrame.raw_img = mImGray;
 
     mCurrentFrame.mNameFile = filename;
     mCurrentFrame.mnDataset = mnNumDataset;
@@ -2718,6 +2843,7 @@ void Tracking::MonocularInitialization()
 
 void Tracking::CreateInitialMapMonocular()
 {
+    // TODO: Adding here
     // Create KeyFrames
     KeyFrame* pKFini = new KeyFrame(mInitialFrame,mpAtlas->GetCurrentMap(),mpKeyFrameDB);
     KeyFrame* pKFcur = new KeyFrame(mCurrentFrame,mpAtlas->GetCurrentMap(),mpKeyFrameDB);
