@@ -21,14 +21,7 @@ namespace ORB_SLAM3
     // class KeyFrame;
     class MapPoint;
     class Map;
-
-    struct cmpKeyframe
-   { //sort frame based on ID
-       bool operator()(const ORB_SLAM3::KeyFrame *a, const ORB_SLAM3::KeyFrame *b) const
-       {
-           return a->mnId < b->mnId;
-       }
-   };
+    struct cmpKeyframe;
 
     class MapCuboidObject
     {
@@ -98,10 +91,8 @@ namespace ORB_SLAM3
 
         Eigen::Vector2d velocityPlanar; //actually used, for kitti cars
         g2o::cuboid pose_Twc_latestKF;
-        std::map<KeyFrame *, Eigen::Vector2d, cmpKeyframe> velocityhistory; // for offline analysis
         g2o::cuboid pose_Twc_afterba;                                       // latest pose after BA. might have some delay compared to pose_Twc_latestKF
-
-        std::map<KeyFrame *, std::pair<g2o::cuboid, bool>, cmpKeyframe> allDynamicPoses; // poses/velocity in each keyframe due to movement.  poses/whether_BA
+        std::map<KeyFrame *, std::pair<g2o::cuboid, bool>> allDynamicPoses; // poses/velocity in each keyframe due to movement.  poses/whether_BA
         std::unordered_map<KeyFrame *, int> bundle_vertex_ids;
         int truth_tracklet_id;
 

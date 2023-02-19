@@ -3792,7 +3792,10 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
                             objectLastframe = mpLastKeyFrame->local_cuboids[mpLastKeyFrame->keypoint_associate_objectID[pixelindLastKf]];
                         g2o::cuboid cube_pose_lastkf;
                         if (objectLastframe->already_associated)
+                        {
+                            // TODO: Checking about compare function
                             cube_pose_lastkf = objectLastframe->associated_landmark->allDynamicPoses[mpLastKeyFrame].first;
+                        }
                         else
                             cube_pose_lastkf = objectLastframe->GetWorldPos();
                         // get new cube pose in this frame??? based on keypoint object asscoiate id.

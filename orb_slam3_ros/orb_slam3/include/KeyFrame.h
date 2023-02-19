@@ -599,6 +599,14 @@ public:
     }
 };
 
+struct cmpKeyframe
+{ //sort frame based on ID
+   bool operator()(const ORB_SLAM3::KeyFrame *a, const ORB_SLAM3::KeyFrame *b) const
+   {
+       return a->mnId < b->mnId;
+   }
+};
+
 } //namespace ORB_SLAM
 
 #endif // KEYFRAME_H

@@ -20,6 +20,7 @@
 #include "Converter.h"
 #include "ImuTypes.h"
 #include "MapCuboidObject.h"
+#include "Parameter.h"
 #include <mutex>
 
 namespace ORB_SLAM3
@@ -1044,6 +1045,38 @@ void KeyFrame::PreSave(set<KeyFrame*>& spKF,set<MapPoint*>& spMP, set<GeometricC
 
     if(mpImuPreintegrated)
         mBackupImuPreintegrated.CopyFrom(mpImuPreintegrated);
+}
+
+void KeyFrame::SetupSimpleMapPoints(MapPoint *pNewMP, int point_ind)
+{
+    pNewMP->AddObservation(this, point_ind);
+    AddMapPoint(pNewMP, point_ind);
+    if (!(use_dynamic_klt_features && pNewMP->is_dynamic))
+    {
+            pNewMP->ComputeDistinctiveDescriptors();
+            pNewMP->UpdateNormalAndDepth();
+    }
+    mpMap->AddMapPoint(pNewMP);
+}
+
+
+cv::Mat KeyFrame::UnprojectDepth(int i, float depth)
+{
+    const float z = depth;
+    if (z > 0)
+    {
+        const float u = mvKeys[i].pt.x;
+        const float v = mvKeys[i].pt.y;
+        const float x = (u - cx) * z * invfx;
+        const float y = (v - cy) * z * invfy;
+        cv::Mat x3Dc = (cv::Mat_<float>(3, 1) << x, y, z);
+
+        unique_lock<mutex> lock(mMutexPose);
+        cv::Mat Twc = Converter::toCvMat(mTwc);
+        return Twc.rowRange(0, 3).colRange(0, 3) * x3Dc + Twc.rowRange(0, 3).col(3);
+    }
+    else
+        return cv::Mat();
 }
 
 void KeyFrame::PostLoad(map<long unsigned int, KeyFrame*>& mpKFid, map<long unsigned int, MapPoint*>& mpMPid, map<unsigned int, GeometricCamera*>& mpCamId){
