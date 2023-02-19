@@ -421,8 +421,8 @@ void Viewer::Run()
             if(menuShowPoints)
             {
                 mpMapDrawer->DrawMapPoints();
-//                mpMapDrawer->DrawMapCuboids();
-                mpMapDrawer->DrawMapCuboids2();
+                mpMapDrawer->DrawMapCuboids();
+                // mpMapDrawer->DrawMapCuboids2();
             }
             else
             {
@@ -453,7 +453,7 @@ void Viewer::Run()
 
         // For 3D cuboid
         if(show_object3d_frame) {
-            std::cout << "Visual Quadric Projection \n";
+//            std::cout << "Visual Quadric Projection \n";
             cv::Mat QuadricImage = mpFrameDrawer->GetQuadricImage();
             if (!QuadricImage.empty()) {
                 cv::Mat resizeimg;

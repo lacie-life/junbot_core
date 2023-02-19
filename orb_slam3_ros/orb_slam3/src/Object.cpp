@@ -23,12 +23,12 @@ mutex Object_Map::mMutex_front_back;
 
 bool debug_iou_view = 0;
 Object_2D::Object_2D() {
-    std::cout << "Object_2D  construct 1   ";
-    std::cout << ">>>   End" << std::endl;
+//    std::cout << "Object_2D  construct 1   ";
+//    std::cout << ">>>   End" << std::endl;
 }
 
 Object_2D::Object_2D(Map* Map, Frame* CurrentFrame, const BoxSE &box) {
-    std::cout << "Object_2D  construct 3   ";
+//    std::cout << "Object_2D  construct 3   ";
     mclass_id = box.m_class;
     mScore = box.m_score;
     mleft = box.x;
@@ -48,7 +48,7 @@ Object_2D::Object_2D(Map* Map, Frame* CurrentFrame, const BoxSE &box) {
 
     
     this->sum_pos_3d = cv::Mat::zeros(3, 1, CV_32F);
-    std::cout << ">>>   End" << std::endl;
+//    std::cout << ">>>   End" << std::endl;
 }
 
 void Object_2D::AddYoloBoxes(const BoxSE &box) {
@@ -192,7 +192,7 @@ void Object_2D::MergeTwo_Obj2D(Object_2D *Old_Object2D)
 
 int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
 {
-    std::cout << "Check if it is connected to the old object" << std::endl;
+//    std::cout << "Check if it is connected to the old object" << std::endl;
     const cv::Mat image = mpCurrentFrame->mColorImage.clone();
     const cv::Mat Rcw = cv::Mat::zeros(3,3,CV_32F);
     const cv::Mat tcw = cv::Mat::eye(3,1,CV_32F);
@@ -272,12 +272,12 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                     cv::resize(mat_test, mat_test, cv::Size(640 * 0.5, 480 * 0.5), 0, 0, cv::INTER_CUBIC);
                     cv::imshow("[MotionIou]", mat_test);
                 }
-                std::cout<<"[MotionIou] iou:"<<Iou <<std::endl;
+//                std::cout<<"[MotionIou] iou:"<<Iou <<std::endl;
                 if ((Iou > IouThreshold) && (Iou > IouMax))
                 {
                     IouMax = Iou;
                     ObjID_IouMax = i;
-                    std::cout<<"[MotionIou] yes "<<std::endl;
+//                    std::cout<<"[MotionIou] yes "<<std::endl;
                 }
 
             }
@@ -409,11 +409,10 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
             {
                 int df = (int) obj3D->mvObject_2ds.size();
                 if ((mvMapPonits.size() >= 10) && (df > 8)) {
-                    std::cout << "[ProIou] Use with small samples and multiple objects" << std::endl;
+//                    std::cout << "[ProIou] Use with small samples and multiple objects" << std::endl;
                     continue;
                 }
             }
-
 
             // step 3.1 compute IoU with bounding box constructed by projecting points.
             float fIou = Converter::bboxOverlapratio(RectCurrent, obj3D->mRect_byProjectPoints);
@@ -444,7 +443,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                 MaxAssoObjId_byProIou = i;   //AssoObjId_byProIou  ProIouMaxObjId = i;
                 
                 vAssoObjIds_byProIou.push_back(i);
-                std::cout<<"[ProIou] yes "<<std::endl;
+//                std::cout<<"[ProIou] yes "<<std::endl;
             }
 
         }
@@ -561,7 +560,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                 (t_test_z < tTestData[min((df - 1), 121)][5]))
             {
                 vObjByTId.push_back(i);
-                std::cout<<"[Ttest] yes 1 "<<std::endl;
+//                std::cout<<"[Ttest] yes 1 "<<std::endl;
             }
             // If the T-test is not satisfied, but the IOU is large, reducing the significance.
             else if (fIou > 0.25)
@@ -571,18 +570,18 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                     (t_test_z < tTestData[min((df - 1), 121)][8]))
                 {
                     vObjByTId.push_back(i);
-                    std::cout<<"[Ttest] yes 2 "<<std::endl;
+//                    std::cout<<"[Ttest] yes 2 "<<std::endl;
                 }
 
                 else if ((fIou > 0.25) && ((t_test_x + t_test_y + t_test_z) / 3 < 10))
                 {
                     vObjByTId.push_back(i);
-                    std::cout<<"[Ttest] yes 3 "<<std::endl;
+//                    std::cout<<"[Ttest] yes 3 "<<std::endl;
                 }
                 else
                 {
                     vObjByTIdLower.push_back(i);
-                    std::cout<<"[Ttest] yes 4 "<<std::endl;
+//                    std::cout<<"[Ttest] yes 4 "<<std::endl;
                 }
             }
             else if ((t_test_x + t_test_y + t_test_z) / 3 < 4)
@@ -594,7 +593,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                 fIou_force = max(fIou_force, fIou2_force);
 
                 if (fIou_force > 0.25){
-                    std::cout<<"[Ttest] yes 5 "<<std::endl;
+//                    std::cout<<"[Ttest] yes 5 "<<std::endl;
                     vObjByTIdLower.push_back(i);
                 }
             }
@@ -720,7 +719,7 @@ int Object_2D::creatObject()
     Object3D->mnId = ObjectMaps.size();
     Object3D->mnClass = mclass_id;
 
-    std::cout<<"【debug】Start creating new objects,>>>>>>>>,id:"<< ObjectMaps.size()<<",>>>>>>>>,";
+//    std::cout<<"【debug】Start creating new objects,>>>>>>>>,id:"<< ObjectMaps.size()<<",>>>>>>>>,";
 
     Object3D->mnConfidence_foractive = 1;
     Object3D->mnAddedID_nouse = mpCurrentFrame->mnId;
@@ -1066,7 +1065,7 @@ void Object_Map::ComputeMeanAndDeviation_3D() {
 
         if ((x_pt.size() == 0) || (y_pt.size() == 0) || (z_pt.size() == 0)) {
             this->bad_3d = true;
-            std::cout<<"object->bad Points are 0" <<std::endl;
+//            std::cout<<"object->bad Points are 0" <<std::endl;
             return;
         }
 
@@ -1878,7 +1877,7 @@ bool Object_Map::DoubleSampleTtest_fll(ORB_SLAM3::Object_Map *RepeatObj) {
 
 void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
 {
-    std::cout<<">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 1>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"<<std::endl<<">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"<<std::endl;
+//    std::cout<<">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 1>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"<<std::endl<<">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"<<std::endl;
     // step 1. Add RepeatObj to the current obj3d
     // update points.
     for (int i = 0; i < RepeatObj->mvpMapObjectMappoints.size(); i++)
@@ -1940,9 +1939,9 @@ void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
             }
         }
     }
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 2>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
-              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"<<std::endl;
-    std::cout << "RepeatObj->mvObject_2ds.size(): " << RepeatObj->mvObject_2ds.size() << std::endl;
+//    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 2>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
+//              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"<<std::endl;
+//    std::cout << "RepeatObj->mvObject_2ds.size(): " << RepeatObj->mvObject_2ds.size() << std::endl;
 
     // step 2. update frame objects.
     //int end;
@@ -1967,8 +1966,8 @@ void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
 
         AddObj2d(ObjectFrame);//this->mvObject_2ds.push_back(ObjectFrame);
     }
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 3>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
-              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+//    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 3>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
+//              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 
     // step 3. Add the RepeatObj common view relationship to the current obj3d
     // the co-view relationship
@@ -1991,8 +1990,8 @@ void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
                 mmAppearSametime.insert(make_pair(nObjId, 1));
         }
     }
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 4>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
-              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+//    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 4>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
+//              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 
     // step 4. Update the id of the last observed frame of the current obj3d
     // update the last observed frame.
@@ -2034,8 +2033,8 @@ void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
             mLastLastRect = RepeatObj->mvObject_2ds[RepeatObj->mvObject_2ds.size() - 2]->mBox_cvRect;
         }
     }
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 5>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
-              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+//    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 5>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
+//              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 
     // step 5. update direction.
     // TODO: Modification type number
@@ -2098,8 +2097,8 @@ void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
             this->Update_Twobj();
         }
     }
-        std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 6>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
-                  << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+//        std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 6>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
+//                  << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 
 }
 
