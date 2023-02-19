@@ -250,7 +250,7 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale)
     // DrawTextInfo(im,state, imWithInfo);
 
     imWithInfo = im.clone();
-    DrawYoloInfo(imWithInfo, true);
+//    DrawYoloInfo(imWithInfo, true);
 
     return imWithInfo;
 }

@@ -21,6 +21,8 @@
 // BRIEF matlab cuboid struct
 class cuboid // matlab cuboid struct. cuboid on ground. only has yaw, no obj roll/pitch
 {
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 public:  
     Eigen::Vector3d pos;      
     Eigen::Vector3d scale;    

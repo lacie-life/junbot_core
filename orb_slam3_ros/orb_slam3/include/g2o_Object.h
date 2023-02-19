@@ -8,7 +8,6 @@
 #include "Thirdparty/g2o/g2o/core/base_multi_edge.h"
 #include "Thirdparty/g2o/g2o/types/types_six_dof_expmap.h"
 #include "detect_3d_cuboid/matrix_utils.h"
-// #include "detect_3d_cuboid/matrix_utils.h"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -29,6 +28,8 @@ using namespace Eigen;
 
 class cuboid
 {
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 public:
 	SE3Quat pose;   // 6 dof for object, object to world by default
 	Vector3d scale; // [length, width, height]  half!

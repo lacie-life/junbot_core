@@ -5490,6 +5490,8 @@ void Tracking::DetectCuboid(KeyFrame *pKF)
     // Get 3D object in this keyframe
     std::vector<Object_Map*> all_objs = pKF->obj_3ds;
 
+    std::cout << "Number 3d cuboid in KF " << pKF->mnId << " : " << all_objs.size() << "\n";
+
     // Change to ObjectSet
     for(int i = 0; i < all_objs.size(); i++)
     {
@@ -5497,10 +5499,23 @@ void Tracking::DetectCuboid(KeyFrame *pKF)
         {
             continue;
         }
-        cuboid *raw_cuboid = new cuboid();
-        raw_cuboid->pos = Converter::toVector3d(all_objs[i]->mCuboid3D.pose_mat);
-        raw_cuboid->rotY = all_objs[i]->mCuboid3D.rotY;
-        raw_cuboid->scale = Vector3d (all_objs[i]->mCuboid3D.lenth, all_objs[i]->mCuboid3D.width, all_objs[i]->mCuboid3D.height);
+
+        Cuboid3D obj = all_objs[i]->mCuboid3D;
+
+        std::cout << "Step 1 \n";
+
+        std::cout << obj.cuboidCenter;
+
+        cv::Mat _pos = Converter::toCvMat(obj.cuboidCenter);
+
+        cuboid* raw_cuboid = new cuboid();
+
+        raw_cuboid->pos = obj.cuboidCenter;
+
+        std::cout << "Step 2 \n";
+
+        raw_cuboid->rotY = obj.rotY;
+        raw_cuboid->scale = Vector3d (obj.lenth, obj.width, obj.height);
 
         // TODO: Check usage
         cv::Rect obj_2d = all_objs[i]->ComputeProjectRectFrameToCurrentKeyFrame(*pKF);
@@ -5509,9 +5524,12 @@ void Tracking::DetectCuboid(KeyFrame *pKF)
         all_obj2d_bbox.push_back(raw_cuboid->rect_detect_2d);
         all_box_confidence.push_back(all_objs[i]->mnConfidence_foractive);
 
+        std::cout << "Step 3 \n";
         ObjectSet temp;
         temp.push_back(raw_cuboid);
         all_obj_cubes.push_back(temp);
+
+        std::cout << "Step 4 \n";
     }
 
     // Change to g2o cuboid
