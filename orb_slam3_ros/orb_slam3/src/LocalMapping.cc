@@ -153,8 +153,7 @@ void LocalMapping::Run()
                     // else if(mpAtlas->KeyFramesInMap()>5)
                     // {
                     //     std::cout << "Optimizer: BA with points and objects" << std::endl;
-                    //     Map* mpMap = mpAtlas->GetCurrentMap();
-                    //     Optimizer::LocalBACameraPointObjects(mpCurrentKeyFrame, &mbAbortBA, mpMap, num_FixedKF_BA, false, false);
+                    //     Optimizer::LocalBACameraPointObjects(mpCurrentKeyFrame, &mbAbortBA, mpCurrentKeyFrame->GetMap(), num_FixedKF_BA, false, false);
                     // }
                     else
                     {

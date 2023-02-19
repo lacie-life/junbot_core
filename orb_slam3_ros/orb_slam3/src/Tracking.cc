@@ -202,7 +202,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     // For 3D cuboid testing (optimize)
     // TODO: Add to settings
     use_truth_trackid = false; // whether use ground truth tracklet ID.
-    whether_detect_object = false;
+    whether_detect_object = true;
     whether_read_offline_cuboidtxt = false;
     whether_save_online_detected_cuboids = false;
     whether_save_final_optimized_cuboids = false;
@@ -2869,13 +2869,13 @@ void Tracking::CreateInitialMapMonocular()
     mpAtlas->AddKeyFrame(pKFini);
     mpAtlas->AddKeyFrame(pKFcur);
 
-    // if (whether_detect_object)
-    // {
-    //     DetectCuboid(pKFini);
-    //     AssociateCuboids(pKFini);
-    //     DetectCuboid(pKFcur);
-    //     AssociateCuboids(pKFcur);
-    // }
+    if (whether_detect_object)
+    {
+        DetectCuboid(pKFini);
+        AssociateCuboids(pKFini);
+        DetectCuboid(pKFcur);
+        AssociateCuboids(pKFcur);
+    }
 
     for(size_t i=0; i<mvIniMatches.size();i++)
     {
@@ -3636,11 +3636,11 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
     // For 3D cuboid testing (optimize)
     std::cout << "\033[33m Created new keyframe!  " << pKF->mnId << " local cuboid " << pKF->local_cuboids.size()
               << "   total ID  " << pKF->mnFrameId << "\033[0m" << std::endl;
-    // if (whether_detect_object)
-    // {
-    //     DetectCuboid(pKF);
-    //     AssociateCuboids(pKF);
-    // }
+    if (whether_detect_object)
+    {
+        DetectCuboid(pKF);
+        AssociateCuboids(pKF);
+    }
 
     // TODO: REMEMBER HERE
     // For 3D cuboid
