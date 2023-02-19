@@ -1,4 +1,4 @@
-# %Tag(FULLTEXT)%
+
 cmake_minimum_required(VERSION 3.0.2)
 project(junbot_adaptive)
 
@@ -25,3 +25,7 @@ target_link_libraries(adaptive ${catkin_LIBRARIES})
 add_dependencies(adaptive ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 # %EndTag(FULLTEXT)%
+add_executable(adaptiveControl src/adaptiveControl.cpp)
+target_link_libraries(adaptiveControl ${catkin_LIBRARIES})
+add_dependencies(adaptiveControl ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
