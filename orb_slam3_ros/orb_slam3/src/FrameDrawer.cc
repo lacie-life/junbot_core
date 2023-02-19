@@ -578,7 +578,7 @@ cv::Mat FrameDrawer::DrawQuadricImage()
 
     const std::vector<Object_Map*> obj_3ds_new = mpMap->GetObjects();
 
-    std::cout << "Obj 3D in Map: " << obj_3ds_new.size() << "\n";
+    // std::cout << "Obj 3D in Map: " << obj_3ds_new.size() << "\n";
 
     for(int i = (int)obj_3ds_new.size() - 1; i >= 0; i--)
     {

@@ -40,6 +40,7 @@ namespace ORB_SLAM3
 class KeyFrame;
 class Map;
 class Frame;
+class MapCuboidObject;
 
 class MapPoint
 {
@@ -263,6 +264,38 @@ public:
     cv::KeyPoint feature_uvCoordinate;    //record the coordinates of each point in the xy(uv) directions  
     // set<int> frame_id;
     // bool First_obj_view;
+
+    // For 3D cuboid testing (optimize)
+    Eigen::Vector3f GetWorldPosVec();
+    cv::Mat GetWorldPosBA();
+    void AddObjectObservation(MapCuboidObject *obj); //called by AddObservation
+    void EraseObjectObservation(MapCuboidObject *obj);
+    void FindBestObject(); //find which object observes this point most
+
+    int GetBelongedObject(MapCuboidObject *&obj); // change obj, return observation times.
+    MapCuboidObject *GetBelongedObject();         //return obj
+
+    // for dynamic stuff
+    bool is_dynamic = false;
+    cv::Mat mWorldPos_latestKF;
+    cv::Mat mWorldPos_latestFrame;
+    cv::Mat PosToObj; // 3d point relative to object center. ideally will converge/fix after BA
+
+    bool is_triangulated = false; //whether this point is triangulated or depth inited?
+    bool is_optimized = false;
+
+    MapCuboidObject *best_object;                        // one point can only belong to at most one object
+    int max_object_vote;                           // sometimes point is wrongly associated to an object. need more frame observation
+    std::set<MapCuboidObject *> LocalObjObservations;    // observed by local objects which hasn't become landmark at that time
+    std::map<MapCuboidObject *, int> MapObjObservations; //object and observe times.
+    std::mutex mMutexObject;
+
+    bool already_bundled;
+
+    bool ground_fitted_point = false;
+    long unsigned int mnGroundFittingForKF;
+
+    int record_txtrow_id = -1; // when finally record to txt, row id in txt
 
 };
 

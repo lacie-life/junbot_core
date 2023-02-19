@@ -23,6 +23,7 @@
 #include "Optimizer.h"
 #include "Converter.h"
 #include "GeometricTools.h"
+#include "MapCuboidObject.h"
 
 #include <mutex>
 #include <chrono>
@@ -149,6 +150,11 @@ void LocalMapping::Run()
                         Optimizer::LocalInertialBA(mpCurrentKeyFrame, &mbAbortBA, mpCurrentKeyFrame->GetMap(),num_FixedKF_BA,num_OptKF_BA,num_MPs_BA,num_edges_BA, bLarge, !mpCurrentKeyFrame->GetMap()->GetIniertialBA2());
                         b_doneLBA = true;
                     }
+                    // else if(mpAtlas->KeyFramesInMap()>5)
+                    // {
+                    //     std::cout << "Optimizer: BA with points and objects" << std::endl;
+                    //     Optimizer::LocalBACameraPointObjects(mpCurrentKeyFrame, &mbAbortBA, mpCurrentKeyFrame->GetMap(), num_FixedKF_BA, false, false);
+                    // }
                     else
                     {
                         Optimizer::LocalBundleAdjustment(mpCurrentKeyFrame,&mbAbortBA, mpCurrentKeyFrame->GetMap(),num_FixedKF_BA,num_OptKF_BA,num_MPs_BA,num_edges_BA);
@@ -435,6 +441,8 @@ void LocalMapping::CreateNewMapPoints()
     int countStereoGoodProj = 0;
     int countStereoAttempt = 0;
     int totalStereoPts = 0;
+    int nnew=0;
+
     // Search matches with epipolar restriction and triangulate
     for(size_t i=0; i<vpNeighKFs.size(); i++)
     {
@@ -712,8 +720,12 @@ void LocalMapping::CreateNewMapPoints()
 
             mpAtlas->AddMapPoint(pMP);
             mlpRecentAddedMapPoints.push_back(pMP);
+
+            nnew++;
         }
-    }    
+    }
+
+    std::cout << "LocalMapping: New Triangulated pt num:   " << nnew << std::endl;
 }
 
 void LocalMapping::SearchInNeighbors()

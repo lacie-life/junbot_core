@@ -235,7 +235,6 @@ public:
     float mCenterStandar_x, mCenterStandar_y, mCenterStandar_z;
     float mCenterStandar;
 
-    
     std::vector< MapPoint*> mvpMapObjectMappoints;
     std::vector< MapPoint*> mvpMapObjectMappoints_NewForActive;     
 
@@ -247,7 +246,8 @@ public:
     void ComputeMeanAndDeviation_3D();
     void IsolationForestDeleteOutliers();
     void Update_Twobj();                                               
-    void ComputeProjectRectFrameToCurrentFrame(Frame &Frame);           
+    void ComputeProjectRectFrameToCurrentFrame(Frame &Frame);
+    cv::Rect ComputeProjectRectFrameToCurrentKeyFrame(KeyFrame &kF);
     bool WhetherOverlap(Object_Map *CompareObj);
     void UpdateCoView(Object_Map *Obj_CoView);
     void AddObj2d(Object_2D* Object_2d){

@@ -26,6 +26,7 @@
 #include "ORBextractor.h"
 #include "Frame.h"
 #include "Atlas.h"
+#include "MapCuboidObject.h"
 #include "Object.h"
 
 #include <set>
@@ -33,7 +34,6 @@
 #include <mutex>
 
 #include <boost/serialization/base_object.hpp>
-
 
 namespace ORB_SLAM3
 {
@@ -45,6 +45,7 @@ class KeyFrameDatabase;
 class ORBextractor;
 class Converter;
 class Frame;
+class MapCuboidObject;
 class Object_Map;
 
 class Map
@@ -232,6 +233,31 @@ protected:
 public:
     void AddObject(Object_Map *pObj);
     std::vector<Object_Map*> GetObjects();
+
+// For 3D Cuboid testing (optimize)
+public:
+    cv::Mat InitToGround, GroundToInit; // orb's init camera frame to my ground
+    Eigen::Matrix4f InitToGround_eigen;
+    Eigen::Matrix4d InitToGround_eigen_d, GroundToInit_eigen_d;
+    Eigen::Matrix3f Kalib_f, invKalib_f;
+    Eigen::Matrix3d Kalib, invKalib;
+
+    int img_width, img_height;
+
+    cv::Mat GroundToInit_opti;
+    cv::Mat InitToGround_opti;
+    cv::Mat RealGroundToMine_opti;
+    cv::Mat MineGroundToReal_opti;
+
+    void AddMapObject(MapCuboidObject *pMO);
+    void EraseMapObject(MapCuboidObject *pMO);
+    std::vector<MapCuboidObject *> GetAllMapObjects(); // not sequential....
+    std::vector<MapCuboidObject *> GetGoodMapObjects();
+    long unsigned int MapObjectsInMap(); // get number of objects.
+
+protected:
+    std::set<MapCuboidObject *> mspMapObjects;
+
 };
 
 } //namespace ORB_SLAM3

@@ -30,7 +30,10 @@
 #include "GeometricTools.h"
 
 #include "YoloDetection.h"
+#include "Parameter.h"
+#include "g2o_Object.h"
 
+#include <Eigen/StdVector>
 #include <iostream>
 
 #include <mutex>
@@ -38,6 +41,10 @@
 
 
 using namespace std;
+
+//EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Vector9d)
+//EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Vector10d)
+//EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Vector6d)
 
 namespace ORB_SLAM3
 {
@@ -145,6 +152,107 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     vdNewKF_ms.clear();
     vdTrackTotal_ms.clear();
 #endif
+
+    // For 3D Cuboid testing (optimize)
+    // TODO: Check param
+    InitToGround = cv::Mat::eye(4, 4, CV_32F);
+    // set initial camera pose wrt ground. by default camera parallel to ground, height=1.7 (kitti)
+    double init_x, init_y, init_z, init_qx, init_qy, init_qz, init_qw;
+    init_x = 0.0;
+    init_y = 0.0;
+    init_z = 2.25/2.0;
+    init_qx = -0.7071;
+    init_qy = 0.0;
+    init_qz = 0.0;
+    init_qw = 0.7071;
+    Eigen::Quaternionf pose_quat(init_qw, init_qx, init_qy, init_qz);
+    Eigen::Matrix3f rot = pose_quat.toRotationMatrix(); // 	The quaternion is required to be normalized
+    for (int row = 0; row < 3; row++)
+        for (int col = 0; col < 3; col++)
+            InitToGround.at<float>(row, col) = rot(row, col);
+
+    InitToGround.at<float>(0, 3) = init_x;
+    InitToGround.at<float>(1, 3) = init_y;
+    InitToGround.at<float>(2, 3) = init_z;
+    nominal_ground_height = init_z;
+
+    cv::Mat R = InitToGround.rowRange(0, 3).colRange(0, 3);
+    cv::Mat t = InitToGround.rowRange(0, 3).col(3);
+    cv::Mat Rinv = R.t();
+    cv::Mat Ow = -Rinv * t;
+    GroundToInit = cv::Mat::eye(4, 4, CV_32F);
+    Rinv.copyTo(GroundToInit.rowRange(0, 3).colRange(0, 3));
+    Ow.copyTo(GroundToInit.rowRange(0, 3).col(3));
+
+    std::cout << "InitToGround_eigen: \n" << InitToGround_eigen << std::endl;
+    InitToGround_eigen = Converter::toMatrix4f(InitToGround);
+    GroundToInit_eigen = Converter::toMatrix4f(GroundToInit);
+    std::cout << "InitToGround_eigen: \n" << InitToGround_eigen << std::endl;
+
+    mpAtlas->InitToGround = InitToGround;
+    mpAtlas->GroundToInit = GroundToInit.clone();
+    mpAtlas->InitToGround_eigen = InitToGround_eigen;
+    mpAtlas->InitToGround_eigen_d = InitToGround_eigen.cast<double>();
+    mpAtlas->GroundToInit_eigen_d = GroundToInit_eigen.cast<double>();
+    mpAtlas->GroundToInit_opti = GroundToInit.clone();
+    mpAtlas->InitToGround_opti = InitToGround.clone();
+    mpAtlas->RealGroundToMine_opti = cv::Mat::eye(4, 4, CV_32F);
+    mpAtlas->MineGroundToReal_opti = cv::Mat::eye(4, 4, CV_32F);
+
+    // For 3D cuboid testing (optimize)
+    // TODO: Add to settings
+    use_truth_trackid = false; // whether use ground truth tracklet ID.
+    whether_detect_object = true;
+    whether_read_offline_cuboidtxt = false;
+    whether_save_online_detected_cuboids = false;
+    whether_save_final_optimized_cuboids = false;
+
+    if(whether_detect_object)
+    {
+//        if(!whether_read_offline_cuboidtxt)
+//        {
+//            detect_cuboid_obj = new detect_3d_cuboid();
+//            detect_cuboid_obj->print_details = false;
+//            detect_cuboid_obj->set_calibration(Kalib);
+//        }
+//
+//        if (!whether_read_offline_cuboidtxt)
+//        {
+//            if (whether_save_online_detected_cuboids)
+//            {
+//                std::string save_object_pose_txt = base_data_folder + "/slam_output/orb_live_pred_objs_temp.txt";
+//                save_online_detected_cuboids.open(save_object_pose_txt.c_str());
+//            }
+//        }
+
+//        if (whether_read_offline_cuboidtxt) {
+//            // Offline detection version
+//        }
+    }
+
+    if (whether_detect_object)
+    {
+        if (whether_save_final_optimized_cuboids)
+        {
+            if (final_object_record_frame_ind == 1e5)
+            {
+                std::cout << "Please set final_object_record_frame_ind!!!" << std::endl;
+                whether_save_final_optimized_cuboids = false;
+            }
+        }
+    }
+
+    filtered_ground_height = 0;
+    first_absolute_scale_frameid = 0;
+    first_absolute_scale_framestamp = 0;
+
+    ground_everyKFs = 10;
+    ground_roi_middle = 3.0;    //# 3(1/3) or 4(1/2)
+    ground_roi_lower = 3.0;      //# 2 or 3
+    ground_inlier_pts = 20;
+    ground_dist_ratio = 0.08;
+    std::cout << "Tracking:  Initial finish" << std::endl;
+
 }
 
 Tracking::Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Atlas* pAtlas,
@@ -729,7 +837,7 @@ void Tracking::newParameterLoader(Settings *settings) {
     Sophus::SE3f Tbc = settings->Tbc();
     mInsertKFsLost = settings->insertKFsWhenLost();
     mImuFreq = settings->imuFrequency();
-    mImuPer = 0.001; //1.0 / (double) mImuFreq;     //TODO: ESTO ESTA BIEN?
+    mImuPer = 0.001; //1.0 / (double) mImuFreq;
     float Ng = settings->noiseGyro();
     float Na = settings->noiseAcc();
     float Ngw = settings->gyroWalk();
@@ -905,6 +1013,20 @@ bool Tracking::ParseCamParamFile(cv::FileStorage &fSettings)
         mK_(1,1) = fy;
         mK_(0,2) = cx;
         mK_(1,2) = cy;
+
+        // For 3D Cuboid testing (optimize)
+        // TODO: Check usage Kalib param
+        Kalib.setIdentity();
+        Kalib(0, 0) = fx;
+        Kalib(0, 2) = cx;
+        Kalib(1, 1) = fy;
+        Kalib(1, 2) = cy;
+        Kalib_f = Kalib.cast<float>();
+        invKalib = Kalib.inverse();
+        invKalib_f = Kalib_f.inverse();
+        mpAtlas->Kalib = Kalib;
+        mpAtlas->Kalib_f = Kalib_f;
+        mpAtlas->invKalib_f = invKalib_f;
     }
     else if(sCameraName == "KannalaBrandt8")
     {
@@ -1654,6 +1776,7 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
     mImDepth = imD;
     mImRGB = imRGB;
 
+    // TODO: REMEMBER HERE
     std::vector<BoxSE> objects;
     if (mpSystem->isYoloDetection)
     {
@@ -1727,18 +1850,31 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
         mCurrentFrame = Frame(mImGray,mImDepth,mImMask,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,&mLastFrame,*mpImuCalib);
     }
     // For 3D cuboid
+    // TODO: REMEMBER HERE
     else if (mSensor == System::RGBD && mpSystem->isYoloDetection)
     {
         mCurrentFrame = Frame(imRGB, mImGray, mImDepth, mImMask, timestamp,
                               mpORBextractorLeft, line_lbd_ptr, mpORBVocabulary,
                               mK, mDistCoef, mbf, mThDepth, objects, mpCamera);
+//        mCurrentFrame = Frame(mImGray,mImDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera);
+
     }
     else if (mSensor == System::IMU_RGBD && mpSystem->isYoloDetection)
     {
         mCurrentFrame = Frame(imRGB, mImGray, mImDepth, mImMask, timestamp,
                               mpORBextractorLeft, line_lbd_ptr, mpORBVocabulary,
                               mK, mDistCoef, mbf, mThDepth, objects, mpCamera, &mLastFrame,*mpImuCalib);
+//        mCurrentFrame = Frame(mImGray,mImDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,&mLastFrame,*mpImuCalib);
     }
+
+    if(mCurrentFrame.mnId == 0)
+    {
+        mpAtlas->img_height = mImGray.rows;
+        mpAtlas->img_width = mImGray.cols;
+    }
+
+    // For 3D cuboid testing (optimize)
+    mCurrentFrame.raw_img = mImGray;
 
     mCurrentFrame.mNameFile = filename;
     mCurrentFrame.mnDataset = mnNumDataset;
@@ -2434,6 +2570,7 @@ void Tracking::Track()
 #ifdef REGISTER_TIMES
             std::chrono::steady_clock::time_point time_StartNewKF = std::chrono::steady_clock::now();
 #endif
+            // Different output with origin version
             int bNeedKF = NeedNewKeyFrame();
 
             // Check if we need to insert a new keyframe
@@ -2732,6 +2869,14 @@ void Tracking::CreateInitialMapMonocular()
     mpAtlas->AddKeyFrame(pKFini);
     mpAtlas->AddKeyFrame(pKFcur);
 
+    if (whether_detect_object)
+    {
+        DetectCuboid(pKFini);
+        AssociateCuboids(pKFini);
+        DetectCuboid(pKFcur);
+        AssociateCuboids(pKFcur);
+    }
+
     for(size_t i=0; i<mvIniMatches.size();i++)
     {
         if(mvIniMatches[i]<0)
@@ -2758,7 +2903,6 @@ void Tracking::CreateInitialMapMonocular()
         //Add to Map
         mpAtlas->AddMapPoint(pMP);
     }
-
 
     // Update Connections
     pKFini->UpdateConnections();
@@ -3106,7 +3250,8 @@ bool Tracking::TrackWithMotionModel()
     }
 
     // For 3D cuboid
-    CreateObject_InTrackMotion();
+    // TODO: REMEMBER HERE
+     CreateObject_InTrackMotion();
 
     // Optimize frame pose with all matches
     Optimizer::PoseOptimization(&mCurrentFrame);
@@ -3151,7 +3296,6 @@ bool Tracking::TrackWithMotionModel()
 
 bool Tracking::TrackLocalMap()
 {
-
     // We have an estimation of the camera pose and some map points tracked in the frame.
     // We retrieve the local map and try to find matches to points in the local map.
     mTrackedFr++;
@@ -3365,7 +3509,8 @@ int Tracking::NeedNewKeyFrame()
     const bool c2 = (((mnMatchesInliers<nRefMatches*thRefRatio || bNeedToInsertClose)) && mnMatchesInliers>15);
 
     // std::cout << "NeedNewKF: c1a=" << c1a << "; c1b=" << c1b << "; c1c=" << c1c << "; c2=" << c2 << std::endl;
-    
+
+    // TODO: REMEMBER HERE
     bool c1d = false;
     if(mCurrentFrame.AppearNewObject)
     {
@@ -3419,9 +3564,10 @@ int Tracking::NeedNewKeyFrame()
             }
         }
     }
-    // else
-    //     return false;
+     else
+         return false;
 
+    // TODO: REMEMBER HERE
     if (c1d)
     {
         if (bLocalMappingIdle)
@@ -3446,6 +3592,21 @@ int Tracking::NeedNewKeyFrame()
     return 0;
 }
 
+template <class BidiIter> //Fisher-Yates shuffle
+BidiIter random_unique2(BidiIter begin, BidiIter end, int num_random)
+{
+    size_t left = std::distance(begin, end);
+    while (num_random--)
+    {
+        BidiIter r = begin;
+        std::advance(r, rand() % left);
+        std::swap(*begin, *r);
+        ++begin;
+        --left;
+    }
+    return begin;
+}
+
 void Tracking::CreateNewKeyFrame(bool CreateByObjs)
 {
     if(mpLocalMapper->IsInitializing() && !mpAtlas->isImuInitialized())
@@ -3453,7 +3614,6 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
 
     if(!mpLocalMapper->SetNotStop(true))
         return;
-
 
     KeyFrame* pKF;
     if(mSensor == System::RGBD || mSensor == System::IMU_RGBD)
@@ -3473,6 +3633,16 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
     mpReferenceKF = pKF;
     mCurrentFrame.mpReferenceKF = pKF;
 
+    // For 3D cuboid testing (optimize)
+    std::cout << "\033[33m Created new keyframe!  " << pKF->mnId << " local cuboid " << pKF->local_cuboids.size()
+              << "   total ID  " << pKF->mnFrameId << "\033[0m" << std::endl;
+    if (whether_detect_object)
+    {
+        DetectCuboid(pKF);
+        AssociateCuboids(pKF);
+    }
+
+    // TODO: REMEMBER HERE
     // For 3D cuboid
     if(CreateByObjs)
     {
@@ -3578,6 +3748,565 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
                 }
             }
             //Verbose::PrintMess("new mps for stereo KF: " + to_string(nPoints), Verbose::VERBOSITY_NORMAL);
+        }
+    }
+
+    //copied from localMapping, only for dynamic object
+    if (mono_allframe_Obj_depth_init && whether_dynamic_object)
+    {
+        KeyFrame *mpCurrentKeyFrame = pKF;
+
+        const vector<MapPoint *> vpMapPointMatches = mpCurrentKeyFrame->GetMapPointMatches();
+
+        double total_feature_pts = vpMapPointMatches.size();
+        double raw_depth_pts = 0; // point already have depth
+        double plane_object_initialized_pts = 0;
+        std::vector<int> raw_pixels_no_depth_inds;
+
+        if (triangulate_dynamic_pts)
+        {
+            vector<MapPoint *> frameMapPointMatches;
+            if (use_dynamic_klt_features)
+                frameMapPointMatches = mCurrentFrame.mvpMapPointsHarris;
+            else
+                frameMapPointMatches = mpCurrentKeyFrame->GetMapPointMatches();
+
+            cv::Mat Tcw_last = Converter::toCvMat(mpLastKeyFrame->GetPose());
+            cv::Mat Tcw_now = Converter::toCvMat(mpCurrentKeyFrame->GetPose());
+            const float &cx1 = mpCurrentKeyFrame->cx;
+            const float &cy1 = mpCurrentKeyFrame->cy;
+            const float &invfx1 = mpCurrentKeyFrame->invfx;
+            const float &invfy1 = mpCurrentKeyFrame->invfy;
+            for (size_t i = 0; i < frameMapPointMatches.size(); i++)
+            {
+                MapPoint *pMP = frameMapPointMatches[i];
+                if (pMP && pMP->is_dynamic) // the point is matched to this frame, and also dynamic.
+                {
+                    // check if this point is created by last keyframe, if yes, triangulate it with this frame!   if created earlier, not need
+                    if (!pMP->is_triangulated) // if not Triangulated
+                    {
+                        int pixelindLastKf = get<0>(pMP->GetIndexInKeyFrame(mpLastKeyFrame));
+                        if (pixelindLastKf == -1)
+                        {
+                            std::cout << "Point frame observation not added yet" << std::endl;
+                            continue;
+                        }
+                        MapCuboidObject *objectLastframe;
+                        if (use_dynamic_klt_features)
+                            objectLastframe = mpLastKeyFrame->local_cuboids[mpLastKeyFrame->keypoint_associate_objectID_harris[pixelindLastKf]];
+                        else
+                            objectLastframe = mpLastKeyFrame->local_cuboids[mpLastKeyFrame->keypoint_associate_objectID[pixelindLastKf]];
+                        g2o::cuboid cube_pose_lastkf;
+                        if (objectLastframe->already_associated)
+                        {
+                            // TODO: Checking about compare function
+                            cube_pose_lastkf = objectLastframe->associated_landmark->allDynamicPoses[mpLastKeyFrame].first;
+                        }
+                        else
+                            cube_pose_lastkf = objectLastframe->GetWorldPos();
+                        // get new cube pose in this frame??? based on keypoint object asscoiate id.
+                        MapCuboidObject *objectThisframe;
+                        if (use_dynamic_klt_features)
+                            objectThisframe = mpCurrentKeyFrame->local_cuboids[mCurrentFrame.keypoint_associate_objectID_harris[i]];
+                        else
+                            objectThisframe = mpCurrentKeyFrame->local_cuboids[mpCurrentKeyFrame->keypoint_associate_objectID[i]];
+                        g2o::cuboid cube_pose_now = objectThisframe->GetWorldPos(); //current obj pose, not BA optimimized
+                        // check truth tracklet id.
+                        if (use_truth_trackid)
+                            if (objectLastframe->truth_tracklet_id != objectThisframe->truth_tracklet_id)
+                            {
+                                std::cout << "Different object tracklet id, possibly due to wrong KLT point tracking" << std::endl;
+                                continue;
+                            }
+                        g2o::SE3Quat objecttransform = cube_pose_now.pose * cube_pose_lastkf.pose.inverse();
+                        cv::Mat Tcw_now_withdynamic = Tcw_now * Converter::toCvMat(objecttransform);
+
+                        cv::KeyPoint kp1, kp2;
+                        if (use_dynamic_klt_features)
+                        {
+                            kp1 = mpLastKeyFrame->mvKeysHarris[pixelindLastKf];
+                            kp2 = mCurrentFrame.mvKeysHarris[i];
+                        }
+                        else
+                        {
+                            kp1 = mpLastKeyFrame->mvKeysUn[pixelindLastKf];
+                            kp2 = mpCurrentKeyFrame->mvKeysUn[i];
+                        }
+                        // Check parallax between rays
+                        cv::Mat xn1 = (cv::Mat_<float>(3, 1) << (kp1.pt.x - cx1) * invfx1, (kp1.pt.y - cy1) * invfy1, 1.0);
+                        cv::Mat xn2 = (cv::Mat_<float>(3, 1) << (kp2.pt.x - cx1) * invfx1, (kp2.pt.y - cy1) * invfy1, 1.0);
+
+                        cv::Mat x3D;
+                        {
+                            // Linear Triangulation Method
+                            cv::Mat A(4, 4, CV_32F);
+                            A.row(0) = xn1.at<float>(0) * Tcw_last.row(2) - Tcw_last.row(0);
+                            A.row(1) = xn1.at<float>(1) * Tcw_last.row(2) - Tcw_last.row(1);
+                            A.row(2) = xn2.at<float>(0) * Tcw_now_withdynamic.row(2) - Tcw_now_withdynamic.row(0);
+                            A.row(3) = xn2.at<float>(1) * Tcw_now_withdynamic.row(2) - Tcw_now_withdynamic.row(1);
+
+                            cv::Mat w, u, vt;
+                            cv::SVD::compute(A, w, u, vt, cv::SVD::MODIFY_A | cv::SVD::FULL_UV);
+
+                            x3D = vt.row(3).t();
+
+                            if (x3D.at<float>(3) == 0)
+                                continue;
+
+                            // Euclidean coordinates
+                            x3D = x3D.rowRange(0, 3) / x3D.at<float>(3);
+                        }
+
+                        if ((Converter::toVector3f(x3D) - pMP->GetWorldPosVec()).norm() > 5) // if too far from object center, not good triangulation.
+                        {
+                            continue;
+                        }
+                        pMP->is_triangulated = true;
+                        pMP->PosToObj = Converter::toCvMat(cube_pose_now.pose.inverse().map(Converter::toVector3d(x3D)));
+                    }
+                }
+            }
+        }
+
+        if (1) // randomly select N points, don't initialize all of them
+        {
+            bool actually_use_obj_depth = false;
+            if (mono_allframe_Obj_depth_init && whether_detect_object && associate_point_with_object)
+                if (mpCurrentKeyFrame->keypoint_associate_objectID.size() > 0)
+                    actually_use_obj_depth = true;
+
+            if (actually_use_obj_depth)
+            {
+                cout << "Tracking just about to initialize object depth point" << endl;
+
+                // detect new KLF feature points   away from existing featute points.
+                if (use_dynamic_klt_features)
+                {
+                    // loop over all mappoints, create circle mask
+                    // 		    objmask_img:  0 background, >0 object areas   change to--->   255 object areas. 0 background.
+                    int MIN_DIST = 10;															// or 10  20
+                    cv::Mat good_mask;															//area to generate new features.
+                    threshold(mCurrentFrame.objmask_img, good_mask, 0, 255, cv::THRESH_BINARY); // threshold to be 0,255
+
+                    // final existing object mappoints.
+                    vector<pair<int, cv::Point2f>> exist_obj_mappts; //point, obverse time
+
+                    for (size_t i = 0; i < mCurrentFrame.mvpMapPointsHarris.size(); i++)
+                    {
+                        MapPoint *pMP = mCurrentFrame.mvpMapPointsHarris[i]; //TODO later should be separate mappoint for dynamic
+                        if (pMP && pMP->is_dynamic)
+                        {
+                            exist_obj_mappts.push_back(make_pair(pMP->Observations(), mCurrentFrame.mvKeysHarris[i].pt));
+                        }
+                    }
+                    // sort(exist_obj_mappts.begin(), exist_obj_mappts.end(), [](MapPoint *a, MapPoint *b) { return a->Observations() > b->Observations(); });
+                    sort(exist_obj_mappts.begin(), exist_obj_mappts.end(), [](const pair<int, cv::Point2f> &a, const pair<int, cv::Point2f> &b) { return a.first > b.first; });
+
+                    for (auto &it : exist_obj_mappts)
+                    {
+                        if (good_mask.at<uchar>(it.second) == 255)
+                        {
+                            cv::circle(good_mask, it.second, MIN_DIST, 0, -1);
+                        }
+                    }
+                    cout << "mCurrentFrame.mvpMapPointsHarris size   " << mCurrentFrame.mvpMapPointsHarris.size() << "  " << exist_obj_mappts.size() << endl;
+
+                    int max_new_pts = 200; //100
+                    vector<cv::Point2f> corners;
+                    cv::goodFeaturesToTrack(mpCurrentKeyFrame->raw_img, corners, max_new_pts, 0.1, MIN_DIST, good_mask);
+
+                    int numTracked = mCurrentFrame.mvKeysHarris.size();
+                    int numNewfeat = corners.size();
+                    int totalfeat = numTracked + numNewfeat;
+
+                    mpCurrentKeyFrame->mvKeysHarris = mCurrentFrame.mvKeysHarris;
+                    mpCurrentKeyFrame->mvKeysHarris.resize(totalfeat);
+                    mpCurrentKeyFrame->mvpMapPointsHarris = mCurrentFrame.mvpMapPointsHarris;
+                    mpCurrentKeyFrame->mvpMapPointsHarris.resize(totalfeat);
+                    mpCurrentKeyFrame->keypoint_associate_objectID_harris = mCurrentFrame.keypoint_associate_objectID_harris;
+                    mpCurrentKeyFrame->keypoint_associate_objectID_harris.resize(totalfeat);
+
+                    //create and append new detected features.
+                    for (int new_fea_ind = 0; new_fea_ind < numNewfeat; new_fea_ind++)
+                    {
+                        int maskval = int(mCurrentFrame.objmask_img.at<uchar>(corners[new_fea_ind])); //0 background, >0 object id
+                        int pixelcubeid = maskval - 1;
+                        if (maskval == 0)
+                        {
+                            std::cout << "Get invalid pixel object index" << std::endl;
+                            exit(0);
+                        }
+                        cv::KeyPoint keypt;
+                        keypt.pt = corners[new_fea_ind];
+                        mpCurrentKeyFrame->mvKeysHarris[new_fea_ind + numTracked] = keypt;
+                        mpCurrentKeyFrame->keypoint_associate_objectID_harris[new_fea_ind + numTracked] = pixelcubeid;
+
+                        float point_depth = mpCurrentKeyFrame->local_cuboids[pixelcubeid]->cube_meas.translation()[2]; // camera z
+                        cv::Mat x3D = mpCurrentKeyFrame->UnprojectPixelDepth(corners[new_fea_ind], point_depth);
+
+                        MapPoint *pNewMP = new MapPoint(Converter::toVector3f(x3D), mpCurrentKeyFrame, mpAtlas->GetCurrentMap());
+                        pNewMP->is_dynamic = true;
+                        mpCurrentKeyFrame->SetupSimpleMapPoints(pNewMP, new_fea_ind + numTracked); // add to frame observation, add to map.
+                        //also changed mvpMapPointsHarris
+                        pNewMP->is_triangulated = false;
+                        pNewMP->SetWorldPos(Converter::toVector3f(x3D)); // compute dynamic point to object pose
+                    }
+                    cout << "tracked/new_created features   " << numTracked << "  " << numNewfeat << endl;
+
+                    //update total features in mCurrentFrame
+                    mCurrentFrame.mvKeysHarris = mpCurrentKeyFrame->mvKeysHarris;
+                    mCurrentFrame.mvpMapPointsHarris = mpCurrentKeyFrame->mvpMapPointsHarris;
+                    mCurrentFrame.keypoint_associate_objectID_harris = mpCurrentKeyFrame->keypoint_associate_objectID_harris;
+                }
+                else
+                {
+                    std::vector<int> has_object_depth_pixel_inds; // points with no depth yet but with matching object and plane
+
+                    bool gridsHasMappt[FRAME_GRID_COLS][FRAME_GRID_ROWS];
+                    for (int i = 0; i < FRAME_GRID_COLS; i++)
+                        for (int j = 0; j < FRAME_GRID_ROWS; j++)
+                            gridsHasMappt[i][j] = false;
+                    for (size_t i = 0; i < vpMapPointMatches.size(); i++)
+                    {
+                        MapPoint *pMP = vpMapPointMatches[i];
+                        if (!pMP) //no map point yet. not associated yet
+                        {
+                            int gridx, gridy;
+                            if (mpCurrentKeyFrame->PosInGrid(mpCurrentKeyFrame->mvKeys[i], gridx, gridy))
+                            {
+                                if (gridsHasMappt[gridx][gridy])
+                                    continue;
+                            }
+                            else
+                                continue;
+
+                            if (mpCurrentKeyFrame->keypoint_associate_objectID[i] > -1) // have associated object
+                                if (mpCurrentKeyFrame->mvKeys[i].octave < 3)			//HACK for KLT tracking, better just use first octave
+                                {
+                                    has_object_depth_pixel_inds.push_back(i);
+                                    gridsHasMappt[gridx][gridy] = true;
+                                }
+                        }
+                        else
+                            raw_depth_pts++;
+                    }
+                    bool whether_actually_planeobj_init_pt = false;
+
+                    double depth_point_ration_now = raw_depth_pts / total_feature_pts;
+                    int max_initialize_pts = 0;
+                    if (depth_point_ration_now < 0.30) //0.3
+                        whether_actually_planeobj_init_pt = true;
+                    max_initialize_pts = std::min(int(total_feature_pts * 0.30) - int(raw_depth_pts), int(has_object_depth_pixel_inds.size()));
+                    max_initialize_pts = std::min(max_initialize_pts, 80);
+
+                    cout << "all points to initilaze  " << has_object_depth_pixel_inds.size() << "  initialized " << max_initialize_pts << endl;
+                    int nPoints = 0;
+
+                    if (whether_actually_planeobj_init_pt)
+                    {
+                        srand(time(NULL));
+                        // 		    random_shuffle ( has_object_depth_pixel_inds.begin(), has_object_depth_pixel_inds.end() );
+                        random_unique2(has_object_depth_pixel_inds.begin(), has_object_depth_pixel_inds.end(), max_initialize_pts);
+
+                        int vector_counter = 0;
+                        while ((nPoints < max_initialize_pts) && (vector_counter < (int)has_object_depth_pixel_inds.size()))
+                        {
+                            int pixel_ind = has_object_depth_pixel_inds[vector_counter];
+                            float point_depth = -1;
+                            cv::Mat x3D;
+
+                            if ((point_depth < 0))
+                            {
+                                if (mpCurrentKeyFrame->keypoint_associate_objectID[pixel_ind] > -1)
+                                {
+                                    point_depth = mpCurrentKeyFrame->local_cuboids[mpCurrentKeyFrame->keypoint_associate_objectID[pixel_ind]]->cube_meas.translation()[2]; // camera z
+                                    x3D = mpCurrentKeyFrame->UnprojectDepth(pixel_ind, point_depth);
+                                }
+                            }
+                            if (point_depth > 0)
+                            {
+                                MapPoint *pNewMP = new MapPoint(Converter::toVector3f(x3D), mpCurrentKeyFrame, mpAtlas->GetCurrentMap());
+                                mpCurrentKeyFrame->SetupSimpleMapPoints(pNewMP, pixel_ind); // add to frame observation, add to map.
+                                pNewMP->is_triangulated = false;
+                                nPoints++;
+                                if (whether_dynamic_object)
+                                {
+                                    pNewMP->is_dynamic = true;
+                                }
+                            }
+                            else
+                            {
+                                //NOTE projected point is negative. remove association? because this point is bad
+                            }
+                            vector_counter++;
+                        }
+                        plane_object_initialized_pts = nPoints;
+                        std::cout << "Online depth create mappoints!!!!!!!!  " << nPoints << std::endl;
+                    }
+                }
+            }
+        }
+
+        // 	std::cout<<"Finish create my map points!!!!"<<std::endl;
+        mCurrentFrame.mvpMapPoints = mpCurrentKeyFrame->GetMapPointMatches();
+        // mCurrentFrame.mvpMapPoints indepent of new created mappoints in localmapping
+    }
+
+    if (enable_ground_height_scale)
+    {
+        float img_width = float(mpAtlas->img_width);
+        float img_height = float(mpAtlas->img_height);
+
+        // do it in every frame, otherwise may take longer time when do it together for many frames.
+        for (size_t iMP = 0; iMP < mCurrentFrame.mvpMapPoints.size(); iMP++)
+            if (pKF->mvKeysUn[iMP].pt.x > img_width / ground_roi_middle && pKF->mvKeysUn[iMP].pt.x < img_width / ground_roi_middle * (ground_roi_middle - 1))
+                if (pKF->mvKeysUn[iMP].pt.y > img_height / ground_roi_lower * (ground_roi_lower - 1)) // lower 1/3, I checked kitti sequence, roughly true.
+                {
+                    bool not_in_object = true;
+                    if (pKF->keypoint_inany_object.size() > 0)
+                        if (pKF->keypoint_inany_object[iMP])
+                            not_in_object = false;
+                    if (not_in_object)
+                        pKF->ground_region_potential_pts.push_back(iMP); // used for latter adjacent frame ground fitting
+                }
+
+        std::cout << "Tracking: estimate ground: potential_pts: " << pKF->ground_region_potential_pts.size()
+                  << " pKF->mnId: " << pKF->mnId << " ground_everyKFs: " << ground_everyKFs << std::endl;
+        if (pKF->mnId % ground_everyKFs == 0)
+        {
+            unsigned long anchor_frame_kfid = 0;
+            if (int(pKF->mnId) > ground_everyKFs)
+                anchor_frame_kfid = pKF->mnId - ground_everyKFs;
+            KeyFrame *first_keyframe = nullptr;
+            std::vector<KeyFrame *> ground_local_KFs;
+            unsigned long minKFid = pKF->mnId;
+            for (size_t ii = 0; ii < mvpLocalKeyFrames.size(); ii++)
+            {
+                KeyFrame *pKFi = mvpLocalKeyFrames[ii];
+                if (pKFi->mnId >= anchor_frame_kfid)
+                {
+                    ground_local_KFs.push_back(pKFi);
+                    pKFi->mnGroundFittingForKF = pKF->mnId;
+                    if (pKFi->mnId < minKFid)
+                    {
+                        minKFid = pKFi->mnId; // the original anchor frame id might not exist due to culling.
+                        first_keyframe = pKFi;
+                    }
+                }
+            }
+            if (first_keyframe == nullptr)
+            {
+                std::cout << "Not found first keyframe!!!  " << std::endl;
+                exit(0);
+            }
+            ground_local_KFs.push_back(pKF);
+            anchor_frame_kfid = pKF->mnId;
+            int initializer_starting_frame_id = (*mlpReferences.begin())->mnFrameId; // a fixed value
+
+            KeyFrame *median_keyframe = nullptr; // scale relative to the center frames instead of the begining frame? more accurate?
+            // added benchun 20201210
+            if (pKF->mnId == 20)
+                height_esti_history.push_back(2.25);
+            std::cout << "Tracking: height_esti_history.size() " << height_esti_history.size() << std::endl;
+            if (height_esti_history.size() > 0)
+            {
+                vector<unsigned> range_kf_ids;
+                for (size_t i = 0; i < ground_local_KFs.size(); i++)
+                    range_kf_ids.push_back(ground_local_KFs[i]->mnId);
+                sort(range_kf_ids.begin(), range_kf_ids.end());
+                unsigned median_frameid = range_kf_ids[range_kf_ids.size() / 2];
+                for (size_t i = 0; i < ground_local_KFs.size(); i++)
+                    if (ground_local_KFs[i]->mnId == median_frameid)
+                    {
+                        median_keyframe = ground_local_KFs[i];
+                        break;
+                    }
+                if (median_keyframe == nullptr)
+                {
+                    std::cout << "Not found median keyframe!!!  " << std::endl;
+                    exit(0);
+                }
+            }
+            else
+                median_keyframe = first_keyframe; // still want to scale at the very first fram
+
+            bool recently_have_object = false;
+            if (recently_have_object)
+                std::cout << "Found cuboid landmark in this range" << std::endl;
+            if ((!recently_have_object) || (height_esti_history.size() < 1))
+            {
+                pcl::PointCloud<pcl::PointXYZ> cloud;
+                pcl::PointXYZ pt;
+                cloud.points.reserve(mvpLocalMapPoints.size());
+                vector<MapPoint *> potential_plane_points;
+                for (size_t i = 0; i < ground_local_KFs.size(); i++)
+                {
+                    std::vector<MapPoint *> framepointmatches = ground_local_KFs[i]->GetMapPointMatches();
+                    for (size_t j = 0; j < ground_local_KFs[i]->ground_region_potential_pts.size(); j++)
+                    {
+                        MapPoint *pMP = framepointmatches[ground_local_KFs[i]->ground_region_potential_pts[j]];
+                        if (pMP)
+                            if (!pMP->isBad())
+                                if (pMP->mnGroundFittingForKF != pKF->mnId)
+                                {
+                                    // std::cout << "Check" << std::endl;
+                                    cv::Mat point_position = Converter::toCvMat(pMP->GetWorldPos()); // fit plane in global frame, then tranform plane. saving time for point transformation
+                                    pt.x = point_position.at<float>(0);
+                                    pt.y = point_position.at<float>(1);
+                                    pt.z = point_position.at<float>(2);
+                                    cloud.points.push_back(pt);
+                                    potential_plane_points.push_back(pMP);
+                                    pMP->mnGroundFittingForKF = pKF->mnId;
+                                }
+                    }
+                }
+                std::cout << "Tracking: Potential plane pt size    " << potential_plane_points.size() << "   " << ground_local_KFs.size() << std::endl;
+
+                if (potential_plane_points.size()>=4)
+                {
+                    // TODO can we directly search height plane to find points supporting it?? not using ransac. Song used it.
+                    pcl::SACSegmentation<pcl::PointXYZ> *seg = new pcl::SACSegmentation<pcl::PointXYZ>();
+                    seg->setOptimizeCoefficients(true);
+                    seg->setModelType(pcl::SACMODEL_PLANE);
+                    seg->setMethodType(pcl::SAC_RANSAC);
+                    if (height_esti_history.size() > 0)
+                        seg->setDistanceThreshold(ground_dist_ratio * height_esti_history.back());
+                    else
+                        seg->setDistanceThreshold(0.005); // the raw map is scaled to mean 1.
+                    pcl::ModelCoefficients coefficients;
+                    pcl::PointIndices inliers;
+                    seg->setInputCloud(cloud.makeShared());
+                    // ca::Profiler::tictoc("pcl plane fitting time");
+                    seg->segment(inliers, coefficients);
+
+                    Eigen::Vector4f global_fitted_plane(coefficients.values[0], coefficients.values[1], coefficients.values[2], coefficients.values[3]);
+                    float cam_plane_dist, angle_diff_normal;
+
+                    // transform to anchor frame
+                    KeyFrame *anchor_frame = first_keyframe; // first_keyframe  median_keyframe  pKF;
+                    cv::Mat anchor_Tcw = Converter::toCvMat(anchor_frame->GetPose());
+                    cv::Mat anchor_Twc = Converter::toCvMat(anchor_frame->GetPoseInverse());
+
+                    // take averge of all camera pose dist to plane,  not just wrt anchor frame
+                    if (1)
+                    {
+                        float sum_cam_dist = 0;
+                        float sum_angle_diff = 0;
+                        vector<float> temp_dists;
+                        for (size_t i = 0; i < ground_local_KFs.size(); i++)
+                        {
+                            KeyFrame *localkf = ground_local_KFs[i];
+                            cv::Mat cam_Twc = Converter::toCvMat(localkf->GetPoseInverse());
+                            Eigen::Matrix4f cam_Twc_eig = Converter::toMatrix4f(cam_Twc);
+                            Eigen::Vector4f local_kf_plane = cam_Twc_eig.transpose() * global_fitted_plane;
+                            local_kf_plane = local_kf_plane / local_kf_plane.head<3>().norm(); // normalize the plane.
+
+                            float local_cam_plane_dist = fabs(local_kf_plane(3));
+                            float local_angle_diff_normal = acos(local_kf_plane.head(3).dot(Vector3f(0, 1, 0))) * 180.0 / M_PI; // 0~pi
+                            if (local_angle_diff_normal > 90)
+                                local_angle_diff_normal = 180.0 - local_angle_diff_normal;
+                            sum_cam_dist += local_cam_plane_dist;
+                            sum_angle_diff += local_angle_diff_normal;
+                            temp_dists.push_back(local_cam_plane_dist);
+                        }
+                        cam_plane_dist = sum_cam_dist / float(ground_local_KFs.size());
+                        angle_diff_normal = sum_angle_diff / float(ground_local_KFs.size());
+                    }
+
+                    std::cout << "Tracking: find Potential plane pt size   " << potential_plane_points.size()
+                              << " Find init plane  dist  " << cam_plane_dist << "  angle  " << angle_diff_normal << "   inliers  " << inliers.indices.size() << std::endl;
+
+                    if (int(inliers.indices.size()) > ground_inlier_pts) // or ratio
+                    {
+                        if (angle_diff_normal < 10)
+                        {
+                            // for kitti 02, unstale initialization. needs more times
+                            if ((fabs(cam_plane_dist - nominal_ground_height) < 0.6) || (height_esti_history.size() < 4)) // or compare with last time?
+                            {
+                                height_esti_history.push_back(cam_plane_dist);
+
+                                if (height_esti_history.size() == 1)
+                                {
+                                    first_absolute_scale_frameid = first_keyframe->mnFrameId;
+                                    first_absolute_scale_framestamp = first_keyframe->mTimeStamp;
+                                }
+
+                                for (size_t i = 0; i < inliers.indices.size(); i++)
+                                    potential_plane_points[inliers.indices[i]]->ground_fitted_point = true;
+
+                                float final_filter_height = cam_plane_dist;
+                                // take average or recent tow/three frames. or median filter? is this correct if object scale???
+                                if (height_esti_history.size() > 2)
+                                {
+                                    final_filter_height = 0.6 * height_esti_history.back() + 0.4 * filtered_ground_height;
+                                }
+                                filtered_ground_height = final_filter_height;
+
+                                float scaling_ratio = nominal_ground_height / final_filter_height;
+                                if (height_esti_history.size() > 1) // ignore the first time.
+                                {
+                                    // don't want too large scaling, which might be wrong...
+                                    scaling_ratio = std::min(std::max(scaling_ratio, 0.7f), 1.3f);
+                                }
+                                std::cout << "Actually scale map and frames~~~~~~~~~~~~~~~~" << std::endl;
+
+                                if (enable_ground_height_scale)
+                                {
+                                    for (size_t iMP = 0; iMP < mvpLocalMapPoints.size(); iMP++) // approximatedly. actually mvpLocalMapPoints has much more points
+                                    {
+                                        cv::Mat poseLocalMapPoint = Converter::toCvMat(mvpLocalMapPoints[iMP]->GetWorldPos());
+                                        cv::Mat local_pt = anchor_Tcw.rowRange(0, 3).colRange(0, 3) * poseLocalMapPoint + anchor_Tcw.rowRange(0, 3).col(3);
+                                        cv::Mat scaled_global_pt = anchor_Twc.rowRange(0, 3).colRange(0, 3) * (local_pt * scaling_ratio) + anchor_Twc.rowRange(0, 3).col(3);
+                                        mvpLocalMapPoints[iMP]->SetWorldPos(Converter::toVector3f(scaled_global_pt));
+                                    }
+                                    for (size_t iKF = 0; iKF < ground_local_KFs.size(); iKF++)
+                                    {
+                                        cv::Mat anchor_to_pose = Converter::toCvMat(ground_local_KFs[iKF]->GetPose()) * anchor_Twc;
+                                        anchor_to_pose.col(3).rowRange(0, 3) = anchor_to_pose.col(3).rowRange(0, 3) * scaling_ratio;
+                                        ground_local_KFs[iKF]->SetPose(Converter::toSophus(anchor_to_pose * anchor_Tcw));
+                                    }
+                                    cv::Mat _Tcw = Converter::toCvMat(mLastFrame.GetPose());
+                                    cv::Mat anchor_to_pose = _Tcw * anchor_Twc;
+                                    anchor_to_pose.col(3).rowRange(0, 3) = anchor_to_pose.col(3).rowRange(0, 3) * scaling_ratio;
+                                    mLastFrame.SetPose(Converter::toSophus(anchor_to_pose * anchor_Tcw));
+                                    mCurrentFrame.SetPose(pKF->GetPose());
+
+                                    cv::Mat vec = Converter::toCvMat(mVelocity);
+                                    vec.col(3).rowRange(0, 3) = vec.col(3).rowRange(0, 3) * scaling_ratio;
+                                    mVelocity = Converter::toSophus(vec);
+
+                                    // loop over mlpReferences, if any frames' references frames lie in this range, scale the relative poses accordingly
+                                    // mlpReferences doesn't include the initialization stage... // if it is bad...??
+
+                                    for (size_t ind = first_keyframe->mnFrameId - initializer_starting_frame_id; ind < mlpReferences.size(); ind++)
+                                    {
+                                        list<ORB_SLAM3::KeyFrame*>::iterator lRit = mlpReferences.begin();
+                                        list<Sophus::SE3f>::iterator it = mlRelativeFramePoses.begin();
+                                        for(int i = 0; i< ind; i++){
+                                            ++lRit;
+                                            ++it;
+                                        }
+                                        if ((*lRit)->mnGroundFittingForKF == pKF->mnId)
+                                        {
+                                            cv::Mat Tcr = Converter::toCvMat((*it)); // reference to current
+                                            Tcr.col(3).rowRange(0, 3) = Tcr.col(3).rowRange(0, 3) * scaling_ratio;
+                                            (*it) = Converter::toSophus(Tcr);
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                                std::cout << "\033[31m Too large change compared to last time. \033[0m" << cam_plane_dist << "   last  " << filtered_ground_height << std::endl;
+                        }
+                        else
+                            std::cout << "\033[31m Bad ground orientation. \033[0m" << std::endl;
+                    }
+                    else
+                        std::cout << "\033[31m Not enough inliers. \033[0m" << std::endl;
+                }
+                else
+                    std::cout << "\033[31m Not enough Potential plane. \033[0m" << std::endl;
+            }
         }
     }
 
@@ -4755,6 +5484,425 @@ void Tracking::UpdateFrameIMU(const float s, const IMU::Bias &b, KeyFrame* pCurr
     mnFirstImuFrameId = mCurrentFrame.mnId;
 }
 
+// TODO: Adding here
+void Tracking::DetectCuboid(KeyFrame *pKF)
+{
+    cv::Mat pop_pose_to_ground = InitToGround.clone();
+    std::vector<double> all_box_confidence;
+    vector<int> truth_tracklet_ids;
+
+    // Get 3D object in this keyframe
+    std::vector<Object_Map*> all_objs = pKF->obj_3ds;
+
+    std::cout << "Number 3d cuboid in KF " << pKF->mnId << ": " << all_objs.size() << "\n";
+
+    // Change to g2o cuboid
+    pKF->local_cuboids.clear();
+
+    g2o::SE3Quat frame_pose_to_init = Converter::toSE3Quat(pKF->GetPoseInverse());
+
+    for (int ii = 0; ii < (int)all_objs.size(); ii++)
+    {
+        std::cout << "Step 1 \n";
+
+        if(all_objs[ii]->bad_3d)
+        {
+            continue;
+        }
+
+        all_box_confidence.push_back(all_objs[ii]->mnConfidence_foractive);
+
+        Cuboid3D raw_cuboid  = all_objs[ii]->mCuboid3D;
+
+        g2o::cuboid cube_ground_value;
+        Eigen::Matrix<double, 9, 1> cube_pose;
+        cube_pose << raw_cuboid.cuboidCenter.x(), raw_cuboid.cuboidCenter.y(), raw_cuboid.cuboidCenter.z(), 0, 0, raw_cuboid.rotY,
+                raw_cuboid.lenth, raw_cuboid.width, raw_cuboid.height;
+        cube_ground_value.fromMinimalVector(cube_pose);
+
+        std::cout << "Step 2 \n";
+
+        // Measurement in local camera frame
+        MapCuboidObject *newcuboid = new MapCuboidObject(mpAtlas->GetCurrentMap());
+
+        g2o::cuboid cube_local_meas = cube_ground_value.transform_to(Converter::toSE3Quat(pop_pose_to_ground));
+        newcuboid->cube_meas = cube_local_meas;
+        newcuboid->bbox_2d = all_objs[ii]->ComputeProjectRectFrameToCurrentKeyFrame(*pKF);
+        newcuboid->bbox_vec = Vector4d((double)newcuboid->bbox_2d.x + (double)newcuboid->bbox_2d.width / 2, (double)newcuboid->bbox_2d.y + (double)newcuboid->bbox_2d.height / 2,
+                                       (double)newcuboid->bbox_2d.width, (double)newcuboid->bbox_2d.height);
+
+        std::cout << "Step 3 \n";
+
+//        newcuboid->box_corners_2d = raw_cuboid->box_corners_2d;
+
+        cv::Rect tmp = all_objs[ii]->ComputeProjectRectFrameToCurrentKeyFrame(*pKF);
+        newcuboid->bbox_2d_tight = cv::Rect(tmp.x + tmp.width / 10.0,
+                                            tmp.y + tmp.height / 10.0,
+                                            tmp.width * 0.8, tmp.height * 0.8);
+        get_cuboid_draw_edge_markers(newcuboid->edge_markers, Vector2d(1, 1), false);
+
+        newcuboid->SetReferenceKeyFrame(pKF);
+        newcuboid->object_id_in_localKF = pKF->local_cuboids.size();
+
+        // g2o::cuboid global_obj_pose_to_init = cube_local_meas.transform_from(Converter::toSE3Quat(pop_pose_to_ground));
+        g2o::cuboid global_obj_pose_to_init = cube_local_meas.transform_from(frame_pose_to_init);
+
+        newcuboid->SetWorldPos(global_obj_pose_to_init);
+        newcuboid->pose_noopti = global_obj_pose_to_init;
+        if (use_truth_trackid)
+            newcuboid->truth_tracklet_id = truth_tracklet_ids[ii];
+
+        if (scene_unique_id == kitti)
+        {
+            if (cube_local_meas.pose.translation()(0) > 1)
+                newcuboid->left_right_to_car = 2; // right
+            if (cube_local_meas.pose.translation()(0) < -1)
+                newcuboid->left_right_to_car = 1; // left
+            if ((cube_local_meas.pose.translation()(0) > -1) && (cube_local_meas.pose.translation()(0) < 1))
+                newcuboid->left_right_to_car = 0;
+        }
+        if (1)
+        {
+            double obj_cam_dist = std::min(std::max(newcuboid->cube_meas.translation()(2), 10.0), 30.0); // cut into [a,b]
+            double obj_meas_quality = (60.0 - obj_cam_dist) / 40.0;
+            newcuboid->meas_quality = obj_meas_quality;
+        }
+        else
+            newcuboid->meas_quality = 1.0;
+        if (all_box_confidence[ii] > 0)
+            newcuboid->meas_quality *= all_box_confidence[ii]; // or =
+
+        if (newcuboid->meas_quality < 0.1)
+            std::cout <<"Abnormal measure quality!!:   " << newcuboid->meas_quality << std::endl;
+        pKF->local_cuboids.push_back(newcuboid);
+
+    }
+
+    // std::cout << "Tracking: created local object num   " << pKF->local_cuboids.size() << std::endl;
+    std::cout << "Tracking: detect cuboid for pKF id: " << pKF->mnId << "  total id: " << pKF->mnFrameId << "  numObj: " << pKF->local_cuboids.size() << std::endl;
+
+    if (whether_save_online_detected_cuboids)
+    {
+        for (int ii = 0; ii < (int)all_objs.size(); ii++)
+        {
+
+            Cuboid3D raw_cuboid  = all_objs[ii]->mCuboid3D;
+            g2o::cuboid cube_ground_value;
+            Eigen::Matrix<double, 9, 1> cube_pose;
+
+            cube_pose << raw_cuboid.cuboidCenter.x(), raw_cuboid.cuboidCenter.y(), raw_cuboid.cuboidCenter.z(), 0, 0, raw_cuboid.rotY,
+                    raw_cuboid.lenth, raw_cuboid.width, raw_cuboid.height;
+
+            save_online_detected_cuboids << pKF->mnFrameId << "  " << cube_pose.transpose() << "\n";
+
+        }
+    }
+
+    if (associate_point_with_object)
+    {
+        std::cout << "Tracking: associate_point_with_object  " << associate_point_with_object
+                  << "  whether_dynamic_object  " << whether_dynamic_object << std::endl;
+        if (!whether_dynamic_object) //for old non-dynamic object, associate based on 2d overlap... could also use instance segmentation
+        {
+            pKF->keypoint_associate_objectID = vector<int>(pKF->mvKeys.size(), -1);
+            std::vector<bool> overlapped(pKF->local_cuboids.size(), false);
+            if (1) {
+                for (size_t i = 0; i < pKF->local_cuboids.size(); i++)
+                    if (!overlapped[i])
+                        for (size_t j = i + 1; j < pKF->local_cuboids.size(); j++)
+                            if (!overlapped[j]) {
+                                float iou_ratio = bboxOverlapratio(pKF->local_cuboids[i]->bbox_2d,
+                                                                   pKF->local_cuboids[j]->bbox_2d);
+                                if (iou_ratio > 0.15) {
+                                    overlapped[i] = true;
+                                    overlapped[j] = true;
+                                }
+                            }
+            }
+
+            if (!enable_ground_height_scale) {                                       // slightly faster
+                if (pKF->local_cuboids.size() > 0) // if there is object
+                    for (size_t i = 0; i < pKF->mvKeys.size(); i++) {
+                        int associated_times = 0;
+                        for (size_t j = 0; j < pKF->local_cuboids.size(); j++)
+                            if (!overlapped[j])
+                                if (pKF->local_cuboids[j]->bbox_2d.contains(pKF->mvKeys[i].pt)) {
+                                    associated_times++;
+                                    if (associated_times == 1)
+                                        pKF->keypoint_associate_objectID[i] = j;
+                                    else
+                                        pKF->keypoint_associate_objectID[i] = -1;
+                                }
+                    }
+            } else {
+                pKF->keypoint_inany_object = vector<bool>(pKF->mvKeys.size(), false);
+                for (size_t i = 0; i < pKF->mvKeys.size(); i++) {
+                    int associated_times = 0;
+                    for (size_t j = 0; j < pKF->local_cuboids.size(); j++)
+                        if (pKF->local_cuboids[j]->bbox_2d.contains(pKF->mvKeys[i].pt)) {
+                            pKF->keypoint_inany_object[i] = true;
+                            if (!overlapped[j]) {
+                                associated_times++;
+                                if (associated_times == 1)
+                                    pKF->keypoint_associate_objectID[i] = j;
+                                else
+                                    pKF->keypoint_associate_objectID[i] = -1;
+                            }
+                        }
+                }
+                if (height_esti_history.size() == 0) {
+                    std::cout << "\033[31mTracking: height_esti_history.size() = 0, clear object  \033[0m" << std::endl;
+                    pKF->local_cuboids.clear(); // don't do object when in initial stage...
+                    pKF->keypoint_associate_objectID.clear();
+                }
+            }
+        }
+
+        if (whether_dynamic_object) //  for dynamic object, I use instance segmentation
+        {
+            if (pKF->local_cuboids.size() > 0) // if there is object
+            {
+                std::vector<MapPoint *> framePointMatches = pKF->GetMapPointMatches();
+
+                if (pKF->keypoint_associate_objectID.size() < pKF->mvKeys.size())
+                    std::cout << "Tracking Bad keypoint associate ID size   " << pKF->keypoint_associate_objectID.size()
+                              << "  " << pKF->mvKeys.size() << std::endl;
+
+                for (size_t i = 0; i < pKF->mvKeys.size(); i++) {
+                    if (pKF->keypoint_associate_objectID[i] >= 0 &&
+                        pKF->keypoint_associate_objectID[i] >= pKF->local_cuboids.size()) {
+                        std::cout << "Detect cuboid find bad pixel obj id  " << pKF->keypoint_associate_objectID[i]
+                                  << "  " << pKF->local_cuboids.size() << std::endl;
+                    }
+                    if (pKF->keypoint_associate_objectID[i] > -1) {
+                        MapPoint *pMP = framePointMatches[i];
+                        if (pMP)
+                            pMP->is_dynamic = true;
+                    }
+                }
+            }
+        }
+    }
+
+    std::vector<KeyFrame *> checkframes = mvpLocalKeyFrames; // only check recent to save time
+
+    int object_own_point_threshold = 20;
+    if (scene_unique_id == kitti)
+    {
+        if (mono_allframe_Obj_depth_init)
+            object_own_point_threshold = 50; // 50 using 10 is too noisy.... many objects don't have enough points to match with others then will create as new...
+        else
+            object_own_point_threshold = 30; // 30 if don't initialize object point sepratedly, there won't be many points....  tried 20, not good...
+    }
+
+    if (use_truth_trackid) //very accurate, no need of object point for association
+        object_own_point_threshold = -1;
+
+    // points and object are related in local mapping, when creating mapPoints
+
+    //dynamic object: didn't triangulate point in localmapping. but in tracking
+    std::cout << "Tracking: check the objects has enough points, keyframe num:" << checkframes.size() << std::endl;
+    for (size_t i = 0; i < checkframes.size(); i++)
+    {
+        KeyFrame *kfs = checkframes[i];
+        // std::cout << "Tracking: check the objects has enough points, object num:" << kfs->local_cuboids.size() << std::endl;
+        for (size_t j = 0; j < kfs->local_cuboids.size(); j++)
+        {
+            MapCuboidObject *mPO = kfs->local_cuboids[j];
+            if (!mPO->become_candidate)
+            {
+                // points number maybe increased when later triangulated
+                mPO->check_whether_valid_object(object_own_point_threshold);
+            }
+        }
+    }
+}
+
+void Tracking::AssociateCuboids(KeyFrame *pKF)
+{
+    // loop over current KF's objects, check with all past objects (or local objects), compare the associated object map points.
+    // (if a local object is not associated, could re-check here as frame-object-point might change overtime, especially due to triangulation.)
+    std::cout << "Tracking: AssociateCuboids  " << "mvpLocalKeyFrames.size()  " << mvpLocalKeyFrames.size() << std::endl;
+
+    std::vector<MapCuboidObject *> LocalObjectsCandidates;
+    std::vector<MapCuboidObject *> LocalObjectsLandmarks;
+    // keypoint might not added to frame observation yet, so object might not have many associated points yet....
+    // method 1: just check current frame's object, using existing map point associated objects.
+    // same as plane association, don't just check current frame, but check all recent keyframe's unmatched objects...
+    for (size_t i = 0; i < mvpLocalKeyFrames.size(); i++) // pKF is not in mvpLocalKeyFrames yet
+    {
+        KeyFrame *kfs = mvpLocalKeyFrames[i];
+        // std::cout << "kfs->local_cuboids.size()  " << kfs->local_cuboids.size() << std::endl;
+        for (size_t j = 0; j < kfs->local_cuboids.size(); j++)
+        {
+            MapCuboidObject *mPO = kfs->local_cuboids[j];
+            if (mPO->become_candidate && (!mPO->already_associated))
+                LocalObjectsCandidates.push_back(kfs->local_cuboids[j]);
+        }
+        for (size_t j = 0; j < kfs->cuboids_landmark.size(); j++)
+            if (kfs->cuboids_landmark[j]) // might be deleted due to badFlag()
+                if (!kfs->cuboids_landmark[j]->isBad())
+                    if (kfs->cuboids_landmark[j]->association_refid_in_tracking != pKF->mnId) // could also use set to avoid duplicates
+                    {
+                        LocalObjectsLandmarks.push_back(kfs->cuboids_landmark[j]);
+                        kfs->cuboids_landmark[j]->association_refid_in_tracking = pKF->mnId;
+                    }
+    }
+
+    std::cout << "Tracking: Associate cuboids #candidate: " << LocalObjectsCandidates.size() << " #landmarks " << LocalObjectsLandmarks.size()
+              << " #localKFs " << mvpLocalKeyFrames.size() << std::endl;
+    int largest_shared_num_points_thres = 10;
+    if (mono_allframe_Obj_depth_init)
+        largest_shared_num_points_thres = 20;
+    if (scene_unique_id == kitti)
+        largest_shared_num_points_thres = 10; // kitti vehicle occupy large region
+
+    if (whether_detect_object && mono_allframe_Obj_depth_init) // dynamic object is more difficult. especially reverse motion
+        largest_shared_num_points_thres = 5;
+
+    MapCuboidObject *last_new_created_object = nullptr;
+    for (size_t i = 0; i < LocalObjectsCandidates.size(); i++)
+    {
+        // there might be some new created object!
+        if (last_new_created_object)
+            LocalObjectsLandmarks.push_back(last_new_created_object);
+        last_new_created_object = nullptr;
+
+        // find existing object landmarks which share most points with this object
+        MapCuboidObject *candidateObject = LocalObjectsCandidates[i];
+        std::vector<MapPoint *> object_owned_pts = candidateObject->GetPotentialMapPoints();
+
+        MapCuboidObject *largest_shared_objectlandmark = nullptr;
+        if (LocalObjectsLandmarks.size() > 0)
+        {
+            map<MapCuboidObject *, int> LandmarkObserveCounter;
+
+            for (size_t j = 0; j < object_owned_pts.size(); j++)
+                for (map<MapCuboidObject *, int>::iterator mit = object_owned_pts[j]->MapObjObservations.begin(); mit != object_owned_pts[j]->MapObjObservations.end(); mit++)
+                    LandmarkObserveCounter[mit->first]++;
+
+            int largest_shared_num_points = largest_shared_num_points_thres;
+            for (size_t j = 0; j < LocalObjectsLandmarks.size(); j++)
+            {
+                MapCuboidObject *pMP = LocalObjectsLandmarks[j];
+                if (!pMP->isBad())
+                    if (LandmarkObserveCounter.count(pMP))
+                    {
+                        if (LandmarkObserveCounter[pMP] > largest_shared_num_points)
+                        {
+                            largest_shared_num_points = LandmarkObserveCounter[pMP];
+                            largest_shared_objectlandmark = pMP;
+                        }
+                    }
+            }
+        }
+
+        if (use_truth_trackid) // find associate id based on tracket id.
+        {
+            if (trackletid_to_landmark.count(candidateObject->truth_tracklet_id))
+                largest_shared_objectlandmark = trackletid_to_landmark[candidateObject->truth_tracklet_id];
+            else
+                largest_shared_objectlandmark == nullptr;
+        }
+
+        if (largest_shared_objectlandmark == nullptr) // if not found, create as new landmark.  either using original local pointer, or initialize as new
+        {
+            if (use_truth_trackid)
+            {
+                if (candidateObject->truth_tracklet_id > -1) // -1 means no ground truth tracking ID, don't use this object
+                    trackletid_to_landmark[candidateObject->truth_tracklet_id] = candidateObject;
+                else
+                    continue;
+            }
+            candidateObject->already_associated = true; // must be put before SetAsLandmark();
+            KeyFrame *refframe = candidateObject->GetReferenceKeyFrame();
+            candidateObject->addObservation(refframe, candidateObject->object_id_in_localKF); // add to frame observation
+            refframe->cuboids_landmark.push_back(candidateObject);
+            candidateObject->mnId = MapCuboidObject::getIncrementedIndex(); //mpMap->MapObjectsInMap();  // needs to manually set
+            candidateObject->associated_landmark = candidateObject;
+            candidateObject->SetAsLandmark();
+
+            if (scene_unique_id == kitti) // object scale change back and forth
+            {
+                g2o::cuboid cubeglobalpose = candidateObject->GetWorldPos();
+                cubeglobalpose.setScale(Eigen::Vector3d(1.9420, 0.8143, 0.7631));
+                candidateObject->SetWorldPos(cubeglobalpose);
+                candidateObject->pose_Twc_latestKF = cubeglobalpose;
+                candidateObject->pose_noopti = cubeglobalpose;
+                candidateObject->allDynamicPoses[refframe] = make_pair(cubeglobalpose, false); //Vector6d::Zero()  false means not BAed
+            }
+            (mpAtlas->GetCurrentMap())->AddMapObject(candidateObject);
+            last_new_created_object = candidateObject;
+            candidateObject->allDynamicPoses[refframe] = make_pair(candidateObject->GetWorldPos(), false);
+        }
+        else // if found, then update observation.
+        {
+            candidateObject->already_associated = true; // must be put before SetAsLandmark();
+            KeyFrame *refframe = candidateObject->GetReferenceKeyFrame();
+            largest_shared_objectlandmark->addObservation(refframe, candidateObject->object_id_in_localKF);
+            refframe->cuboids_landmark.push_back(largest_shared_objectlandmark);
+            candidateObject->associated_landmark = largest_shared_objectlandmark;
+
+            //NOTE use current frame's object poes, but don't use current object if very close to boundary.... large error
+            // I use this mainly for kitti, as further objects are inaccurate.  for indoor object, we may not need it
+            if (scene_unique_id == kitti)
+            {
+                g2o::cuboid cubeglobalpose = candidateObject->GetWorldPos();
+                cubeglobalpose.setScale(Eigen::Vector3d(1.9420, 0.8143, 0.7631));
+
+                largest_shared_objectlandmark->allDynamicPoses[refframe] = make_pair(cubeglobalpose, false);
+                largest_shared_objectlandmark->SetWorldPos(cubeglobalpose);
+                largest_shared_objectlandmark->pose_Twc_latestKF = cubeglobalpose; //if want to test without BA
+                largest_shared_objectlandmark->pose_noopti = cubeglobalpose;
+            }
+            largest_shared_objectlandmark->MergeIntoLandmark(candidateObject);
+        }
+    }
+
+    // remove outlier objects....
+    bool remove_object_outlier = true;
+
+    int minimum_object_observation = 2;
+    if (scene_unique_id == kitti)
+    {
+        remove_object_outlier = false;
+        if (whether_detect_object)
+        {
+            remove_object_outlier = true;
+            minimum_object_observation = 3; // dynamic object has more outliers
+        }
+    }
+
+    bool check_object_points = true;
+
+    if (remove_object_outlier)
+    {
+        vector<MapCuboidObject *> all_objects = (mpAtlas->GetCurrentMap())->GetAllMapObjects();
+        for (size_t i = 0; i < all_objects.size(); i++)
+        {
+            MapCuboidObject *pMObject = all_objects[i];
+            if ((!pMObject->isBad()) && (!pMObject->isGood))						// if not determined good or bad yet.
+                if ((int)pMObject->GetLatestKeyFrame()->mnId < (int)pKF->mnId - 15) //20
+                {
+                    // if not recently observed, and not enough observations.  NOTE if point-object not used in BA, filtered size will be zero...
+                    bool no_enough_inlier_pts = check_object_points && (pMObject->NumUniqueMapPoints() > 20) && (pMObject->used_points_in_BA_filtered.size() < 10) && (pMObject->point_object_BA_counter > -1);
+                    if (pMObject->Observations() < minimum_object_observation)
+                    {
+                        pMObject->SetBadFlag();
+                        cout << "Found one bad object !!!!!!!!!!!!!!!!!!!!!!!!!  " << pMObject->mnId << "  " << pMObject->Observations() << "  " << pMObject->used_points_in_BA_filtered.size() << endl;
+
+                        if (use_truth_trackid)
+                            trackletid_to_landmark.erase(pMObject->truth_tracklet_id); // remove from track id mapping
+                    }
+                    else
+                    {
+                        pMObject->isGood = true;
+                    }
+                }
+        }
+    }
+}
+
 // TODO: This function should be placed in the constructor of object
 void Tracking::CreateObject_InTrackMotion(){
 
@@ -4762,6 +5910,10 @@ void Tracking::CreateObject_InTrackMotion(){
     // STEP 1. construct 2D object *
     // *****************************
     vector<Object_2D *> obj_2ds;
+
+    // 3D object to add in keyframe from this frame
+    mCurrentFrame.mvObject_3ds.clear();
+
     cv::Mat ColorImage = mCurrentFrame.mColorImage.clone();
     Map* mpMap = mpAtlas->GetCurrentMap();
     for (auto &box : mCurrentFrame.boxes)
@@ -5026,8 +6178,6 @@ void Tracking::CreateObject_InTrackMotion(){
             ++it;
     }
 
-
-
     // *************************************************************
     // STEP 7. copy objects in the last frame after initialization.*
     // *************************************************************
@@ -5040,7 +6190,6 @@ void Tracking::CreateObject_InTrackMotion(){
         if (!mLastFrame.mvLastObject_2ds.empty())
             mCurrentFrame.mvLastLastObject_2ds = mLastFrame.mvLastObject_2ds;
     }
-
 
     // *******************************************************************************
     // STEP 8. Merges objects with 5-10 points  between two adjacent frames.
@@ -5143,6 +6292,7 @@ void Tracking::CreateObject_InTrackMotion(){
         }
     }
 
+    // TODO: ADD OBJECT_MAP TO KEYFRAME
     // **************************************************************
     // STEP 10. Data association and create objects*
     // **************************************************************
@@ -5154,7 +6304,7 @@ void Tracking::CreateObject_InTrackMotion(){
         // The point in the project is projected into the Currentframe, 
         // and the projection bounding box of obj3d in the Currentframe is calculated, 
         // and stored in mRectProject_forDataAssociate2D of obj3d
-        // To view obje3d, you can associate objects in Currentframe
+        // To view obj3d, you can associate objects in Currentframe
         const std::vector<Object_Map*> obj_3ds = mpMap->GetObjects();
         for (int i = 0; i < (int)obj_3ds.size(); i++)
         {
@@ -5165,13 +6315,17 @@ void Tracking::CreateObject_InTrackMotion(){
             // object appeared in the last 30 frames.
             if(ProIou_only30_flag) {
                 if (obj3d->mnLastAddID > mCurrentFrame.mnId - 30)
+                {
                     obj3d->ComputeProjectRectFrameToCurrentFrame(mCurrentFrame);  // Project the point in obj3d to the current frame and calculate the projected bounding box
+                    mCurrentFrame.mvObject_3ds.push_back(obj_3ds[i]);
+                }
                 else {
                     obj3d->mRect_byProjectPoints = cv::Rect(0, 0, 0, 0);
                 }
             }
             else{
                 obj3d->ComputeProjectRectFrameToCurrentFrame(mCurrentFrame);  // Project the point in obj3d to the current frame and calculate the projected bounding box
+                mCurrentFrame.mvObject_3ds.push_back(obj3d);
             }
         }
 

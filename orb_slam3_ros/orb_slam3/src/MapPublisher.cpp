@@ -98,7 +98,6 @@ namespace ORB_SLAM3
         //Configure MapObjects
         object_id_init = 46;
 
-
         //Configure Publisher
         publisher = nh.advertise<visualization_msgs::Marker>("Point", 1000);
         publisher_curframe = nh.advertise<visualization_msgs::Marker>("CurFrame", 1000);

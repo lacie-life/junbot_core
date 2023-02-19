@@ -23,12 +23,12 @@ mutex Object_Map::mMutex_front_back;
 
 bool debug_iou_view = 0;
 Object_2D::Object_2D() {
-    std::cout << "Object_2D  construct 1   ";
-    std::cout << ">>>   End" << std::endl;
+//    std::cout << "Object_2D  construct 1   ";
+//    std::cout << ">>>   End" << std::endl;
 }
 
 Object_2D::Object_2D(Map* Map, Frame* CurrentFrame, const BoxSE &box) {
-    std::cout << "Object_2D  construct 3   ";
+//    std::cout << "Object_2D  construct 3   ";
     mclass_id = box.m_class;
     mScore = box.m_score;
     mleft = box.x;
@@ -48,7 +48,7 @@ Object_2D::Object_2D(Map* Map, Frame* CurrentFrame, const BoxSE &box) {
 
     
     this->sum_pos_3d = cv::Mat::zeros(3, 1, CV_32F);
-    std::cout << ">>>   End" << std::endl;
+//    std::cout << ">>>   End" << std::endl;
 }
 
 void Object_2D::AddYoloBoxes(const BoxSE &box) {
@@ -192,7 +192,7 @@ void Object_2D::MergeTwo_Obj2D(Object_2D *Old_Object2D)
 
 int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
 {
-    std::cout << "Check if it is connected to the old object" << std::endl;
+//    std::cout << "Check if it is connected to the old object" << std::endl;
     const cv::Mat image = mpCurrentFrame->mColorImage.clone();
     const cv::Mat Rcw = cv::Mat::zeros(3,3,CV_32F);
     const cv::Mat tcw = cv::Mat::eye(3,1,CV_32F);
@@ -272,12 +272,12 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                     cv::resize(mat_test, mat_test, cv::Size(640 * 0.5, 480 * 0.5), 0, 0, cv::INTER_CUBIC);
                     cv::imshow("[MotionIou]", mat_test);
                 }
-                std::cout<<"[MotionIou] iou:"<<Iou <<std::endl;
+//                std::cout<<"[MotionIou] iou:"<<Iou <<std::endl;
                 if ((Iou > IouThreshold) && (Iou > IouMax))
                 {
                     IouMax = Iou;
                     ObjID_IouMax = i;
-                    std::cout<<"[MotionIou] yes "<<std::endl;
+//                    std::cout<<"[MotionIou] yes "<<std::endl;
                 }
 
             }
@@ -401,7 +401,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
             }
 
             if (obj3D->bad_3d){
-                std::cout << "[ProIou] object bad" << std::endl;
+//                std::cout << "[ProIou] object bad" << std::endl;
                 continue;
             }
 
@@ -409,11 +409,10 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
             {
                 int df = (int) obj3D->mvObject_2ds.size();
                 if ((mvMapPonits.size() >= 10) && (df > 8)) {
-                    std::cout << "[ProIou] Use with small samples and multiple objects" << std::endl;
+//                    std::cout << "[ProIou] Use with small samples and multiple objects" << std::endl;
                     continue;
                 }
             }
-
 
             // step 3.1 compute IoU with bounding box constructed by projecting points.
             float fIou = Converter::bboxOverlapratio(RectCurrent, obj3D->mRect_byProjectPoints);
@@ -444,7 +443,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                 MaxAssoObjId_byProIou = i;   //AssoObjId_byProIou  ProIouMaxObjId = i;
                 
                 vAssoObjIds_byProIou.push_back(i);
-                std::cout<<"[ProIou] yes "<<std::endl;
+//                std::cout<<"[ProIou] yes "<<std::endl;
             }
 
         }
@@ -561,7 +560,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                 (t_test_z < tTestData[min((df - 1), 121)][5]))
             {
                 vObjByTId.push_back(i);
-                std::cout<<"[Ttest] yes 1 "<<std::endl;
+//                std::cout<<"[Ttest] yes 1 "<<std::endl;
             }
             // If the T-test is not satisfied, but the IOU is large, reducing the significance.
             else if (fIou > 0.25)
@@ -571,18 +570,18 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                     (t_test_z < tTestData[min((df - 1), 121)][8]))
                 {
                     vObjByTId.push_back(i);
-                    std::cout<<"[Ttest] yes 2 "<<std::endl;
+//                    std::cout<<"[Ttest] yes 2 "<<std::endl;
                 }
 
                 else if ((fIou > 0.25) && ((t_test_x + t_test_y + t_test_z) / 3 < 10))
                 {
                     vObjByTId.push_back(i);
-                    std::cout<<"[Ttest] yes 3 "<<std::endl;
+//                    std::cout<<"[Ttest] yes 3 "<<std::endl;
                 }
                 else
                 {
                     vObjByTIdLower.push_back(i);
-                    std::cout<<"[Ttest] yes 4 "<<std::endl;
+//                    std::cout<<"[Ttest] yes 4 "<<std::endl;
                 }
             }
             else if ((t_test_x + t_test_y + t_test_z) / 3 < 4)
@@ -594,7 +593,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                 fIou_force = max(fIou_force, fIou2_force);
 
                 if (fIou_force > 0.25){
-                    std::cout<<"[Ttest] yes 5 "<<std::endl;
+//                    std::cout<<"[Ttest] yes 5 "<<std::endl;
                     vObjByTIdLower.push_back(i);
                 }
             }
@@ -720,7 +719,7 @@ int Object_2D::creatObject()
     Object3D->mnId = ObjectMaps.size();
     Object3D->mnClass = mclass_id;
 
-    std::cout<<"【debug】Start creating new objects,>>>>>>>>,id:"<< ObjectMaps.size()<<",>>>>>>>>,";
+//    std::cout<<"【debug】Start creating new objects,>>>>>>>>,id:"<< ObjectMaps.size()<<",>>>>>>>>,";
 
     Object3D->mnConfidence_foractive = 1;
     Object3D->mnAddedID_nouse = mpCurrentFrame->mnId;
@@ -1066,7 +1065,7 @@ void Object_Map::ComputeMeanAndDeviation_3D() {
 
         if ((x_pt.size() == 0) || (y_pt.size() == 0) || (z_pt.size() == 0)) {
             this->bad_3d = true;
-            std::cout<<"object->bad Points are 0" <<std::endl;
+//            std::cout<<"object->bad Points are 0" <<std::endl;
             return;
         }
 
@@ -1423,6 +1422,55 @@ void Object_Map::ComputeProjectRectFrameToCurrentFrame(Frame &Frame)
         y_max = Frame.mColorImage.rows;
 
     mRect_byProjectPoints = cv::Rect(x_min, y_min, x_max - x_min, y_max - y_min);
+}
+
+cv::Rect Object_Map::ComputeProjectRectFrameToCurrentKeyFrame(KeyFrame &kF)
+{
+    cv::Mat Tcw_ = Converter::toCvMat(kF.GetPose());
+    const cv::Mat Rcw = Tcw_.rowRange(0, 3).colRange(0, 3);
+    const cv::Mat tcw = Tcw_.rowRange(0, 3).col(3);
+    vector<float> x_pt;
+    vector<float> y_pt;
+
+    for (int j = 0; j < mvpMapObjectMappoints.size(); j++)
+    {
+        MapPoint *pMP = mvpMapObjectMappoints[j];
+        cv::Mat PointPosWorld = Converter::toCvMat(pMP->GetWorldPos());
+
+        cv::Mat PointPosCamera = Rcw * PointPosWorld + tcw;
+
+        const float xc = PointPosCamera.at<float>(0);
+        const float yc = PointPosCamera.at<float>(1);
+        const float invzc = 1.0 / PointPosCamera.at<float>(2);
+
+        float u = kF.fx * xc * invzc + kF.cx;
+        float v = kF.fy * yc * invzc + kF.cy;
+
+        x_pt.push_back(u);
+        y_pt.push_back(v);
+
+    }
+
+    if (x_pt.size() == 0)
+        return cv::Rect(0.0, 0.0, 0.0, 0.0);
+
+    sort(x_pt.begin(), x_pt.end());
+    sort(y_pt.begin(), y_pt.end());
+    float x_min = x_pt[0];
+    float x_max = x_pt[x_pt.size() - 1];
+    float y_min = y_pt[0];
+    float y_max = y_pt[y_pt.size() - 1];
+
+    if (x_min < 0)
+        x_min = 0;
+    if (y_min < 0)
+        y_min = 0;
+    if (x_max > kF.raw_img.cols)
+        x_max = kF.raw_img.cols;
+    if (y_max > kF.raw_img.rows)
+        y_max = kF.raw_img.rows;
+
+    return cv::Rect(x_min, y_min, x_max - x_min, y_max - y_min);
 }
 
 
@@ -1829,7 +1877,7 @@ bool Object_Map::DoubleSampleTtest_fll(ORB_SLAM3::Object_Map *RepeatObj) {
 
 void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
 {
-    std::cout<<">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 1>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"<<std::endl<<">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"<<std::endl;
+//    std::cout<<">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 1>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"<<std::endl<<">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"<<std::endl;
     // step 1. Add RepeatObj to the current obj3d
     // update points.
     for (int i = 0; i < RepeatObj->mvpMapObjectMappoints.size(); i++)
@@ -1891,9 +1939,9 @@ void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
             }
         }
     }
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 2>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
-              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"<<std::endl;
-    std::cout << "RepeatObj->mvObject_2ds.size(): " << RepeatObj->mvObject_2ds.size() << std::endl;
+//    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 2>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
+//              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"<<std::endl;
+//    std::cout << "RepeatObj->mvObject_2ds.size(): " << RepeatObj->mvObject_2ds.size() << std::endl;
 
     // step 2. update frame objects.
     //int end;
@@ -1918,8 +1966,8 @@ void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
 
         AddObj2d(ObjectFrame);//this->mvObject_2ds.push_back(ObjectFrame);
     }
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 3>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
-              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+//    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 3>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
+//              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 
     // step 3. Add the RepeatObj common view relationship to the current obj3d
     // the co-view relationship
@@ -1942,8 +1990,8 @@ void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
                 mmAppearSametime.insert(make_pair(nObjId, 1));
         }
     }
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 4>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
-              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+//    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 4>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
+//              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 
     // step 4. Update the id of the last observed frame of the current obj3d
     // update the last observed frame.
@@ -1985,8 +2033,8 @@ void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
             mLastLastRect = RepeatObj->mvObject_2ds[RepeatObj->mvObject_2ds.size() - 2]->mBox_cvRect;
         }
     }
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 5>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
-              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+//    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 5>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
+//              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 
     // step 5. update direction.
     // TODO: Modification type number
@@ -2049,8 +2097,8 @@ void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
             this->Update_Twobj();
         }
     }
-        std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 6>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
-                  << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+//        std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 6>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
+//                  << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 
 }
 
@@ -2410,7 +2458,7 @@ cv::Mat Object_Map::compute_pointnum_eachgrid(){
             //std::cout<<"compute_pointnum_eachgrid2: " << mvPointNum_mat.at<float>(x,y) <<std::endl;
         }
         else{
-            std::cout << "compute grid index: ERROR:i " << i << ", x " << x << ", y " << y << std::endl;
+//            std::cout << "compute grid index: ERROR:i " << i << ", x " << x << ", y " << y << std::endl;
         }
     }
 
@@ -2420,7 +2468,7 @@ cv::Mat Object_Map::compute_pointnum_eachgrid(){
 
 void Object_Map::compute_occupied_prob_eachgrid(){
 
-    std::cout << "debug The number of points and occupation probability of each grid：";
+//    std::cout << "debug The number of points and occupation probability of each grid：";
     for(int x=0; x<mIE_rows; x++){
 
         int num_onecol = 0;
@@ -2449,18 +2497,18 @@ void Object_Map::compute_occupied_prob_eachgrid(){
                 //mvGridProb_mat.at<float>(x,y) = exp(lnv_p);
                 double bel = 1.0 - 1.0 / (1.0 + exp(lnv_p));
                 mvGridProb_mat.at<float>(x,y) = (float) bel;
-                std::cout << mvPointNum_mat.at<float>(x,y) << "(" << mvGridProb_mat.at<float>(x,y) << "," << ObserveNum << "," << lnv_p << ")， ";
+//                std::cout << mvPointNum_mat.at<float>(x,y) << "(" << mvGridProb_mat.at<float>(x,y) << "," << ObserveNum << "," << lnv_p << ")， ";
             }
         }
         else{
              for(int y=0; y<mIE_rows; y++){
                  //unkonwn
                  mvGridProb_mat.at<float>(x,y) = mP_prior;
-                 std::cout << mvPointNum_mat.at<float>(x,y) << "(" << mvGridProb_mat.at<float>(x,y) << ")， ";
+//                 std::cout << mvPointNum_mat.at<float>(x,y) << "(" << mvGridProb_mat.at<float>(x,y) << ")， ";
              }
         }
     }
-    std::cout << "   " << std::endl;
+//    std::cout << "   " << std::endl;
 }
 
 void Object_Map::ComputeIE(){
@@ -2468,13 +2516,13 @@ void Object_Map::ComputeIE(){
     compute_pointnum_eachgrid();
     compute_occupied_prob_eachgrid();
 
-    std::cout << "debug Occupancy probability of each grid：";
+//    std::cout << "debug Occupancy probability of each grid：";
     for(int x=0; x<mIE_cols; x++)
         for(int y=0; y<mIE_rows; y++){
-            std::cout << mvGridProb_mat.at<float>(x,y) << "， ";
+//            std::cout << mvGridProb_mat.at<float>(x,y) << "， ";
             mvInforEntroy_mat.at<float>(x,y) = IE(mvGridProb_mat.at<float>(x,y));
         }
-    std::cout << "" << std::endl;
+//    std::cout << "" << std::endl;
 
     double entroy = 0;
     for(int x=0; x<mIE_cols; x++)
