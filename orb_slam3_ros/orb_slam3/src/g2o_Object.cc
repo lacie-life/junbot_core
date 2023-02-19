@@ -6,7 +6,6 @@
 
 #include "Thirdparty/g2o/g2o/types/types_six_dof_expmap.h"
 #include "detect_3d_cuboid/matrix_utils.h"
-// #include "detect_3d_cuboid/matrix_utils.h"
 
 #include "g2o_Object.h"
 
@@ -56,7 +55,7 @@ SE3Quat exptwist_norollpitch(const Vector6d &update)
 
 void VertexCuboid::oplusImpl(const double *update_)
 {
-    Eigen::Map<const Vector9d> update(update_);
+    Eigen::Map<const Eigen::Matrix<double, 9, 1>> update(update_);
 
     g2o::cuboid newcube;
     if (whether_fixrotation)
@@ -65,7 +64,7 @@ void VertexCuboid::oplusImpl(const double *update_)
     }
     else if (whether_fixrollpitch) //NOTE this only works for cuboid already has parallel to ground. otherwise update_z will also change final RPY
     {
-        Vector9d update2 = update;
+        Eigen::Matrix<double, 9, 1> update2 = update;
         update2(0) = 0;
         update2(1) = 0;
         newcube.pose = _estimate.pose * exptwist_norollpitch(update2.head<6>()); //NOTE object pose is from object to world!!!!

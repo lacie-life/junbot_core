@@ -31,7 +31,9 @@
 
 #include "YoloDetection.h"
 #include "Parameter.h"
+#include "g2o_Object.h"
 
+#include <Eigen/StdVector>
 #include <iostream>
 
 #include <mutex>
@@ -39,6 +41,10 @@
 
 
 using namespace std;
+
+//EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Vector9d)
+//EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Vector10d)
+//EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Vector6d)
 
 namespace ORB_SLAM3
 {
@@ -5481,122 +5487,95 @@ void Tracking::UpdateFrameIMU(const float s, const IMU::Bias &b, KeyFrame* pCurr
 // TODO: Adding here
 void Tracking::DetectCuboid(KeyFrame *pKF)
 {
-    cv::Mat pop_pose_to_ground;
-    std::vector<ObjectSet> all_obj_cubes;
-    std::vector<Vector4d> all_obj2d_bbox;
+    cv::Mat pop_pose_to_ground = InitToGround.clone();
     std::vector<double> all_box_confidence;
     vector<int> truth_tracklet_ids;
 
     // Get 3D object in this keyframe
     std::vector<Object_Map*> all_objs = pKF->obj_3ds;
 
-    std::cout << "Number 3d cuboid in KF " << pKF->mnId << " : " << all_objs.size() << "\n";
-
-    // Change to ObjectSet
-    for(int i = 0; i < all_objs.size(); i++)
-    {
-        if(all_objs[i]->bad_3d)
-        {
-            continue;
-        }
-
-        Cuboid3D obj = all_objs[i]->mCuboid3D;
-
-        std::cout << "Step 1 \n";
-
-        std::cout << obj.cuboidCenter;
-
-        cv::Mat _pos = Converter::toCvMat(obj.cuboidCenter);
-
-        cuboid* raw_cuboid = new cuboid();
-
-        raw_cuboid->pos = obj.cuboidCenter;
-
-        std::cout << "Step 2 \n";
-
-        raw_cuboid->rotY = obj.rotY;
-        raw_cuboid->scale = Vector3d (obj.lenth, obj.width, obj.height);
-
-        // TODO: Check usage
-        cv::Rect obj_2d = all_objs[i]->ComputeProjectRectFrameToCurrentKeyFrame(*pKF);
-        raw_cuboid->rect_detect_2d = Vector4d(obj_2d.x, obj_2d.y, obj_2d.width, obj_2d.height);
-        raw_cuboid->box_config_type = Vector2d(1, 1);
-        all_obj2d_bbox.push_back(raw_cuboid->rect_detect_2d);
-        all_box_confidence.push_back(all_objs[i]->mnConfidence_foractive);
-
-        std::cout << "Step 3 \n";
-        ObjectSet temp;
-        temp.push_back(raw_cuboid);
-        all_obj_cubes.push_back(temp);
-
-        std::cout << "Step 4 \n";
-    }
+    std::cout << "Number 3d cuboid in KF " << pKF->mnId << ": " << all_objs.size() << "\n";
 
     // Change to g2o cuboid
     pKF->local_cuboids.clear();
 
     g2o::SE3Quat frame_pose_to_init = Converter::toSE3Quat(pKF->GetPoseInverse());
 
-    for (int ii = 0; ii < (int)all_obj_cubes.size(); ii++)
+    for (int ii = 0; ii < (int)all_objs.size(); ii++)
     {
-        if (all_obj_cubes[ii].size() > 0) // if has detected 3d Cuboid
+        std::cout << "Step 1 \n";
+
+        if(all_objs[ii]->bad_3d)
         {
-            cuboid *raw_cuboid = all_obj_cubes[ii][0];
-
-            g2o::cuboid cube_ground_value; // offline cuboid txt in local ground frame.  [x y z yaw l w h]
-            Vector9d cube_pose;
-            cube_pose << raw_cuboid->pos[0], raw_cuboid->pos[1], raw_cuboid->pos[2], 0, 0, raw_cuboid->rotY,
-                    raw_cuboid->scale[0], raw_cuboid->scale[1], raw_cuboid->scale[2];
-            cube_ground_value.fromMinimalVector(cube_pose);
-
-            // measurement in local camera frame! important
-            MapCuboidObject *newcuboid = new MapCuboidObject(mpAtlas->GetCurrentMap());
-            g2o::cuboid cube_local_meas = cube_ground_value.transform_to(Converter::toSE3Quat(pop_pose_to_ground));
-            // g2o::cuboid cube_local_meas = cube_ground_value.transform_to(frame_pose_to_init);
-            newcuboid->cube_meas = cube_local_meas;
-            newcuboid->bbox_2d = cv::Rect(raw_cuboid->rect_detect_2d[0], raw_cuboid->rect_detect_2d[1], raw_cuboid->rect_detect_2d[2], raw_cuboid->rect_detect_2d[3]);
-            newcuboid->bbox_vec = Vector4d((double)newcuboid->bbox_2d.x + (double)newcuboid->bbox_2d.width / 2, (double)newcuboid->bbox_2d.y + (double)newcuboid->bbox_2d.height / 2,
-                                           (double)newcuboid->bbox_2d.width, (double)newcuboid->bbox_2d.height);
-            newcuboid->box_corners_2d = raw_cuboid->box_corners_2d;
-            newcuboid->bbox_2d_tight = cv::Rect(raw_cuboid->rect_detect_2d[0] + raw_cuboid->rect_detect_2d[2] / 10.0,
-                                                raw_cuboid->rect_detect_2d[1] + raw_cuboid->rect_detect_2d[3] / 10.0,
-                                                raw_cuboid->rect_detect_2d[2] * 0.8, raw_cuboid->rect_detect_2d[3] * 0.8);
-            get_cuboid_draw_edge_markers(newcuboid->edge_markers, raw_cuboid->box_config_type, false);
-            newcuboid->SetReferenceKeyFrame(pKF);
-            newcuboid->object_id_in_localKF = pKF->local_cuboids.size();
-
-            // g2o::cuboid global_obj_pose_to_init = cube_local_meas.transform_from(Converter::toSE3Quat(pop_pose_to_ground));
-            g2o::cuboid global_obj_pose_to_init = cube_local_meas.transform_from(frame_pose_to_init);
-
-            newcuboid->SetWorldPos(global_obj_pose_to_init);
-            newcuboid->pose_noopti = global_obj_pose_to_init;
-            if (use_truth_trackid)
-                newcuboid->truth_tracklet_id = truth_tracklet_ids[ii];
-
-            if (scene_unique_id == kitti)
-            {
-                if (cube_local_meas.pose.translation()(0) > 1)
-                    newcuboid->left_right_to_car = 2; // right
-                if (cube_local_meas.pose.translation()(0) < -1)
-                    newcuboid->left_right_to_car = 1; // left
-                if ((cube_local_meas.pose.translation()(0) > -1) && (cube_local_meas.pose.translation()(0) < 1))
-                    newcuboid->left_right_to_car = 0;
-            }
-            if (1)
-            {
-                double obj_cam_dist = std::min(std::max(newcuboid->cube_meas.translation()(2), 10.0), 30.0); // cut into [a,b]
-                double obj_meas_quality = (60.0 - obj_cam_dist) / 40.0;
-                newcuboid->meas_quality = obj_meas_quality;
-            }
-            else
-                newcuboid->meas_quality = 1.0;
-            if (all_box_confidence[ii] > 0)
-                newcuboid->meas_quality *= all_box_confidence[ii]; // or =
-
-            if (newcuboid->meas_quality < 0.1)
-                std::cout <<"Abnormal measure quality!!:   " << newcuboid->meas_quality << std::endl;
-            pKF->local_cuboids.push_back(newcuboid);
+            continue;
         }
+
+        all_box_confidence.push_back(all_objs[ii]->mnConfidence_foractive);
+
+        Cuboid3D raw_cuboid  = all_objs[ii]->mCuboid3D;
+
+        g2o::cuboid cube_ground_value;
+        Eigen::Matrix<double, 9, 1> cube_pose;
+        cube_pose << raw_cuboid.cuboidCenter.x(), raw_cuboid.cuboidCenter.y(), raw_cuboid.cuboidCenter.z(), 0, 0, raw_cuboid.rotY,
+                raw_cuboid.lenth, raw_cuboid.width, raw_cuboid.height;
+        cube_ground_value.fromMinimalVector(cube_pose);
+
+        std::cout << "Step 2 \n";
+
+        // Measurement in local camera frame
+        MapCuboidObject *newcuboid = new MapCuboidObject(mpAtlas->GetCurrentMap());
+
+        g2o::cuboid cube_local_meas = cube_ground_value.transform_to(Converter::toSE3Quat(pop_pose_to_ground));
+        newcuboid->cube_meas = cube_local_meas;
+        newcuboid->bbox_2d = all_objs[ii]->ComputeProjectRectFrameToCurrentKeyFrame(*pKF);
+        newcuboid->bbox_vec = Vector4d((double)newcuboid->bbox_2d.x + (double)newcuboid->bbox_2d.width / 2, (double)newcuboid->bbox_2d.y + (double)newcuboid->bbox_2d.height / 2,
+                                       (double)newcuboid->bbox_2d.width, (double)newcuboid->bbox_2d.height);
+
+        std::cout << "Step 3 \n";
+
+//        newcuboid->box_corners_2d = raw_cuboid->box_corners_2d;
+
+        cv::Rect tmp = all_objs[ii]->ComputeProjectRectFrameToCurrentKeyFrame(*pKF);
+        newcuboid->bbox_2d_tight = cv::Rect(tmp.x + tmp.width / 10.0,
+                                            tmp.y + tmp.height / 10.0,
+                                            tmp.width * 0.8, tmp.height * 0.8);
+        get_cuboid_draw_edge_markers(newcuboid->edge_markers, Vector2d(1, 1), false);
+
+        newcuboid->SetReferenceKeyFrame(pKF);
+        newcuboid->object_id_in_localKF = pKF->local_cuboids.size();
+
+        // g2o::cuboid global_obj_pose_to_init = cube_local_meas.transform_from(Converter::toSE3Quat(pop_pose_to_ground));
+        g2o::cuboid global_obj_pose_to_init = cube_local_meas.transform_from(frame_pose_to_init);
+
+        newcuboid->SetWorldPos(global_obj_pose_to_init);
+        newcuboid->pose_noopti = global_obj_pose_to_init;
+        if (use_truth_trackid)
+            newcuboid->truth_tracklet_id = truth_tracklet_ids[ii];
+
+        if (scene_unique_id == kitti)
+        {
+            if (cube_local_meas.pose.translation()(0) > 1)
+                newcuboid->left_right_to_car = 2; // right
+            if (cube_local_meas.pose.translation()(0) < -1)
+                newcuboid->left_right_to_car = 1; // left
+            if ((cube_local_meas.pose.translation()(0) > -1) && (cube_local_meas.pose.translation()(0) < 1))
+                newcuboid->left_right_to_car = 0;
+        }
+        if (1)
+        {
+            double obj_cam_dist = std::min(std::max(newcuboid->cube_meas.translation()(2), 10.0), 30.0); // cut into [a,b]
+            double obj_meas_quality = (60.0 - obj_cam_dist) / 40.0;
+            newcuboid->meas_quality = obj_meas_quality;
+        }
+        else
+            newcuboid->meas_quality = 1.0;
+        if (all_box_confidence[ii] > 0)
+            newcuboid->meas_quality *= all_box_confidence[ii]; // or =
+
+        if (newcuboid->meas_quality < 0.1)
+            std::cout <<"Abnormal measure quality!!:   " << newcuboid->meas_quality << std::endl;
+        pKF->local_cuboids.push_back(newcuboid);
+
     }
 
     // std::cout << "Tracking: created local object num   " << pKF->local_cuboids.size() << std::endl;
@@ -5604,17 +5583,18 @@ void Tracking::DetectCuboid(KeyFrame *pKF)
 
     if (whether_save_online_detected_cuboids)
     {
-        for (int ii = 0; ii < (int)all_obj_cubes.size(); ii++)
+        for (int ii = 0; ii < (int)all_objs.size(); ii++)
         {
-            if (all_obj_cubes[ii].size() > 0) // if has detected 3d Cuboid, always true in this case
-            {
-                cuboid *raw_cuboid = all_obj_cubes[ii][0];
-                g2o::cuboid cube_ground_value;
-                Vector9d cube_pose;
-                cube_pose << raw_cuboid->pos[0], raw_cuboid->pos[1], raw_cuboid->pos[2], 0, 0, raw_cuboid->rotY,
-                        raw_cuboid->scale[0], raw_cuboid->scale[1], raw_cuboid->scale[2];
-                save_online_detected_cuboids << pKF->mnFrameId << "  " << cube_pose.transpose() << "\n";
-            }
+
+            Cuboid3D raw_cuboid  = all_objs[ii]->mCuboid3D;
+            g2o::cuboid cube_ground_value;
+            Eigen::Matrix<double, 9, 1> cube_pose;
+
+            cube_pose << raw_cuboid.cuboidCenter.x(), raw_cuboid.cuboidCenter.y(), raw_cuboid.cuboidCenter.z(), 0, 0, raw_cuboid.rotY,
+                    raw_cuboid.lenth, raw_cuboid.width, raw_cuboid.height;
+
+            save_online_detected_cuboids << pKF->mnFrameId << "  " << cube_pose.transpose() << "\n";
+
         }
     }
 

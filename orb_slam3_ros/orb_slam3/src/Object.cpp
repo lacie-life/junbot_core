@@ -401,7 +401,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
             }
 
             if (obj3D->bad_3d){
-                std::cout << "[ProIou] object bad" << std::endl;
+//                std::cout << "[ProIou] object bad" << std::endl;
                 continue;
             }
 
@@ -2459,7 +2459,7 @@ cv::Mat Object_Map::compute_pointnum_eachgrid(){
             //std::cout<<"compute_pointnum_eachgrid2: " << mvPointNum_mat.at<float>(x,y) <<std::endl;
         }
         else{
-            std::cout << "compute grid index: ERROR:i " << i << ", x " << x << ", y " << y << std::endl;
+//            std::cout << "compute grid index: ERROR:i " << i << ", x " << x << ", y " << y << std::endl;
         }
     }
 
@@ -2469,7 +2469,7 @@ cv::Mat Object_Map::compute_pointnum_eachgrid(){
 
 void Object_Map::compute_occupied_prob_eachgrid(){
 
-    std::cout << "debug The number of points and occupation probability of each grid：";
+//    std::cout << "debug The number of points and occupation probability of each grid：";
     for(int x=0; x<mIE_rows; x++){
 
         int num_onecol = 0;
@@ -2498,18 +2498,18 @@ void Object_Map::compute_occupied_prob_eachgrid(){
                 //mvGridProb_mat.at<float>(x,y) = exp(lnv_p);
                 double bel = 1.0 - 1.0 / (1.0 + exp(lnv_p));
                 mvGridProb_mat.at<float>(x,y) = (float) bel;
-                std::cout << mvPointNum_mat.at<float>(x,y) << "(" << mvGridProb_mat.at<float>(x,y) << "," << ObserveNum << "," << lnv_p << ")， ";
+//                std::cout << mvPointNum_mat.at<float>(x,y) << "(" << mvGridProb_mat.at<float>(x,y) << "," << ObserveNum << "," << lnv_p << ")， ";
             }
         }
         else{
              for(int y=0; y<mIE_rows; y++){
                  //unkonwn
                  mvGridProb_mat.at<float>(x,y) = mP_prior;
-                 std::cout << mvPointNum_mat.at<float>(x,y) << "(" << mvGridProb_mat.at<float>(x,y) << ")， ";
+//                 std::cout << mvPointNum_mat.at<float>(x,y) << "(" << mvGridProb_mat.at<float>(x,y) << ")， ";
              }
         }
     }
-    std::cout << "   " << std::endl;
+//    std::cout << "   " << std::endl;
 }
 
 void Object_Map::ComputeIE(){
@@ -2517,13 +2517,13 @@ void Object_Map::ComputeIE(){
     compute_pointnum_eachgrid();
     compute_occupied_prob_eachgrid();
 
-    std::cout << "debug Occupancy probability of each grid：";
+//    std::cout << "debug Occupancy probability of each grid：";
     for(int x=0; x<mIE_cols; x++)
         for(int y=0; y<mIE_rows; y++){
-            std::cout << mvGridProb_mat.at<float>(x,y) << "， ";
+//            std::cout << mvGridProb_mat.at<float>(x,y) << "， ";
             mvInforEntroy_mat.at<float>(x,y) = IE(mvGridProb_mat.at<float>(x,y));
         }
-    std::cout << "" << std::endl;
+//    std::cout << "" << std::endl;
 
     double entroy = 0;
     for(int x=0; x<mIE_cols; x++)

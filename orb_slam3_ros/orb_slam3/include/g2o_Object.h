@@ -15,11 +15,11 @@
 #include <math.h>
 #include <algorithm> // std::swap
 
-typedef Eigen::Matrix<double, 9, 1> Vector9d;
-typedef Eigen::Matrix<double, 9, 9> Matrix9d;
-typedef Eigen::Matrix<double, 10, 1> Vector10d;
-typedef Eigen::Matrix<double, 6, 1> Vector6d;
-typedef Eigen::Matrix<double, 6, 6> Matrix6d;
+//typedef Eigen::Matrix<double, 9, 1> Vector9d;
+//typedef Eigen::Matrix<double, 9, 9> Matrix9d;
+//typedef Eigen::Matrix<double, 10, 1> Vector10d;
+//typedef Eigen::Matrix<double, 6, 1> Vector6d;
+//typedef Eigen::Matrix<double, 6, 6> Matrix6d;
 
 namespace g2o
 {
@@ -41,7 +41,7 @@ public:
 	}
 
 	// xyz roll pitch yaw half_scale
-	inline void fromMinimalVector(const Vector9d &v)
+	inline void fromMinimalVector(const Eigen::Matrix<double, 9, 1> &v)
 	{
 		Eigen::Quaterniond posequat = zyx_euler_to_quat(v(3), v(4), v(5));
 		pose = SE3Quat(posequat, v.head<3>());
@@ -49,7 +49,7 @@ public:
 	}
 
 	// xyz quaternion, half_scale
-	inline void fromVector(const Vector10d &v)
+	inline void fromVector(const Eigen::Matrix<double, 10, 1> &v)
 	{
 		pose.fromVector(v.head<7>());
 		scale = v.tail<3>();
@@ -62,7 +62,7 @@ public:
 	inline void setScale(const Vector3d &scale_) { scale = scale_; }
 
 	// apply update to current cuboid. exponential map
-	cuboid exp_update(const Vector9d &update) // apply update to current cuboid
+	cuboid exp_update(const Eigen::Matrix<double, 9, 1> &update) // apply update to current cuboid
 	{
 		cuboid res;
 		res.pose = this->pose * SE3Quat::exp(update.head<6>()); // NOTE bug before. switch position
@@ -71,9 +71,9 @@ public:
 	}
 
 	// actual error between two cuboids.
-	Vector9d cube_log_error(const cuboid &newone) const
+    Eigen::Matrix<double, 9, 1> cube_log_error(const cuboid &newone) const
 	{
-		Vector9d res;
+        Eigen::Matrix<double, 9, 1> res;
 		SE3Quat pose_diff = newone.pose.inverse() * this->pose;
 		res.head<6>() = pose_diff.log(); //treat as se3 log error. could also just use yaw error
 		res.tail<3>() = this->scale - newone.scale;
@@ -81,7 +81,7 @@ public:
 	}
 
 	// function called by g2o.
-	Vector9d min_log_error(const cuboid &newone, bool print_details = false) const
+    Eigen::Matrix<double, 9, 1> min_log_error(const cuboid &newone, bool print_details = false) const
 	{
 		bool whether_rotate_cubes = true; // whether rotate cube to find smallest error
 		if (!whether_rotate_cubes)
@@ -97,7 +97,7 @@ public:
 		for (int i = 0; i < rotate_errors_norm.rows(); i++)
 		{
 			cuboid rotated_cuboid = newone.rotate_cuboid(rotate_angles(i) * M_PI / 2.0); // rotate new cuboids
-			Vector9d cuboid_error = this->cube_log_error(rotated_cuboid);
+            Eigen::Matrix<double, 9, 1> cuboid_error = this->cube_log_error(rotated_cuboid);
 			rotate_errors_norm(i) = cuboid_error.norm();
 			rotate_errors.col(i) = cuboid_error;
 		}
@@ -141,18 +141,18 @@ public:
 	}
 
 	// xyz roll pitch yaw half_scale
-	inline Vector9d toMinimalVector() const
+	inline Eigen::Matrix<double, 9, 1> toMinimalVector() const
 	{
-		Vector9d v;
+        Eigen::Matrix<double, 9, 1> v;
 		v.head<6>() = pose.toXYZPRYVector();
 		v.tail<3>() = scale;
 		return v;
 	}
 
 	// xyz quaternion, half_scale
-	inline Vector10d toVector() const
+	inline Eigen::Matrix<double, 10, 1> toVector() const
 	{
-		Vector10d v;
+        Eigen::Matrix<double, 10, 1> v;
 		v.head<7>() = pose.toVector();
 		v.tail<3>() = scale;
 		return v;

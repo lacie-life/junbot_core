@@ -275,15 +275,15 @@ void Viewer::Run()
     pangolin::OpenGlMatrix Twc, Twr;
     Twc.SetIdentity();
 
-    cv::namedWindow("Point, Line and Object Detection");
-    cv::moveWindow("Point, Line and Object Detection", 40, 40);
+//    cv::namedWindow("Point, Line and Object Detection");
+//    cv::moveWindow("Point, Line and Object Detection", 40, 40);
     cv::namedWindow("Quadric Projection");
     cv::moveWindow("Quadric Projection", 40, 40+480*0.8);
 
-    cv::namedWindow("[MotionIou]");
-    cv::moveWindow("[MotionIou]", 40, 40+480*0.7+40+480*0.7);
-    cv::namedWindow("[ProIou]");
-    cv::moveWindow("[ProIou]", 40+640*0.55, 40+480*0.7+40+480*0.7);
+//    cv::namedWindow("[MotionIou]");
+//    cv::moveWindow("[MotionIou]", 40, 40+480*0.7+40+480*0.7);
+//    cv::namedWindow("[ProIou]");
+//    cv::moveWindow("[ProIou]", 40+640*0.55, 40+480*0.7+40+480*0.7);
 
     pangolin::OpenGlMatrix Ow; // Oriented with g in the z axis
     Ow.SetIdentity();

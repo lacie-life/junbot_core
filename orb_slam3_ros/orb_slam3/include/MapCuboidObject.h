@@ -26,6 +26,9 @@ namespace ORB_SLAM3
     class MapCuboidObject
     {
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
+
+    public:
         // whether update global unique map object ID. only used in keyframe creation.
         MapCuboidObject(Map *pMap, bool update_index = false);
 
@@ -96,7 +99,7 @@ namespace ORB_SLAM3
         std::unordered_map<KeyFrame *, int> bundle_vertex_ids;
         int truth_tracklet_id;
 
-        Vector6d velocityTwist;                                    //general 6dof twist. for cars can assume no roll pitch   pose_Twc*exp(twist)=newpose
+        Eigen::Matrix<double, 6, 1> velocityTwist;                                    //general 6dof twist. for cars can assume no roll pitch   pose_Twc*exp(twist)=newpose
         g2o::SE3Quat getMovePose(KeyFrame *kf, double deltaT = 0); // deltaT relative to kf. works for short period where velocity doesn't change much
 
         //----------for local MapObject--------     no mutex needed, for local cuboid storage, not landmark
