@@ -20,4 +20,8 @@ add_executable(add_layer src/add_layer.cpp)
 target_link_libraries(add_layer ${catkin_LIBRARIES})
 add_dependencies(add_layer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+add_executable(adaptive src/adaptive.cpp)
+target_link_libraries(adaptive ${catkin_LIBRARIES})
+add_dependencies(adaptive ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 # %EndTag(FULLTEXT)%
