@@ -1425,6 +1425,55 @@ void Object_Map::ComputeProjectRectFrameToCurrentFrame(Frame &Frame)
     mRect_byProjectPoints = cv::Rect(x_min, y_min, x_max - x_min, y_max - y_min);
 }
 
+cv::Rect Object_Map::ComputeProjectRectFrameToCurrentKeyFrame(KeyFrame &kF)
+{
+    cv::Mat Tcw_ = Converter::toCvMat(kF.GetPose());
+    const cv::Mat Rcw = Tcw_.rowRange(0, 3).colRange(0, 3);
+    const cv::Mat tcw = Tcw_.rowRange(0, 3).col(3);
+    vector<float> x_pt;
+    vector<float> y_pt;
+
+    for (int j = 0; j < mvpMapObjectMappoints.size(); j++)
+    {
+        MapPoint *pMP = mvpMapObjectMappoints[j];
+        cv::Mat PointPosWorld = Converter::toCvMat(pMP->GetWorldPos());
+
+        cv::Mat PointPosCamera = Rcw * PointPosWorld + tcw;
+
+        const float xc = PointPosCamera.at<float>(0);
+        const float yc = PointPosCamera.at<float>(1);
+        const float invzc = 1.0 / PointPosCamera.at<float>(2);
+
+        float u = kF.fx * xc * invzc + kF.cx;
+        float v = kF.fy * yc * invzc + kF.cy;
+
+        x_pt.push_back(u);
+        y_pt.push_back(v);
+
+    }
+
+    if (x_pt.size() == 0)
+        return cv::Rect(0.0, 0.0, 0.0, 0.0);
+
+    sort(x_pt.begin(), x_pt.end());
+    sort(y_pt.begin(), y_pt.end());
+    float x_min = x_pt[0];
+    float x_max = x_pt[x_pt.size() - 1];
+    float y_min = y_pt[0];
+    float y_max = y_pt[y_pt.size() - 1];
+
+    if (x_min < 0)
+        x_min = 0;
+    if (y_min < 0)
+        y_min = 0;
+    if (x_max > kF.raw_img.cols)
+        x_max = kF.raw_img.cols;
+    if (y_max > kF.raw_img.rows)
+        y_max = kF.raw_img.rows;
+
+    return cv::Rect(x_min, y_min, x_max - x_min, y_max - y_min);
+}
+
 
 void Object_Map::UpdateCoView(Object_Map *Obj_CoView)
 {

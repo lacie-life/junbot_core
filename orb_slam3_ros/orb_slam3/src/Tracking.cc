@@ -5484,9 +5484,36 @@ void Tracking::DetectCuboid(KeyFrame *pKF)
     std::vector<double> all_box_confidence;
     vector<int> truth_tracklet_ids;
 
+    // Get 3D object in this keyframe
+    std::vector<Object_Map*> all_objs = pKF->obj_3ds;
+
+    // Change to ObjectSet
+    for(int i = 0; i < all_objs.size(); i++)
+    {
+        if(all_objs[i]->bad_3d)
+        {
+            continue;
+        }
+        cuboid *raw_cuboid = new cuboid();
+        raw_cuboid->pos = Converter::toVector3d(all_objs[i]->mCuboid3D.pose_mat);
+        raw_cuboid->rotY = all_objs[i]->mCuboid3D.rotY;
+        raw_cuboid->scale = Vector3d (all_objs[i]->mCuboid3D.lenth, all_objs[i]->mCuboid3D.width, all_objs[i]->mCuboid3D.height);
+
+        // TODO: Check usage
+        cv::Rect obj_2d = all_objs[i]->ComputeProjectRectFrameToCurrentKeyFrame(*pKF);
+        raw_cuboid->rect_detect_2d = Vector4d(obj_2d.x, obj_2d.y, obj_2d.width, obj_2d.height);
+        raw_cuboid->box_config_type = Vector2d(1, 1);
+        all_obj2d_bbox.push_back(raw_cuboid->rect_detect_2d);
+        all_box_confidence.push_back(all_objs[i]->mnConfidence_foractive);
+
+        ObjectSet temp;
+        temp.push_back(raw_cuboid);
+        all_obj_cubes.push_back(temp);
+    }
+
+    // Change to g2o cuboid
     pKF->local_cuboids.clear();
 
-    std::vector<Object_Map*> all_obj = pKF->obj_3ds;
 }
 
 // TODO: This function should be placed in the constructor of object
