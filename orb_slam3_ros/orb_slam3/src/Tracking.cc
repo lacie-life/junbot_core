@@ -5514,6 +5514,392 @@ void Tracking::DetectCuboid(KeyFrame *pKF)
     // Change to g2o cuboid
     pKF->local_cuboids.clear();
 
+    g2o::SE3Quat frame_pose_to_init = Converter::toSE3Quat(pKF->GetPoseInverse());
+
+    for (int ii = 0; ii < (int)all_obj_cubes.size(); ii++)
+    {
+        if (all_obj_cubes[ii].size() > 0) // if has detected 3d Cuboid
+        {
+            cuboid *raw_cuboid = all_obj_cubes[ii][0];
+
+            g2o::cuboid cube_ground_value; // offline cuboid txt in local ground frame.  [x y z yaw l w h]
+            Vector9d cube_pose;
+            cube_pose << raw_cuboid->pos[0], raw_cuboid->pos[1], raw_cuboid->pos[2], 0, 0, raw_cuboid->rotY,
+                    raw_cuboid->scale[0], raw_cuboid->scale[1], raw_cuboid->scale[2];
+            cube_ground_value.fromMinimalVector(cube_pose);
+
+            // measurement in local camera frame! important
+            MapCuboidObject *newcuboid = new MapCuboidObject(mpAtlas->GetCurrentMap());
+            g2o::cuboid cube_local_meas = cube_ground_value.transform_to(Converter::toSE3Quat(pop_pose_to_ground));
+            // g2o::cuboid cube_local_meas = cube_ground_value.transform_to(frame_pose_to_init);
+            newcuboid->cube_meas = cube_local_meas;
+            newcuboid->bbox_2d = cv::Rect(raw_cuboid->rect_detect_2d[0], raw_cuboid->rect_detect_2d[1], raw_cuboid->rect_detect_2d[2], raw_cuboid->rect_detect_2d[3]);
+            newcuboid->bbox_vec = Vector4d((double)newcuboid->bbox_2d.x + (double)newcuboid->bbox_2d.width / 2, (double)newcuboid->bbox_2d.y + (double)newcuboid->bbox_2d.height / 2,
+                                           (double)newcuboid->bbox_2d.width, (double)newcuboid->bbox_2d.height);
+            newcuboid->box_corners_2d = raw_cuboid->box_corners_2d;
+            newcuboid->bbox_2d_tight = cv::Rect(raw_cuboid->rect_detect_2d[0] + raw_cuboid->rect_detect_2d[2] / 10.0,
+                                                raw_cuboid->rect_detect_2d[1] + raw_cuboid->rect_detect_2d[3] / 10.0,
+                                                raw_cuboid->rect_detect_2d[2] * 0.8, raw_cuboid->rect_detect_2d[3] * 0.8);
+            get_cuboid_draw_edge_markers(newcuboid->edge_markers, raw_cuboid->box_config_type, false);
+            newcuboid->SetReferenceKeyFrame(pKF);
+            newcuboid->object_id_in_localKF = pKF->local_cuboids.size();
+
+            // g2o::cuboid global_obj_pose_to_init = cube_local_meas.transform_from(Converter::toSE3Quat(pop_pose_to_ground));
+            g2o::cuboid global_obj_pose_to_init = cube_local_meas.transform_from(frame_pose_to_init);
+
+            newcuboid->SetWorldPos(global_obj_pose_to_init);
+            newcuboid->pose_noopti = global_obj_pose_to_init;
+            if (use_truth_trackid)
+                newcuboid->truth_tracklet_id = truth_tracklet_ids[ii];
+
+            if (scene_unique_id == kitti)
+            {
+                if (cube_local_meas.pose.translation()(0) > 1)
+                    newcuboid->left_right_to_car = 2; // right
+                if (cube_local_meas.pose.translation()(0) < -1)
+                    newcuboid->left_right_to_car = 1; // left
+                if ((cube_local_meas.pose.translation()(0) > -1) && (cube_local_meas.pose.translation()(0) < 1))
+                    newcuboid->left_right_to_car = 0;
+            }
+            if (1)
+            {
+                double obj_cam_dist = std::min(std::max(newcuboid->cube_meas.translation()(2), 10.0), 30.0); // cut into [a,b]
+                double obj_meas_quality = (60.0 - obj_cam_dist) / 40.0;
+                newcuboid->meas_quality = obj_meas_quality;
+            }
+            else
+                newcuboid->meas_quality = 1.0;
+            if (all_box_confidence[ii] > 0)
+                newcuboid->meas_quality *= all_box_confidence[ii]; // or =
+
+            if (newcuboid->meas_quality < 0.1)
+                std::cout <<"Abnormal measure quality!!:   " << newcuboid->meas_quality << std::endl;
+            pKF->local_cuboids.push_back(newcuboid);
+        }
+    }
+
+    // std::cout << "Tracking: created local object num   " << pKF->local_cuboids.size() << std::endl;
+    std::cout << "Tracking: detect cuboid for pKF id: " << pKF->mnId << "  total id: " << pKF->mnFrameId << "  numObj: " << pKF->local_cuboids.size() << std::endl;
+
+    if (whether_save_online_detected_cuboids)
+    {
+        for (int ii = 0; ii < (int)all_obj_cubes.size(); ii++)
+        {
+            if (all_obj_cubes[ii].size() > 0) // if has detected 3d Cuboid, always true in this case
+            {
+                cuboid *raw_cuboid = all_obj_cubes[ii][0];
+                g2o::cuboid cube_ground_value;
+                Vector9d cube_pose;
+                cube_pose << raw_cuboid->pos[0], raw_cuboid->pos[1], raw_cuboid->pos[2], 0, 0, raw_cuboid->rotY,
+                        raw_cuboid->scale[0], raw_cuboid->scale[1], raw_cuboid->scale[2];
+                save_online_detected_cuboids << pKF->mnFrameId << "  " << cube_pose.transpose() << "\n";
+            }
+        }
+    }
+
+    if (associate_point_with_object)
+    {
+        std::cout << "Tracking: associate_point_with_object  " << associate_point_with_object
+                  << "  whether_dynamic_object  " << whether_dynamic_object << std::endl;
+        if (!whether_dynamic_object) //for old non-dynamic object, associate based on 2d overlap... could also use instance segmentation
+        {
+            pKF->keypoint_associate_objectID = vector<int>(pKF->mvKeys.size(), -1);
+            std::vector<bool> overlapped(pKF->local_cuboids.size(), false);
+            if (1) {
+                for (size_t i = 0; i < pKF->local_cuboids.size(); i++)
+                    if (!overlapped[i])
+                        for (size_t j = i + 1; j < pKF->local_cuboids.size(); j++)
+                            if (!overlapped[j]) {
+                                float iou_ratio = bboxOverlapratio(pKF->local_cuboids[i]->bbox_2d,
+                                                                   pKF->local_cuboids[j]->bbox_2d);
+                                if (iou_ratio > 0.15) {
+                                    overlapped[i] = true;
+                                    overlapped[j] = true;
+                                }
+                            }
+            }
+
+            if (!enable_ground_height_scale) {                                       // slightly faster
+                if (pKF->local_cuboids.size() > 0) // if there is object
+                    for (size_t i = 0; i < pKF->mvKeys.size(); i++) {
+                        int associated_times = 0;
+                        for (size_t j = 0; j < pKF->local_cuboids.size(); j++)
+                            if (!overlapped[j])
+                                if (pKF->local_cuboids[j]->bbox_2d.contains(pKF->mvKeys[i].pt)) {
+                                    associated_times++;
+                                    if (associated_times == 1)
+                                        pKF->keypoint_associate_objectID[i] = j;
+                                    else
+                                        pKF->keypoint_associate_objectID[i] = -1;
+                                }
+                    }
+            } else {
+                pKF->keypoint_inany_object = vector<bool>(pKF->mvKeys.size(), false);
+                for (size_t i = 0; i < pKF->mvKeys.size(); i++) {
+                    int associated_times = 0;
+                    for (size_t j = 0; j < pKF->local_cuboids.size(); j++)
+                        if (pKF->local_cuboids[j]->bbox_2d.contains(pKF->mvKeys[i].pt)) {
+                            pKF->keypoint_inany_object[i] = true;
+                            if (!overlapped[j]) {
+                                associated_times++;
+                                if (associated_times == 1)
+                                    pKF->keypoint_associate_objectID[i] = j;
+                                else
+                                    pKF->keypoint_associate_objectID[i] = -1;
+                            }
+                        }
+                }
+                if (height_esti_history.size() == 0) {
+                    std::cout << "\033[31mTracking: height_esti_history.size() = 0, clear object  \033[0m" << std::endl;
+                    pKF->local_cuboids.clear(); // don't do object when in initial stage...
+                    pKF->keypoint_associate_objectID.clear();
+                }
+            }
+        }
+
+        if (whether_dynamic_object) //  for dynamic object, I use instance segmentation
+        {
+            if (pKF->local_cuboids.size() > 0) // if there is object
+            {
+                std::vector<MapPoint *> framePointMatches = pKF->GetMapPointMatches();
+
+                if (pKF->keypoint_associate_objectID.size() < pKF->mvKeys.size())
+                    std::cout << "Tracking Bad keypoint associate ID size   " << pKF->keypoint_associate_objectID.size()
+                              << "  " << pKF->mvKeys.size() << std::endl;
+
+                for (size_t i = 0; i < pKF->mvKeys.size(); i++) {
+                    if (pKF->keypoint_associate_objectID[i] >= 0 &&
+                        pKF->keypoint_associate_objectID[i] >= pKF->local_cuboids.size()) {
+                        std::cout << "Detect cuboid find bad pixel obj id  " << pKF->keypoint_associate_objectID[i]
+                                  << "  " << pKF->local_cuboids.size() << std::endl;
+                    }
+                    if (pKF->keypoint_associate_objectID[i] > -1) {
+                        MapPoint *pMP = framePointMatches[i];
+                        if (pMP)
+                            pMP->is_dynamic = true;
+                    }
+                }
+            }
+        }
+    }
+
+    std::vector<KeyFrame *> checkframes = mvpLocalKeyFrames; // only check recent to save time
+
+    int object_own_point_threshold = 20;
+    if (scene_unique_id == kitti)
+    {
+        if (mono_allframe_Obj_depth_init)
+            object_own_point_threshold = 50; // 50 using 10 is too noisy.... many objects don't have enough points to match with others then will create as new...
+        else
+            object_own_point_threshold = 30; // 30 if don't initialize object point sepratedly, there won't be many points....  tried 20, not good...
+    }
+
+    if (use_truth_trackid) //very accurate, no need of object point for association
+        object_own_point_threshold = -1;
+
+    // points and object are related in local mapping, when creating mapPoints
+
+    //dynamic object: didn't triangulate point in localmapping. but in tracking
+    std::cout << "Tracking: check the objects has enough points, keyframe num:" << checkframes.size() << std::endl;
+    for (size_t i = 0; i < checkframes.size(); i++)
+    {
+        KeyFrame *kfs = checkframes[i];
+        // std::cout << "Tracking: check the objects has enough points, object num:" << kfs->local_cuboids.size() << std::endl;
+        for (size_t j = 0; j < kfs->local_cuboids.size(); j++)
+        {
+            MapCuboidObject *mPO = kfs->local_cuboids[j];
+            if (!mPO->become_candidate)
+            {
+                // points number maybe increased when later triangulated
+                mPO->check_whether_valid_object(object_own_point_threshold);
+            }
+        }
+    }
+}
+
+void Tracking::AssociateCuboids(KeyFrame *pKF)
+{
+    // loop over current KF's objects, check with all past objects (or local objects), compare the associated object map points.
+    // (if a local object is not associated, could re-check here as frame-object-point might change overtime, especially due to triangulation.)
+    std::cout << "Tracking: AssociateCuboids  " << "mvpLocalKeyFrames.size()  " << mvpLocalKeyFrames.size() << std::endl;
+
+    std::vector<MapCuboidObject *> LocalObjectsCandidates;
+    std::vector<MapCuboidObject *> LocalObjectsLandmarks;
+    // keypoint might not added to frame observation yet, so object might not have many associated points yet....
+    // method 1: just check current frame's object, using existing map point associated objects.
+    // same as plane association, don't just check current frame, but check all recent keyframe's unmatched objects...
+    for (size_t i = 0; i < mvpLocalKeyFrames.size(); i++) // pKF is not in mvpLocalKeyFrames yet
+    {
+        KeyFrame *kfs = mvpLocalKeyFrames[i];
+        // std::cout << "kfs->local_cuboids.size()  " << kfs->local_cuboids.size() << std::endl;
+        for (size_t j = 0; j < kfs->local_cuboids.size(); j++)
+        {
+            MapCuboidObject *mPO = kfs->local_cuboids[j];
+            if (mPO->become_candidate && (!mPO->already_associated))
+                LocalObjectsCandidates.push_back(kfs->local_cuboids[j]);
+        }
+        for (size_t j = 0; j < kfs->cuboids_landmark.size(); j++)
+            if (kfs->cuboids_landmark[j]) // might be deleted due to badFlag()
+                if (!kfs->cuboids_landmark[j]->isBad())
+                    if (kfs->cuboids_landmark[j]->association_refid_in_tracking != pKF->mnId) // could also use set to avoid duplicates
+                    {
+                        LocalObjectsLandmarks.push_back(kfs->cuboids_landmark[j]);
+                        kfs->cuboids_landmark[j]->association_refid_in_tracking = pKF->mnId;
+                    }
+    }
+
+    std::cout << "Tracking: Associate cuboids #candidate: " << LocalObjectsCandidates.size() << " #landmarks " << LocalObjectsLandmarks.size()
+              << " #localKFs " << mvpLocalKeyFrames.size() << std::endl;
+    int largest_shared_num_points_thres = 10;
+    if (mono_allframe_Obj_depth_init)
+        largest_shared_num_points_thres = 20;
+    if (scene_unique_id == kitti)
+        largest_shared_num_points_thres = 10; // kitti vehicle occupy large region
+
+    if (whether_detect_object && mono_allframe_Obj_depth_init) // dynamic object is more difficult. especially reverse motion
+        largest_shared_num_points_thres = 5;
+
+    MapCuboidObject *last_new_created_object = nullptr;
+    for (size_t i = 0; i < LocalObjectsCandidates.size(); i++)
+    {
+        // there might be some new created object!
+        if (last_new_created_object)
+            LocalObjectsLandmarks.push_back(last_new_created_object);
+        last_new_created_object = nullptr;
+
+        // find existing object landmarks which share most points with this object
+        MapCuboidObject *candidateObject = LocalObjectsCandidates[i];
+        std::vector<MapPoint *> object_owned_pts = candidateObject->GetPotentialMapPoints();
+
+        MapCuboidObject *largest_shared_objectlandmark = nullptr;
+        if (LocalObjectsLandmarks.size() > 0)
+        {
+            map<MapCuboidObject *, int> LandmarkObserveCounter;
+
+            for (size_t j = 0; j < object_owned_pts.size(); j++)
+                for (map<MapCuboidObject *, int>::iterator mit = object_owned_pts[j]->MapObjObservations.begin(); mit != object_owned_pts[j]->MapObjObservations.end(); mit++)
+                    LandmarkObserveCounter[mit->first]++;
+
+            int largest_shared_num_points = largest_shared_num_points_thres;
+            for (size_t j = 0; j < LocalObjectsLandmarks.size(); j++)
+            {
+                MapCuboidObject *pMP = LocalObjectsLandmarks[j];
+                if (!pMP->isBad())
+                    if (LandmarkObserveCounter.count(pMP))
+                    {
+                        if (LandmarkObserveCounter[pMP] > largest_shared_num_points)
+                        {
+                            largest_shared_num_points = LandmarkObserveCounter[pMP];
+                            largest_shared_objectlandmark = pMP;
+                        }
+                    }
+            }
+        }
+
+        if (use_truth_trackid) // find associate id based on tracket id.
+        {
+            if (trackletid_to_landmark.count(candidateObject->truth_tracklet_id))
+                largest_shared_objectlandmark = trackletid_to_landmark[candidateObject->truth_tracklet_id];
+            else
+                largest_shared_objectlandmark == nullptr;
+        }
+
+        if (largest_shared_objectlandmark == nullptr) // if not found, create as new landmark.  either using original local pointer, or initialize as new
+        {
+            if (use_truth_trackid)
+            {
+                if (candidateObject->truth_tracklet_id > -1) // -1 means no ground truth tracking ID, don't use this object
+                    trackletid_to_landmark[candidateObject->truth_tracklet_id] = candidateObject;
+                else
+                    continue;
+            }
+            candidateObject->already_associated = true; // must be put before SetAsLandmark();
+            KeyFrame *refframe = candidateObject->GetReferenceKeyFrame();
+            candidateObject->addObservation(refframe, candidateObject->object_id_in_localKF); // add to frame observation
+            refframe->cuboids_landmark.push_back(candidateObject);
+            candidateObject->mnId = MapCuboidObject::getIncrementedIndex(); //mpMap->MapObjectsInMap();  // needs to manually set
+            candidateObject->associated_landmark = candidateObject;
+            candidateObject->SetAsLandmark();
+            // std::cout << "88888888888888888:   " << std::endl;
+            if (scene_unique_id == kitti) // object scale change back and forth
+            {
+                g2o::cuboid cubeglobalpose = candidateObject->GetWorldPos();
+                cubeglobalpose.setScale(Eigen::Vector3d(1.9420, 0.8143, 0.7631));
+                candidateObject->SetWorldPos(cubeglobalpose);
+                candidateObject->pose_Twc_latestKF = cubeglobalpose;
+                candidateObject->pose_noopti = cubeglobalpose;
+                candidateObject->allDynamicPoses[refframe] = make_pair(cubeglobalpose, false); //Vector6d::Zero()  false means not BAed
+            }
+            (mpAtlas->GetCurrentMap())->AddMapObject(candidateObject);
+            last_new_created_object = candidateObject;
+            candidateObject->allDynamicPoses[refframe] = make_pair(candidateObject->GetWorldPos(), false);
+        }
+        else // if found, then update observation.
+        {
+            candidateObject->already_associated = true; // must be put before SetAsLandmark();
+            KeyFrame *refframe = candidateObject->GetReferenceKeyFrame();
+            largest_shared_objectlandmark->addObservation(refframe, candidateObject->object_id_in_localKF);
+            refframe->cuboids_landmark.push_back(largest_shared_objectlandmark);
+            candidateObject->associated_landmark = largest_shared_objectlandmark;
+
+            //NOTE use current frame's object poes, but don't use current object if very close to boundary.... large error
+            // I use this mainly for kitti, as further objects are inaccurate.  for indoor object, we may not need it
+            if (scene_unique_id == kitti)
+            {
+                g2o::cuboid cubeglobalpose = candidateObject->GetWorldPos();
+                cubeglobalpose.setScale(Eigen::Vector3d(1.9420, 0.8143, 0.7631));
+
+                largest_shared_objectlandmark->allDynamicPoses[refframe] = make_pair(cubeglobalpose, false);
+                largest_shared_objectlandmark->SetWorldPos(cubeglobalpose);
+                largest_shared_objectlandmark->pose_Twc_latestKF = cubeglobalpose; //if want to test without BA
+                largest_shared_objectlandmark->pose_noopti = cubeglobalpose;
+            }
+            largest_shared_objectlandmark->MergeIntoLandmark(candidateObject);
+        }
+    }
+
+    // remove outlier objects....
+    bool remove_object_outlier = true;
+
+    int minimum_object_observation = 2;
+    if (scene_unique_id == kitti)
+    {
+        remove_object_outlier = false;
+        if (whether_detect_object)
+        {
+            remove_object_outlier = true;
+            minimum_object_observation = 3; // dynamic object has more outliers
+        }
+    }
+
+    bool check_object_points = true;
+
+    if (remove_object_outlier)
+    {
+        vector<MapCuboidObject *> all_objects = (mpAtlas->GetCurrentMap())->GetAllMapObjects();
+        for (size_t i = 0; i < all_objects.size(); i++)
+        {
+            MapCuboidObject *pMObject = all_objects[i];
+            if ((!pMObject->isBad()) && (!pMObject->isGood))						// if not determined good or bad yet.
+                if ((int)pMObject->GetLatestKeyFrame()->mnId < (int)pKF->mnId - 15) //20
+                {
+                    // if not recently observed, and not enough observations.  NOTE if point-object not used in BA, filtered size will be zero...
+                    bool no_enough_inlier_pts = check_object_points && (pMObject->NumUniqueMapPoints() > 20) && (pMObject->used_points_in_BA_filtered.size() < 10) && (pMObject->point_object_BA_counter > -1);
+                    if (pMObject->Observations() < minimum_object_observation)
+                    {
+                        pMObject->SetBadFlag();
+                        cout << "Found one bad object !!!!!!!!!!!!!!!!!!!!!!!!!  " << pMObject->mnId << "  " << pMObject->Observations() << "  " << pMObject->used_points_in_BA_filtered.size() << endl;
+
+                        if (use_truth_trackid)
+                            trackletid_to_landmark.erase(pMObject->truth_tracklet_id); // remove from track id mapping
+                    }
+                    else
+                    {
+                        pMObject->isGood = true;
+                    }
+                }
+        }
+    }
 }
 
 // TODO: This function should be placed in the constructor of object

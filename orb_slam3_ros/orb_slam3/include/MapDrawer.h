@@ -90,6 +90,7 @@ public:
 // For 3D cuboid testing
 public:
     void DrawMapCuboids();
+    void DrawMapCuboids2();
 
 private:
     std::vector<Eigen::Vector3f> box_colors;

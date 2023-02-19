@@ -421,7 +421,8 @@ void Viewer::Run()
             if(menuShowPoints)
             {
                 mpMapDrawer->DrawMapPoints();
-                mpMapDrawer->DrawMapCuboids();
+//                mpMapDrawer->DrawMapCuboids();
+                mpMapDrawer->DrawMapCuboids2();
             }
             else
             {

@@ -19,6 +19,7 @@
 #include "MapDrawer.h"
 #include "MapPoint.h"
 #include "KeyFrame.h"
+#include "Parameter.h"
 #include <pangolin/pangolin.h>
 #include <mutex>
 
@@ -534,6 +535,78 @@ namespace ORB_SLAM3 {
             glVertex3f(cube.corner_8[0], cube.corner_8[1], cube.corner_8[2]);//
             glVertex3f(cube.corner_5[0], cube.corner_5[1], cube.corner_5[2]);//
             glEnd();
+        }
+    }
+
+    void MapDrawer::DrawMapCuboids2()
+    {
+        // make sure final cuboid is in init world frame.
+        // draw all map objects
+        const vector<MapCuboidObject *> all_Map_objs = (mpAtlas->GetCurrentMap())->GetAllMapObjects();
+        Vector4d front_face_color(1.0, 0.0, 1.0, 1.0); // draw front face edges magenta
+        std::cout << "MapDrawer:: DrawMapCuboids: "<< all_Map_objs.size() << std::endl;
+        for (size_t object_id = 0; object_id < all_Map_objs.size(); object_id++) {
+            MapCuboidObject *obj_landmark = all_Map_objs[object_id];
+
+            if (obj_landmark->isBad()) // some good, some bad, some not determined
+                continue;
+
+            // show objects that being optimized! for kitti fix scale, this will make map visualization better.
+            if (bundle_object_opti) {
+                if (!obj_landmark->obj_been_optimized) {
+                    continue;
+                }
+            }
+
+            Eigen::MatrixXd cube_corners;
+            if (bundle_object_opti && whether_dynamic_object)
+                cube_corners = obj_landmark->pose_Twc_afterba.compute3D_BoxCorner(); // show pose after BA, will have some delay, but looks good
+            else
+                cube_corners = obj_landmark->GetWorldPos().compute3D_BoxCorner();
+
+            if (obj_landmark->Observations() == 1) {
+                glLineWidth(mGraphLineWidth * 2);
+                glBegin(GL_LINES);
+                front_face_color = Vector4d(0, 0, 128.0 / 255.0, 1.0);
+            } else {
+                glLineWidth(mGraphLineWidth * 4);
+                glBegin(GL_LINES);
+                front_face_color = Vector4d(1.0, 0.0, 1.0, 1.0);
+            }
+            // draw cuboid
+            Vector3f box_color = box_colors[obj_landmark->mnId % box_colors.size()];
+            glColor4f(box_color(0), box_color(1), box_color(2), 1.0f); // draw all edges  cyan
+            for (int line_id = 0; line_id < all_edge_pt_ids.rows(); line_id++) {
+                glVertex3f(cube_corners(0, all_edge_pt_ids(line_id, 0)), cube_corners(1, all_edge_pt_ids(line_id, 0)),
+                           cube_corners(2, all_edge_pt_ids(line_id, 0)));
+                glVertex3f(cube_corners(0, all_edge_pt_ids(line_id, 1)), cube_corners(1, all_edge_pt_ids(line_id, 1)),
+                           cube_corners(2, all_edge_pt_ids(line_id, 1)));
+            }
+            for (int line_id = 0; line_id < front_edge_pt_ids.rows(); line_id++) {
+                glVertex3f(cube_corners(0, front_edge_pt_ids(line_id, 0)),
+                           cube_corners(1, front_edge_pt_ids(line_id, 0)),
+                           cube_corners(2, front_edge_pt_ids(line_id, 0)));
+                glVertex3f(cube_corners(0, front_edge_pt_ids(line_id, 1)),
+                           cube_corners(1, front_edge_pt_ids(line_id, 1)),
+                           cube_corners(2, front_edge_pt_ids(line_id, 1)));
+            }
+            glEnd();
+
+            // // draw dynamic object history path
+            // if (whether_dynamic_object && obj_landmark->is_dynamic && obj_landmark->allDynamicPoses.size() > 0)
+            // {
+            // 	glLineWidth(mGraphLineWidth * 2);
+            // 	glBegin(GL_LINE_STRIP);									   // line strip connects adjacent points
+            // 	glColor4f(box_color(0), box_color(1), box_color(2), 1.0f); // draw all edges  cyan
+            // 	for (auto it = obj_landmark->allDynamicPoses.begin(); it != obj_landmark->allDynamicPoses.end(); it++)
+            // 	{
+            // 		if (bundle_object_opti && !it->second.second) //only show optimized frame object pose
+            // 			continue;
+            // 		g2o::cuboid cubepose = it->second.first;
+            // 		glVertex3f(cubepose.pose.translation()(0), cubepose.pose.translation()(1), cubepose.pose.translation()(2));
+            // 	}
+            // 	glEnd();
+            // }
         }
     }
 
