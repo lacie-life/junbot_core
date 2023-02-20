@@ -257,7 +257,6 @@ public:
 
 protected:
     std::set<MapCuboidObject *> mspMapObjects;
-
 };
 
 } //namespace ORB_SLAM3

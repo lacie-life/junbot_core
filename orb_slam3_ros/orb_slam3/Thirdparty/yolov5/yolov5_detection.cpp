@@ -72,7 +72,7 @@ void YoLoObjectDetection::detectObject(const cv::Mat& _frame, std::vector<Detect
 
     if(res_batch.size() > 0)
     {
-        std::cout << res_batch.size() << std::endl;
+//        std::cout << res_batch.size() << std::endl;
         auto& res = res_batch[0];
         for(int i = 0; i < res.size(); i++)
         {

@@ -1114,7 +1114,6 @@ void Object_Map::ComputeMeanAndDeviation_3D() {
     // step 4. update object pose
     Update_Twobj();
 
-
     // step 5. Calculate the world coordinates of 8 fixed points
     vector<float> x_pt_obj, y_pt_obj, z_pt_obj;
     g2o::SE3Quat pose =  Converter::toSE3Quat(this->mCuboid3D.pose_mat);
@@ -1226,7 +1225,7 @@ void Object_Map::ComputeMeanAndDeviation_3D() {
     }
     mCenterStandar = sqrt(dis / (mvObject_2ds.size()));
 
-    // step 8. 计算ie
+    // step 8. Compute IE
     this->ComputeIE();
 }
 
@@ -1511,7 +1510,7 @@ vector<MapPoint* > Object_Map::GetNewObjectMappoints(){
 // return Reasons for false: class id does not match; IOU is too small; Frame id is not incremented;
 bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, int Flag){
 
-    std::cout<<"UpdateToObject3D "<<Flag<<std::endl;
+//    std::cout << "UpdateToObject3D " << Flag << std::endl;
 
     if (Object_2d->mclass_id != mnClass)
         return false;
@@ -1741,10 +1740,10 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
     this->IsolationForestDeleteOutliers();
 
     mCurrentFrame.mvObject_2ds.push_back(Object_2d);
-    std::cout   <<"Successfully merged with the old object, cude h:" <<this->mCuboid3D.height
-                <<", cude w:" <<this->mCuboid3D.width
-                <<", cude l:" <<this->mCuboid3D.lenth
-                <<std::endl;
+//    std::cout   <<"Successfully merged with the old object, cude h:" <<this->mCuboid3D.height
+//                <<", cude w:" <<this->mCuboid3D.width
+//                <<", cude l:" <<this->mCuboid3D.lenth
+//                <<std::endl;
     return true;
 }
 
@@ -2389,7 +2388,6 @@ Object_Map::Object_Map() {
 double Object_Map::IE(const double &p){
     return -1*p*log(p) - (1-p)*log(1-p);
 }
-
 
 void Object_Map::IE_RecoverInit() {
         //mCuboid3D = object->mCuboid3D;

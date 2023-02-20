@@ -207,29 +207,6 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     whether_save_online_detected_cuboids = false;
     whether_save_final_optimized_cuboids = false;
 
-    if(whether_detect_object)
-    {
-//        if(!whether_read_offline_cuboidtxt)
-//        {
-//            detect_cuboid_obj = new detect_3d_cuboid();
-//            detect_cuboid_obj->print_details = false;
-//            detect_cuboid_obj->set_calibration(Kalib);
-//        }
-//
-//        if (!whether_read_offline_cuboidtxt)
-//        {
-//            if (whether_save_online_detected_cuboids)
-//            {
-//                std::string save_object_pose_txt = base_data_folder + "/slam_output/orb_live_pred_objs_temp.txt";
-//                save_online_detected_cuboids.open(save_object_pose_txt.c_str());
-//            }
-//        }
-
-//        if (whether_read_offline_cuboidtxt) {
-//            // Offline detection version
-//        }
-    }
-
     if (whether_detect_object)
     {
         if (whether_save_final_optimized_cuboids)
@@ -5831,6 +5808,9 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
                 candidateObject->pose_noopti = cubeglobalpose;
                 candidateObject->allDynamicPoses[refframe] = make_pair(cubeglobalpose, false); //Vector6d::Zero()  false means not BAed
             }
+
+            std::cout << "Add Map object \n";
+
             (mpAtlas->GetCurrentMap())->AddMapObject(candidateObject);
             last_new_created_object = candidateObject;
             candidateObject->allDynamicPoses[refframe] = make_pair(candidateObject->GetWorldPos(), false);
@@ -6241,7 +6221,7 @@ void Tracking::CreateObject_InTrackMotion(){
             nGoodObjId++;;
 
             // Create an object in the map.
-            std::cout<<"【debug】INIT object"<<std::endl;
+//            std::cout<<"【debug】INIT object"<<std::endl;
             Object_Map *Object3D = new Object_Map;
             Object3D->mvObject_2ds.push_back(obj2d);   // 2D objects in each frame associated with this 3D map object.
             Object3D->mnId = nGoodObjId;             // 3d objects in the map.
@@ -6255,7 +6235,7 @@ void Tracking::CreateObject_InTrackMotion(){
             Object3D->mSumPointsPos = 0; //cv::Mat::zeros(3,1,CV_32F);
             Object3D->mAveCenter3D = obj2d->mPos_world;  ; //cv::Mat::zeros(3,1,CV_32F);
 
-            std::cout<<"【debug】INIT Object Store feature points"<<std::endl;
+//            std::cout<<"【debug】INIT Object Store feature points"<<std::endl;
             // add properties of the point and save it to the object.
 
             for (size_t i = 0; i < obj2d->mvMapPonits.size(); i++)
@@ -6277,15 +6257,15 @@ void Tracking::CreateObject_InTrackMotion(){
 
             // save this 2d object to current frame (associates with a 3d object in the map).
             mCurrentFrame.mvObject_2ds.push_back(obj2d);
-            std::cout<<"【debug】INIT object deposited obj2d"<<std::endl;
+//            std::cout<<"【debug】INIT object deposited obj2d"<<std::endl;
 
             // updata map object.
             Object3D->ComputeMeanAndDeviation_3D();
-            std::cout<<"【debug】INIT Object Calculate mean"<<std::endl;
+//            std::cout<<"【debug】INIT Object Calculate mean"<<std::endl;
             //mpMap->mvObjectMap.push_back(ObjectMapSingle);
             mpMap->AddObject(Object3D);
-            std::cout<<"【debug】INIT object deposited map"<<std::endl;
-            std::cout<<"【debug】INIT object object id:"<<Object3D->mnLastAddID<<", frame id:"<<mCurrentFrame.mnId<<std::endl;
+//            std::cout<<"【debug】INIT object deposited map"<<std::endl;
+//            std::cout<<"【debug】INIT object object id:"<<Object3D->mnLastAddID<<", frame id:"<<mCurrentFrame.mnId<<std::endl;
             // The object is initialized
             mbObjectIni = true;
             mnObjectIniFrameID = mCurrentFrame.mnId;

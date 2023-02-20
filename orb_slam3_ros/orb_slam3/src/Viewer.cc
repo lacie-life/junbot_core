@@ -458,11 +458,11 @@ void Viewer::Run()
             if (!QuadricImage.empty()) {
                 cv::Mat resizeimg;
                 cv::resize(QuadricImage, resizeimg, cv::Size(640 * 0.7, 480 * 0.7), 0, 0, cv::INTER_CUBIC);
-                cv::imshow("Quadric Projection", resizeimg);
+                cv::imshow("Quadratic Projection", resizeimg);
             }
             else
             {
-                std::cout << "QuadricImage is empty \n";
+                std::cout << "QuadraticImage is empty \n";
             }
         }
 
@@ -530,7 +530,7 @@ void Viewer::Run()
 //            mpSystem->SaveMap("map.bin");
             mpMapDrawer->SaveOctoMap("octomap.ot");
             menuSave = false;
-            cout<<"save done!"<<endl;
+            cout << "save done!" << endl;
 
         }
 
