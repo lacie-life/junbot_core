@@ -222,7 +222,10 @@ namespace ORB_SLAM3 {
                 if (pKF->keypoint_associate_objectID.size() > 0) {
                     int frame_cubod_id = pKF->keypoint_associate_objectID[idx];
                     if (frame_cubod_id > -1)
+                    {
+//                        std::cout << "[MapPoint] : " << frame_cubod_id << std::endl;
                         AddObjectObservation(pKF->local_cuboids[frame_cubod_id]);
+                    }
                 }
             }
         }
@@ -680,7 +683,8 @@ namespace ORB_SLAM3 {
 
     void MapPoint::AddObjectObservation(MapCuboidObject *obj) {
         // unique_lock<mutex> lock(mMutexObject);
-        if (obj->already_associated) {
+        if (obj->already_associated)
+        {
             MapCuboidObject *objlandmark = obj->associated_landmark;
 
             if (MapObjObservations.count(objlandmark))
@@ -696,13 +700,11 @@ namespace ORB_SLAM3 {
                 best_object = objlandmark;
 
                 max_object_vote = MapObjObservations[objlandmark];
-                best_object->AddUniqueMapPoint(this,
-                                               max_object_vote); // even being added before, still increase observation num
+                best_object->AddUniqueMapPoint(this,max_object_vote); // even being added before, still increase observation num
             }
         } else {
             LocalObjObservations.insert(obj);
-            obj->AddPotentialMapPoint(
-                    this); // for frame local object, still add point observation. will be useful when local object changes to landmark.
+            obj->AddPotentialMapPoint(this); // for frame local object, still add point observation. will be useful when local object changes to landmark.
         }
     }
 

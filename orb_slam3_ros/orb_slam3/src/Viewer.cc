@@ -277,8 +277,8 @@ void Viewer::Run()
 
 //    cv::namedWindow("Point, Line and Object Detection");
 //    cv::moveWindow("Point, Line and Object Detection", 40, 40);
-    cv::namedWindow("Quadric Projection");
-    cv::moveWindow("Quadric Projection", 40, 40+480*0.8);
+//    cv::namedWindow("Quadric Projection");
+//    cv::moveWindow("Quadric Projection", 40, 40+480*0.8);
 
 //    cv::namedWindow("[MotionIou]");
 //    cv::moveWindow("[MotionIou]", 40, 40+480*0.7+40+480*0.7);
@@ -438,7 +438,6 @@ void Viewer::Run()
 
             pangolin::FinishFrame();
         }
-        
 
         cv::Mat toShow;
         cv::Mat im = mpFrameDrawer->DrawFrame(trackedImageScale);
@@ -458,11 +457,11 @@ void Viewer::Run()
             if (!QuadricImage.empty()) {
                 cv::Mat resizeimg;
                 cv::resize(QuadricImage, resizeimg, cv::Size(640 * 0.7, 480 * 0.7), 0, 0, cv::INTER_CUBIC);
-                cv::imshow("Quadric Projection", resizeimg);
+                cv::imshow("Quadratic Projection", resizeimg);
             }
             else
             {
-                std::cout << "QuadricImage is empty \n";
+                std::cout << "QuadraticImage is empty \n";
             }
         }
 
@@ -530,7 +529,7 @@ void Viewer::Run()
 //            mpSystem->SaveMap("map.bin");
             mpMapDrawer->SaveOctoMap("octomap.ot");
             menuSave = false;
-            cout<<"save done!"<<endl;
+            cout << "save done!" << endl;
 
         }
 
@@ -695,7 +694,6 @@ void Viewer::read_local_object_file(){
             vObjects[ object_num ]-> mvpMapObjectMappoints.push_back( point );
             //mpMapPub -> mpMap->mvObjectMap[ object_num ]->mvpMapObjectMappoints.push_back( &point );
         }
-
 
         row.clear();
         type = -1;

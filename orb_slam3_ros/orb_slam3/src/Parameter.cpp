@@ -16,7 +16,7 @@ namespace ORB_SLAM3
 
     bool whether_detect_object = false;
     bool whether_read_offline_cuboidtxt = false;
-    bool associate_point_with_object = false;
+    bool associate_point_with_object = true;
 
     bool whether_dynamic_object = false;
     bool remove_dynamic_features = false;

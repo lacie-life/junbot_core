@@ -246,7 +246,7 @@ bool YoloDetection::Detectv3(const cv::Mat &bgr_img, std::vector<BoxSE> &objects
         ob.width = rec.width;
         ob.height = rec.height;
 
-        std::cout << res[i].class_id << std::endl;
+//        std::cout << res[i].class_id << std::endl;
         ob.m_class_name = mClassnames[(int)res[i].class_id];
 
         ob.m_score = res[i].conf;

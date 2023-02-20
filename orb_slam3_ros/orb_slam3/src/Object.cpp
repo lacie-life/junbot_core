@@ -390,7 +390,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
     {
         float fIouMax = 0.0;
 
-        std::cout << "Number object in current map: " << (int)ObjectMaps.size() << "\n";
+//        std::cout << "Number object in current map: " << (int)ObjectMaps.size() << "\n";
 
         for (int i = (int)ObjectMaps.size() - 1; i >= 0; i--)
         {
@@ -694,12 +694,12 @@ int Object_2D::creatObject()
     unique_lock<mutex> lock2(mGlobalMutex);
     const cv::Mat ColorImage = mpCurrentFrame->mColorImage.clone();
     int associate = Object2D_DataAssociationWith_Object3D();    // data association with object3d in map. 
-    switch (associate) {
-                case MotionIou:   cout << "Association：MotionIou. " << endl; return 0;
-                case NoPara:    cout << "Association：NoPara. " << endl;  return 0;
-                case ProIou:    cout << "Association：ProIou. " << endl;  return 0;
-                case t_test:    cout << "Association：t_test. " << endl;  return 0;
-    }
+//    switch (associate) {
+//                case MotionIou:   cout << "Association：MotionIou. " << endl; return 0;
+//                case NoPara:    cout << "Association：NoPara. " << endl;  return 0;
+//                case ProIou:    cout << "Association：ProIou. " << endl;  return 0;
+//                case t_test:    cout << "Association：t_test. " << endl;  return 0;
+//    }
     if(associate)
         return 0;  // Association succeeded
 
@@ -1114,7 +1114,6 @@ void Object_Map::ComputeMeanAndDeviation_3D() {
     // step 4. update object pose
     Update_Twobj();
 
-
     // step 5. Calculate the world coordinates of 8 fixed points
     vector<float> x_pt_obj, y_pt_obj, z_pt_obj;
     g2o::SE3Quat pose =  Converter::toSE3Quat(this->mCuboid3D.pose_mat);
@@ -1226,7 +1225,7 @@ void Object_Map::ComputeMeanAndDeviation_3D() {
     }
     mCenterStandar = sqrt(dis / (mvObject_2ds.size()));
 
-    // step 8. 计算ie
+    // step 8. Compute IE
     this->ComputeIE();
 }
 
@@ -1511,7 +1510,7 @@ vector<MapPoint* > Object_Map::GetNewObjectMappoints(){
 // return Reasons for false: class id does not match; IOU is too small; Frame id is not incremented;
 bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, int Flag){
 
-    std::cout<<"UpdateToObject3D "<<Flag<<std::endl;
+//    std::cout << "UpdateToObject3D " << Flag << std::endl;
 
     if (Object_2d->mclass_id != mnClass)
         return false;
@@ -1741,10 +1740,10 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
     this->IsolationForestDeleteOutliers();
 
     mCurrentFrame.mvObject_2ds.push_back(Object_2d);
-    std::cout   <<"Successfully merged with the old object, cude h:" <<this->mCuboid3D.height
-                <<", cude w:" <<this->mCuboid3D.width
-                <<", cude l:" <<this->mCuboid3D.lenth
-                <<std::endl;
+//    std::cout   <<"Successfully merged with the old object, cude h:" <<this->mCuboid3D.height
+//                <<", cude w:" <<this->mCuboid3D.width
+//                <<", cude l:" <<this->mCuboid3D.lenth
+//                <<std::endl;
     return true;
 }
 
@@ -2371,7 +2370,7 @@ Object_Map::Object_Map() {
 	{
 		cout << "Failed to open settings file at: " << WORK_SPACE_PATH + yamlfile_object << endl;
 	}
-	else cout << "success to open file at: " << WORK_SPACE_PATH + "/config/RGB-D/" + yamlfile_object << endl;
+//	else cout << "success to open file at: " << WORK_SPACE_PATH + "/config/RGB-D/" + yamlfile_object << endl;
 
     mIE_rows = fSettings["IE.rows"];
     mIE_cols = fSettings["IE.cols"];
@@ -2389,7 +2388,6 @@ Object_Map::Object_Map() {
 double Object_Map::IE(const double &p){
     return -1*p*log(p) - (1-p)*log(1-p);
 }
-
 
 void Object_Map::IE_RecoverInit() {
         //mCuboid3D = object->mCuboid3D;

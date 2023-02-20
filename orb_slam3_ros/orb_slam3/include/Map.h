@@ -78,7 +78,8 @@ class Map
     }
 
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
+
     Map();
     Map(int initKFid);
     ~Map();
@@ -257,7 +258,6 @@ public:
 
 protected:
     std::set<MapCuboidObject *> mspMapObjects;
-
 };
 
 } //namespace ORB_SLAM3
