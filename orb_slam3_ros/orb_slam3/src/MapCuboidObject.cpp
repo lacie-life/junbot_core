@@ -102,6 +102,7 @@ namespace ORB_SLAM3
 
     bool MapCuboidObject::check_whether_valid_object(int own_point_thre)
     {
+//        std::cout << (int)mappoints_potential_own.size() << std::endl;
         if ((int)mappoints_potential_own.size() > own_point_thre)
             become_candidate = true;
         else

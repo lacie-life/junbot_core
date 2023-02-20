@@ -204,7 +204,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     use_truth_trackid = false; // whether use ground truth tracklet ID.
     whether_detect_object = true;
     whether_read_offline_cuboidtxt = false;
-    whether_save_online_detected_cuboids = false;
+    whether_save_online_detected_cuboids = true;
     whether_save_final_optimized_cuboids = false;
 
     if (whether_detect_object)
@@ -5480,7 +5480,7 @@ void Tracking::DetectCuboid(KeyFrame *pKF)
 
     for (int ii = 0; ii < (int)all_objs.size(); ii++)
     {
-        std::cout << "Step 1 \n";
+//        std::cout << "Step 1 \n";
 
         if(all_objs[ii]->bad_3d)
         {
@@ -5497,18 +5497,23 @@ void Tracking::DetectCuboid(KeyFrame *pKF)
                 raw_cuboid.lenth, raw_cuboid.width, raw_cuboid.height;
         cube_ground_value.fromMinimalVector(cube_pose);
 
-        std::cout << "Step 2 \n";
+//        std::cout << "Step 2 \n";
 
         // Measurement in local camera frame
         MapCuboidObject *newcuboid = new MapCuboidObject(mpAtlas->GetCurrentMap());
 
         g2o::cuboid cube_local_meas = cube_ground_value.transform_to(Converter::toSE3Quat(pop_pose_to_ground));
         newcuboid->cube_meas = cube_local_meas;
+
+        // TODO: Checking here
         newcuboid->bbox_2d = all_objs[ii]->ComputeProjectRectFrameToCurrentKeyFrame(*pKF);
+
+        std::cout << "BBox 2D of cuboid " << ii << ": " << newcuboid->bbox_2d << std::endl;
+
         newcuboid->bbox_vec = Vector4d((double)newcuboid->bbox_2d.x + (double)newcuboid->bbox_2d.width / 2, (double)newcuboid->bbox_2d.y + (double)newcuboid->bbox_2d.height / 2,
                                        (double)newcuboid->bbox_2d.width, (double)newcuboid->bbox_2d.height);
 
-        std::cout << "Step 3 \n";
+//        std::cout << "Step 3 \n";
 
 //        newcuboid->box_corners_2d = raw_cuboid->box_corners_2d;
 
@@ -5582,50 +5587,76 @@ void Tracking::DetectCuboid(KeyFrame *pKF)
         if (!whether_dynamic_object) //for old non-dynamic object, associate based on 2d overlap... could also use instance segmentation
         {
             pKF->keypoint_associate_objectID = vector<int>(pKF->mvKeys.size(), -1);
+
             std::vector<bool> overlapped(pKF->local_cuboids.size(), false);
+
             if (1) {
                 for (size_t i = 0; i < pKF->local_cuboids.size(); i++)
+                {
                     if (!overlapped[i])
+                    {
                         for (size_t j = i + 1; j < pKF->local_cuboids.size(); j++)
+                        {
                             if (!overlapped[j]) {
                                 float iou_ratio = bboxOverlapratio(pKF->local_cuboids[i]->bbox_2d,
                                                                    pKF->local_cuboids[j]->bbox_2d);
+
+                                std::cout << "Overlapped " << i << " " << j << " ratio: " << iou_ratio << std::endl;
+
                                 if (iou_ratio > 0.15) {
                                     overlapped[i] = true;
                                     overlapped[j] = true;
                                 }
                             }
+                        }
+                    }
+                }
             }
-
             if (!enable_ground_height_scale) {                                       // slightly faster
                 if (pKF->local_cuboids.size() > 0) // if there is object
                     for (size_t i = 0; i < pKF->mvKeys.size(); i++) {
                         int associated_times = 0;
                         for (size_t j = 0; j < pKF->local_cuboids.size(); j++)
+                        {
                             if (!overlapped[j])
+                            {
                                 if (pKF->local_cuboids[j]->bbox_2d.contains(pKF->mvKeys[i].pt)) {
                                     associated_times++;
                                     if (associated_times == 1)
+                                    {
                                         pKF->keypoint_associate_objectID[i] = j;
+                                    }
                                     else
+                                    {
                                         pKF->keypoint_associate_objectID[i] = -1;
+                                    }
                                 }
+                            }
+                        }
                     }
-            } else {
+            } else
+            {
                 pKF->keypoint_inany_object = vector<bool>(pKF->mvKeys.size(), false);
                 for (size_t i = 0; i < pKF->mvKeys.size(); i++) {
                     int associated_times = 0;
                     for (size_t j = 0; j < pKF->local_cuboids.size(); j++)
+                    {
                         if (pKF->local_cuboids[j]->bbox_2d.contains(pKF->mvKeys[i].pt)) {
                             pKF->keypoint_inany_object[i] = true;
                             if (!overlapped[j]) {
                                 associated_times++;
                                 if (associated_times == 1)
+                                {
                                     pKF->keypoint_associate_objectID[i] = j;
+                                }
                                 else
+                                {
                                     pKF->keypoint_associate_objectID[i] = -1;
+                                }
                             }
                         }
+                    }
+
                 }
                 if (height_esti_history.size() == 0) {
                     std::cout << "\033[31mTracking: height_esti_history.size() = 0, clear object  \033[0m" << std::endl;
@@ -5634,6 +5665,8 @@ void Tracking::DetectCuboid(KeyFrame *pKF)
                 }
             }
         }
+
+        std::cout << "[DetectCuboid]: " << pKF->keypoint_associate_objectID.size() << std::endl;
 
         if (whether_dynamic_object) //  for dynamic object, I use instance segmentation
         {
@@ -5686,6 +5719,9 @@ void Tracking::DetectCuboid(KeyFrame *pKF)
         for (size_t j = 0; j < kfs->local_cuboids.size(); j++)
         {
             MapCuboidObject *mPO = kfs->local_cuboids[j];
+
+//            std::cout << "[DetectCuboid debug] " << object_own_point_threshold <<  " \n";
+
             if (!mPO->become_candidate)
             {
                 // points number maybe increased when later triangulated
@@ -5709,21 +5745,31 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
     for (size_t i = 0; i < mvpLocalKeyFrames.size(); i++) // pKF is not in mvpLocalKeyFrames yet
     {
         KeyFrame *kfs = mvpLocalKeyFrames[i];
-        // std::cout << "kfs->local_cuboids.size()  " << kfs->local_cuboids.size() << std::endl;
+         std::cout << "kfs->local_cuboids.size()  " << kfs->local_cuboids.size() << std::endl;
         for (size_t j = 0; j < kfs->local_cuboids.size(); j++)
         {
             MapCuboidObject *mPO = kfs->local_cuboids[j];
             if (mPO->become_candidate && (!mPO->already_associated))
+            {
+                std::cout << "Step 1 \n";
                 LocalObjectsCandidates.push_back(kfs->local_cuboids[j]);
+            }
         }
         for (size_t j = 0; j < kfs->cuboids_landmark.size(); j++)
+        {
             if (kfs->cuboids_landmark[j]) // might be deleted due to badFlag()
+            {
                 if (!kfs->cuboids_landmark[j]->isBad())
+                {
                     if (kfs->cuboids_landmark[j]->association_refid_in_tracking != pKF->mnId) // could also use set to avoid duplicates
                     {
+                        std::cout << "Step 2 \n";
                         LocalObjectsLandmarks.push_back(kfs->cuboids_landmark[j]);
                         kfs->cuboids_landmark[j]->association_refid_in_tracking = pKF->mnId;
                     }
+                }
+            }
+        }
     }
 
     std::cout << "Tracking: Associate cuboids #candidate: " << LocalObjectsCandidates.size() << " #landmarks " << LocalObjectsLandmarks.size()
@@ -5774,13 +5820,13 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
             }
         }
 
-        if (use_truth_trackid) // find associate id based on tracket id.
-        {
-            if (trackletid_to_landmark.count(candidateObject->truth_tracklet_id))
-                largest_shared_objectlandmark = trackletid_to_landmark[candidateObject->truth_tracklet_id];
-            else
-                largest_shared_objectlandmark == nullptr;
-        }
+//        if (use_truth_trackid) // find associate id based on tracket id.
+//        {
+//            if (trackletid_to_landmark.count(candidateObject->truth_tracklet_id))
+//                largest_shared_objectlandmark = trackletid_to_landmark[candidateObject->truth_tracklet_id];
+//            else
+//                largest_shared_objectlandmark == nullptr;
+//        }
 
         if (largest_shared_objectlandmark == nullptr) // if not found, create as new landmark.  either using original local pointer, or initialize as new
         {
@@ -5835,6 +5881,9 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
                 largest_shared_objectlandmark->pose_Twc_latestKF = cubeglobalpose; //if want to test without BA
                 largest_shared_objectlandmark->pose_noopti = cubeglobalpose;
             }
+
+            std::cout << "Merge to landmark \n";
+
             largest_shared_objectlandmark->MergeIntoLandmark(candidateObject);
         }
     }
@@ -6320,11 +6369,11 @@ void Tracking::CreateObject_InTrackMotion(){
 
             // Incorporate old objects or generate new ones
             int result = obj_2ds[k]->creatObject();
-            switch (result) {
-                case -1:   cout << "The detection frame is close to the edge" << endl;   break;
-                case 0:    cout << "Blend into old objects" << endl;   break;
-                case 1:    cout << "Generate new objects" << endl;     break;
-            }
+//            switch (result) {
+//                case -1:   cout << "The detection frame is close to the edge" << endl;   break;
+//                case 0:    cout << "Blend into old objects" << endl;   break;
+//                case 1:    cout << "Generate new objects" << endl;     break;
+//            }
         }
 
 

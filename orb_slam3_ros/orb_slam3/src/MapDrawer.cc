@@ -544,7 +544,7 @@ namespace ORB_SLAM3 {
         // draw all map objects
         const vector<MapCuboidObject *> all_Map_objs = (mpAtlas->GetCurrentMap())->GetAllMapObjects();
         Vector4d front_face_color(1.0, 0.0, 1.0, 1.0); // draw front face edges magenta
-        std::cout << "MapDrawer:: DrawMapCuboids: "<< all_Map_objs.size() << std::endl;
+//        std::cout << "MapDrawer: DrawMapCuboids: "<< all_Map_objs.size() << std::endl;
         for (size_t object_id = 0; object_id < all_Map_objs.size(); object_id++) {
             MapCuboidObject *obj_landmark = all_Map_objs[object_id];
 

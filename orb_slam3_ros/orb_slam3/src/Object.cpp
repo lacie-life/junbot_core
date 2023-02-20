@@ -390,7 +390,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
     {
         float fIouMax = 0.0;
 
-        std::cout << "Number object in current map: " << (int)ObjectMaps.size() << "\n";
+//        std::cout << "Number object in current map: " << (int)ObjectMaps.size() << "\n";
 
         for (int i = (int)ObjectMaps.size() - 1; i >= 0; i--)
         {
@@ -694,12 +694,12 @@ int Object_2D::creatObject()
     unique_lock<mutex> lock2(mGlobalMutex);
     const cv::Mat ColorImage = mpCurrentFrame->mColorImage.clone();
     int associate = Object2D_DataAssociationWith_Object3D();    // data association with object3d in map. 
-    switch (associate) {
-                case MotionIou:   cout << "Association：MotionIou. " << endl; return 0;
-                case NoPara:    cout << "Association：NoPara. " << endl;  return 0;
-                case ProIou:    cout << "Association：ProIou. " << endl;  return 0;
-                case t_test:    cout << "Association：t_test. " << endl;  return 0;
-    }
+//    switch (associate) {
+//                case MotionIou:   cout << "Association：MotionIou. " << endl; return 0;
+//                case NoPara:    cout << "Association：NoPara. " << endl;  return 0;
+//                case ProIou:    cout << "Association：ProIou. " << endl;  return 0;
+//                case t_test:    cout << "Association：t_test. " << endl;  return 0;
+//    }
     if(associate)
         return 0;  // Association succeeded
 
@@ -2370,7 +2370,7 @@ Object_Map::Object_Map() {
 	{
 		cout << "Failed to open settings file at: " << WORK_SPACE_PATH + yamlfile_object << endl;
 	}
-	else cout << "success to open file at: " << WORK_SPACE_PATH + "/config/RGB-D/" + yamlfile_object << endl;
+//	else cout << "success to open file at: " << WORK_SPACE_PATH + "/config/RGB-D/" + yamlfile_object << endl;
 
     mIE_rows = fSettings["IE.rows"];
     mIE_cols = fSettings["IE.cols"];

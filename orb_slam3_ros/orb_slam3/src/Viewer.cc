@@ -277,8 +277,8 @@ void Viewer::Run()
 
 //    cv::namedWindow("Point, Line and Object Detection");
 //    cv::moveWindow("Point, Line and Object Detection", 40, 40);
-    cv::namedWindow("Quadric Projection");
-    cv::moveWindow("Quadric Projection", 40, 40+480*0.8);
+//    cv::namedWindow("Quadric Projection");
+//    cv::moveWindow("Quadric Projection", 40, 40+480*0.8);
 
 //    cv::namedWindow("[MotionIou]");
 //    cv::moveWindow("[MotionIou]", 40, 40+480*0.7+40+480*0.7);
