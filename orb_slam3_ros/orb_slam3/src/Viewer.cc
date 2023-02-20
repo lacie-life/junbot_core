@@ -438,7 +438,6 @@ void Viewer::Run()
 
             pangolin::FinishFrame();
         }
-        
 
         cv::Mat toShow;
         cv::Mat im = mpFrameDrawer->DrawFrame(trackedImageScale);
@@ -695,7 +694,6 @@ void Viewer::read_local_object_file(){
             vObjects[ object_num ]-> mvpMapObjectMappoints.push_back( point );
             //mpMapPub -> mpMap->mvObjectMap[ object_num ]->mvpMapObjectMappoints.push_back( &point );
         }
-
 
         row.clear();
         type = -1;

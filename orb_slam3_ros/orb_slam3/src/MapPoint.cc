@@ -223,7 +223,7 @@ namespace ORB_SLAM3 {
                     int frame_cubod_id = pKF->keypoint_associate_objectID[idx];
                     if (frame_cubod_id > -1)
                     {
-                        std::cout << "[MapPoint] : " << frame_cubod_id << std::endl;
+//                        std::cout << "[MapPoint] : " << frame_cubod_id << std::endl;
                         AddObjectObservation(pKF->local_cuboids[frame_cubod_id]);
                     }
                 }

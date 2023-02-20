@@ -105,7 +105,8 @@ class MapPoint
 
 
 public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
+
     MapPoint();
 
     MapPoint(const cv::Mat &Pos, int FirstKFid, int FirstFrame, Map* pMap);

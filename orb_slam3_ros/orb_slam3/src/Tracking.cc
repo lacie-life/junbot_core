@@ -5506,9 +5506,10 @@ void Tracking::DetectCuboid(KeyFrame *pKF)
         newcuboid->cube_meas = cube_local_meas;
 
         // TODO: Checking here
-        newcuboid->bbox_2d = all_objs[ii]->ComputeProjectRectFrameToCurrentKeyFrame(*pKF);
+//        newcuboid->bbox_2d = all_objs[ii]->ComputeProjectRectFrameToCurrentKeyFrame(*pKF);
+        newcuboid->bbox_2d = all_objs[ii]->mRect_byProjectPoints;
 
-        std::cout << "BBox 2D of cuboid " << ii << ": " << newcuboid->bbox_2d << std::endl;
+//        std::cout << "BBox 2D of cuboid " << ii << ": " << newcuboid->bbox_2d << std::endl;
 
         newcuboid->bbox_vec = Vector4d((double)newcuboid->bbox_2d.x + (double)newcuboid->bbox_2d.width / 2, (double)newcuboid->bbox_2d.y + (double)newcuboid->bbox_2d.height / 2,
                                        (double)newcuboid->bbox_2d.width, (double)newcuboid->bbox_2d.height);
@@ -5601,7 +5602,7 @@ void Tracking::DetectCuboid(KeyFrame *pKF)
                                 float iou_ratio = bboxOverlapratio(pKF->local_cuboids[i]->bbox_2d,
                                                                    pKF->local_cuboids[j]->bbox_2d);
 
-                                std::cout << "Overlapped " << i << " " << j << " ratio: " << iou_ratio << std::endl;
+//                                std::cout << "Overlapped " << i << " " << j << " ratio: " << iou_ratio << std::endl;
 
                                 if (iou_ratio > 0.15) {
                                     overlapped[i] = true;
@@ -5751,7 +5752,7 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
             MapCuboidObject *mPO = kfs->local_cuboids[j];
             if (mPO->become_candidate && (!mPO->already_associated))
             {
-                std::cout << "Step 1 \n";
+//                std::cout << "Step 1 \n";
                 LocalObjectsCandidates.push_back(kfs->local_cuboids[j]);
             }
         }
@@ -5763,7 +5764,7 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
                 {
                     if (kfs->cuboids_landmark[j]->association_refid_in_tracking != pKF->mnId) // could also use set to avoid duplicates
                     {
-                        std::cout << "Step 2 \n";
+//                        std::cout << "Step 2 \n";
                         LocalObjectsLandmarks.push_back(kfs->cuboids_landmark[j]);
                         kfs->cuboids_landmark[j]->association_refid_in_tracking = pKF->mnId;
                     }
@@ -5776,19 +5777,28 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
               << " #localKFs " << mvpLocalKeyFrames.size() << std::endl;
     int largest_shared_num_points_thres = 10;
     if (mono_allframe_Obj_depth_init)
+    {
         largest_shared_num_points_thres = 20;
+    }
     if (scene_unique_id == kitti)
+    {
         largest_shared_num_points_thres = 10; // kitti vehicle occupy large region
+    }
 
     if (whether_detect_object && mono_allframe_Obj_depth_init) // dynamic object is more difficult. especially reverse motion
+    {
         largest_shared_num_points_thres = 5;
+    }
 
     MapCuboidObject *last_new_created_object = nullptr;
+
     for (size_t i = 0; i < LocalObjectsCandidates.size(); i++)
     {
         // there might be some new created object!
         if (last_new_created_object)
+        {
             LocalObjectsLandmarks.push_back(last_new_created_object);
+        }
         last_new_created_object = nullptr;
 
         // find existing object landmarks which share most points with this object
@@ -5801,8 +5811,12 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
             map<MapCuboidObject *, int> LandmarkObserveCounter;
 
             for (size_t j = 0; j < object_owned_pts.size(); j++)
+            {
                 for (map<MapCuboidObject *, int>::iterator mit = object_owned_pts[j]->MapObjObservations.begin(); mit != object_owned_pts[j]->MapObjObservations.end(); mit++)
+                {
                     LandmarkObserveCounter[mit->first]++;
+                }
+            }
 
             int largest_shared_num_points = largest_shared_num_points_thres;
             for (size_t j = 0; j < LocalObjectsLandmarks.size(); j++)
@@ -5855,6 +5869,7 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
                 candidateObject->allDynamicPoses[refframe] = make_pair(cubeglobalpose, false); //Vector6d::Zero()  false means not BAed
             }
 
+            // TODO: CHECKING HERE
             std::cout << "Add Map object \n";
 
             (mpAtlas->GetCurrentMap())->AddMapObject(candidateObject);
@@ -5883,7 +5898,6 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
             }
 
             std::cout << "Merge to landmark \n";
-
             largest_shared_objectlandmark->MergeIntoLandmark(candidateObject);
         }
     }
@@ -5911,23 +5925,25 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
         {
             MapCuboidObject *pMObject = all_objects[i];
             if ((!pMObject->isBad()) && (!pMObject->isGood))						// if not determined good or bad yet.
-                if ((int)pMObject->GetLatestKeyFrame()->mnId < (int)pKF->mnId - 15) //20
+            {
+                if ((int) pMObject->GetLatestKeyFrame()->mnId < (int) pKF->mnId - 15) //20
                 {
                     // if not recently observed, and not enough observations.  NOTE if point-object not used in BA, filtered size will be zero...
-                    bool no_enough_inlier_pts = check_object_points && (pMObject->NumUniqueMapPoints() > 20) && (pMObject->used_points_in_BA_filtered.size() < 10) && (pMObject->point_object_BA_counter > -1);
-                    if (pMObject->Observations() < minimum_object_observation)
-                    {
+                    bool no_enough_inlier_pts = check_object_points && (pMObject->NumUniqueMapPoints() > 20) &&
+                                                (pMObject->used_points_in_BA_filtered.size() < 10) &&
+                                                (pMObject->point_object_BA_counter > -1);
+                    if (pMObject->Observations() < minimum_object_observation) {
                         pMObject->SetBadFlag();
-                        cout << "Found one bad object !!!!!!!!!!!!!!!!!!!!!!!!!  " << pMObject->mnId << "  " << pMObject->Observations() << "  " << pMObject->used_points_in_BA_filtered.size() << endl;
+                        cout << "Found one bad object !!!!!!!!!!!!!!!!!!!!!!!!!  " << pMObject->mnId << "  "
+                             << pMObject->Observations() << "  " << pMObject->used_points_in_BA_filtered.size() << endl;
 
                         if (use_truth_trackid)
                             trackletid_to_landmark.erase(pMObject->truth_tracklet_id); // remove from track id mapping
-                    }
-                    else
-                    {
+                    } else {
                         pMObject->isGood = true;
                     }
                 }
+            }
         }
     }
 }
