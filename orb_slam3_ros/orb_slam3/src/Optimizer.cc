@@ -41,6 +41,7 @@
 #include "OptimizableTypes.h"
 #include "Parameter.h"
 #include "detect_3d_cuboid/matrix_utils.h"
+#include "MapCuboidObject.h"
 #include "Converter.h"
 
 
