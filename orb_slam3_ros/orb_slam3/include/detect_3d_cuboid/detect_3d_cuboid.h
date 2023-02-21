@@ -47,6 +47,7 @@ typedef std::vector<cuboid*> ObjectSet;  // for each 2D box, the set of generate
 
 struct cam_pose_infos
 {
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
       Eigen::Matrix4d transToWolrd;       
       Eigen::Matrix3d Kalib;              
       
@@ -61,6 +62,8 @@ struct cam_pose_infos
 
 class detect_3d_cuboid
 {
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 public:
       cam_pose_infos cam_pose;
       cam_pose_infos cam_pose_raw;

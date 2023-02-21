@@ -20,6 +20,7 @@
 #include "MapPoint.h"
 #include "KeyFrame.h"
 #include "Parameter.h"
+#include "MapCuboidObject.h"
 #include <pangolin/pangolin.h>
 #include <mutex>
 

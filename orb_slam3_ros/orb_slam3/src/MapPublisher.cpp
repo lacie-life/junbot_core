@@ -146,7 +146,7 @@ namespace ORB_SLAM3
             PublishKeyFrames(vKeyFrames);
             PublishObject(vMapObjects);
             PublishObject2Map(vMapObjects);
-            PublishIE(vMapObjects);
+//            PublishIE(vMapObjects);
         }
     }
 

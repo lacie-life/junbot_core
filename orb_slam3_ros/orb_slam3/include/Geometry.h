@@ -21,10 +21,13 @@
 namespace ORB_SLAM3
 {
     class Geometry {
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
     private:
 
         class DynKeyPoint
         {
+            EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
         public:
             cv::Point2i mPoint;
             int mRefFrameLabel;
@@ -33,6 +36,7 @@ namespace ORB_SLAM3
         class DataBase
         {
         public:
+            EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
             vector<ORB_SLAM3::Frame> mvDataBase = vector<ORB_SLAM3::Frame>(MAX_DB_SIZE);
             int mIni=0;
             int mFin=0;

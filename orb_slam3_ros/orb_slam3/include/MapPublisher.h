@@ -42,6 +42,8 @@ namespace ORB_SLAM3
     class MapPublisher {
 
     public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
+
         MapPublisher(Atlas* mAtlas, const string &strSettingPath);
 
         Atlas* mpAtlas;

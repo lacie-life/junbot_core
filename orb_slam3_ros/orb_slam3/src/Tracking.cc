@@ -32,6 +32,7 @@
 #include "YoloDetection.h"
 #include "Parameter.h"
 #include "g2o_Object.h"
+#include "MapCuboidObject.h"
 
 #include <Eigen/StdVector>
 #include <iostream>
@@ -5775,7 +5776,9 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
 
     std::cout << "Tracking: Associate cuboids #candidate: " << LocalObjectsCandidates.size() << " #landmarks " << LocalObjectsLandmarks.size()
               << " #localKFs " << mvpLocalKeyFrames.size() << std::endl;
+
     int largest_shared_num_points_thres = 10;
+
     if (mono_allframe_Obj_depth_init)
     {
         largest_shared_num_points_thres = 20;
@@ -5853,6 +5856,7 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
             }
             candidateObject->already_associated = true; // must be put before SetAsLandmark();
             KeyFrame *refframe = candidateObject->GetReferenceKeyFrame();
+
             candidateObject->addObservation(refframe, candidateObject->object_id_in_localKF); // add to frame observation
             refframe->cuboids_landmark.push_back(candidateObject);
             candidateObject->mnId = MapCuboidObject::getIncrementedIndex(); //mpMap->MapObjectsInMap();  // needs to manually set
@@ -5873,8 +5877,14 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
             std::cout << "Add Map object \n";
 
             (mpAtlas->GetCurrentMap())->AddMapObject(candidateObject);
+
             last_new_created_object = candidateObject;
-            candidateObject->allDynamicPoses[refframe] = make_pair(candidateObject->GetWorldPos(), false);
+
+            g2o::cuboid cubePose = candidateObject->GetWorldPos();
+
+//            candidateObject->allDynamicPoses[refframe] = std::make_pair(cubePose, false);
+
+            std::cout << "Step 1 \n";
         }
         else // if found, then update observation.
         {
