@@ -34,7 +34,7 @@
 
 #include "YoloDetection.h"
 #include "Detector.h"
-#include "MapCuboidObject.h"
+//#include "MapCuboidObject.h"
 
 #include <mutex>
 
@@ -287,7 +287,12 @@ public:
     }
 
     static bool lId(KeyFrame* pKF1, KeyFrame* pKF2){
-        return pKF1->mnId<pKF2->mnId;
+        return pKF1->mnId < pKF2->mnId;
+    }
+
+    bool operator <(const KeyFrame& kf) const
+    {
+        return mnId < kf.mnId;
     }
 
     Map* GetMap();
