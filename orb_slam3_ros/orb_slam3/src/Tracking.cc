@@ -5882,7 +5882,7 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
 
             g2o::cuboid cubePose = candidateObject->GetWorldPos();
 
-            candidateObject->allDynamicPoses[refframe] = make_pair(cubePose, false);
+//            candidateObject->allDynamicPoses[refframe] = std::make_pair(cubePose, false);
 
             std::cout << "Step 1 \n";
         }
