@@ -15,7 +15,8 @@
    - [ ] Turning object database
    	   - [x] Segment 3D bounding box
    	   - [ ] Darknet-ros-3d test [[Link](https://github.com/IntelligentRoboticsLabs/gb_visual_detection_3d)]
-   	   - [ ] Object filter
+   	   - [x] Object filter (sometime crashed)
+   	   - [ ] Improve Object filter
    - [x] Add ZED example
  
  - [ ] ~~Option 1: Segment point cloud by PointNet++ => get 3D bounding box of object (office enviroment) [[Ref](https://github.com/sc19aas/3D-object-detection)]~~
