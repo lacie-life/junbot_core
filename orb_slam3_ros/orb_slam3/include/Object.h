@@ -213,7 +213,6 @@ public:
 public:
     std::vector<Object_2D* > mvObject_2ds;  
 
-    
     cv::Rect mLastRect;
     cv::Rect mLastLastRect;
     cv::Rect mRect_byProjectPoints;    
@@ -235,13 +234,13 @@ public:
     float mCenterStandar_x, mCenterStandar_y, mCenterStandar_z;
     float mCenterStandar;
 
-    std::vector< MapPoint*> mvpMapObjectMappoints;
-    std::vector< MapPoint*> mvpMapObjectMappoints_NewForActive;     
+    std::vector<MapPoint*> mvpMapObjectMappoints;
+    std::vector<MapPoint*> mvpMapObjectMappoints_NewForActive;
 
     std::map<int, int> mReObj;                                      
     std::map<int, int> mmAppearSametime;                            
 
-    std::vector<Eigen::Matrix<float,5,1>, Eigen::aligned_allocator<Eigen::Matrix<float,5,1>> > mvAngleTimesAndScore;    // Score of sampling angle.
+    std::vector<Eigen::Matrix<float,5,1>, Eigen::aligned_allocator<Eigen::Matrix<float,5,1>>> mvAngleTimesAndScore;    // Score of sampling angle.
 
     void ComputeMeanAndDeviation_3D();
     void IsolationForestDeleteOutliers();
@@ -255,8 +254,8 @@ public:
         this->mvObject_2ds.push_back(Object_2d);
     }
 
-// ************************************
-// object3d track
+    // ************************************
+    // object3d track
     bool UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, int Flag);
 
 protected:

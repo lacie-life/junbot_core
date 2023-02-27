@@ -127,7 +127,8 @@ void ObjectDatabase::addObject(Cluster& cluster)
                     best_close      = temp_iter;// corresponding index
                 }
             }
-            // 5. If the distance is smaller than the object size, it is considered to be the same object in the same space,
+            // 5. If the distance is smaller than the object size,
+            // it is considered to be the same object in the same space,
             // and the information of the object in the database is updated
             for (int i = 0; i < mvInterestNames.size(); i++)
             {
@@ -141,7 +142,8 @@ void ObjectDatabase::addObject(Cluster& cluster)
                     }
                     else
                     {
-                        // 6. If the distance exceeds the size of the object, it is considered to be the same object in a different position,
+                        // 6. If the distance exceeds the size of the object,
+                        // it is considered to be the same object in a different position,
                         // and it is directly put into the database
                         DataBaseSize++;
                         cluster.object_id = DataBaseSize;
