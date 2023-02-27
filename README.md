@@ -32,6 +32,10 @@
       - [ ] CostMap param?
       - [ ] Planner param?
    - [ ] ....
+   
+ - [ ] Evaluate results
+   - [ ] SLAM 
+   - [ ] Re-path planning
 
 # Install 
 
