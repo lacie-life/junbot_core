@@ -28,31 +28,33 @@ typedef struct Cluster
 
 class ObjectDatabase {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     ObjectDatabase();
     ~ObjectDatabase();
     void addObject(Cluster& cluster);
-    void addObject(Object_Map* object);
+    void addObject(ORB_SLAM3::Object_Map& object);
     cv::Scalar  getObjectColor(int class_id); // defined object color
     cv::Scalar  getObjectColor(string class_name); // defined object color
     float getObjectSize(int class_id);        // defined object size
 
     // Return the object data with the same name in the database
     std::vector<Cluster>  getObjectByName(std::string objectName);
-    std::vector<Object_Map*> getObjectByName(std::string objectName);
+    std::vector<ORB_SLAM3::Object_Map> getObjectMapByName(std::string objectName);
 
     // Semantic point cloud target array
     std::vector<Cluster> mClusters;
 
-    std::vector<Object_Map*> mObjects;
+    std::vector<ORB_SLAM3::Object_Map> mObjects;
 protected:
     // the color of each object
     std::vector<cv::Scalar> mvColors;
 
     // the size of each object
     std::vector<float>      mvSizes;
-    std::vector<string> mvInterestNames;
+    std::vector<int> mvInterestNames;
 
     int DataBaseSize;
 };
 
-#endif //ORB_SLAM3_ROS_OBJECTDATABASE_H
+#endif //ORB_SLAM3_ROS_OBJECTDATABASE_HmpDetector
