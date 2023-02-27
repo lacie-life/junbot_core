@@ -316,19 +316,6 @@ Tracking::Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer,
         }
     }
 
-    // 3D cuboid testing
-    // bool use_LSD_algorithm = false;
-    // bool save_to_imgs = false;
-    // bool save_to_txts = false;
-    // int numOfOctave_ = 1;
-    // float Octave_ratio = 2.0;
-    // line_lbd_ptr = new line_lbd_detect(numOfOctave_, Octave_ratio);
-    // line_lbd_ptr->use_LSD = use_LSD_algorithm;
-    // line_lbd_ptr->save_imgs = save_to_imgs;
-    // line_lbd_ptr->save_txts = save_to_txts;
-    // line_lbd_ptr->line_length_thres = 15; // the threshold of removing short line.
-    // line detect ------------------------------------------------
-
 #ifdef REGISTER_TIMES
     vdRectStereo_ms.clear();
     vdResizeImage_ms.clear();
@@ -1821,11 +1808,14 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
 
     if (mSensor == System::RGBD && !mpSystem->isYoloDetection)
     {
-        mCurrentFrame = Frame(mImGray,mImDepth,mImMask,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera);
+        mCurrentFrame = Frame(mImGray,mImDepth,mImMask,timestamp,
+                              mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera);
     }
     else if(mSensor == System::IMU_RGBD && !mpSystem->isYoloDetection)
     {
-        mCurrentFrame = Frame(mImGray,mImDepth,mImMask,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,&mLastFrame,*mpImuCalib);
+        mCurrentFrame = Frame(mImGray,mImDepth,mImMask,timestamp,
+                              mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,
+                              mThDepth,mpCamera,&mLastFrame,*mpImuCalib);
     }
     // For 3D cuboid
     // TODO: REMEMBER HERE
@@ -1835,7 +1825,6 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
                               mpORBextractorLeft, line_lbd_ptr, mpORBVocabulary,
                               mK, mDistCoef, mbf, mThDepth, objects, mpCamera);
 //        mCurrentFrame = Frame(mImGray,mImDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera);
-
     }
     else if (mSensor == System::IMU_RGBD && mpSystem->isYoloDetection)
     {
@@ -2847,7 +2836,7 @@ void Tracking::CreateInitialMapMonocular()
     mpAtlas->AddKeyFrame(pKFini);
     mpAtlas->AddKeyFrame(pKFcur);
 
-    if (whether_detect_object)
+    if (whether_detect_object && mpSystem->isg2oObjectOptimize)
     {
         DetectCuboid(pKFini);
         AssociateCuboids(pKFini);
@@ -2914,7 +2903,7 @@ void Tracking::CreateInitialMapMonocular()
 
     // Scale points
     vector<MapPoint*> vpAllMapPoints = pKFini->GetMapPointMatches();
-    for(size_t iMP=0; iMP<vpAllMapPoints.size(); iMP++)
+    for(size_t iMP = 0; iMP < vpAllMapPoints.size(); iMP++)
     {
         if(vpAllMapPoints[iMP])
         {
@@ -3014,7 +3003,7 @@ void Tracking::CreateMapInAtlas()
 
 void Tracking::CheckReplacedInLastFrame()
 {
-    for(int i =0; i<mLastFrame.N; i++)
+    for(int i = 0; i < mLastFrame.N; i++)
     {
         MapPoint* pMP = mLastFrame.mvpMapPoints[i];
 
@@ -3059,7 +3048,7 @@ bool Tracking::TrackReferenceKeyFrame()
 
     // Discard outliers
     int nmatchesMap = 0;
-    for(int i =0; i<mCurrentFrame.N; i++)
+    for(int i = 0; i < mCurrentFrame.N; i++)
     {
         //if(i >= mCurrentFrame.Nleft) break;
         if(mCurrentFrame.mvpMapPoints[i])
@@ -3115,10 +3104,10 @@ void Tracking::UpdateLastFrame()
 
     // Create "visual odometry" MapPoints
     // We sort points according to their measured depth by the stereo/RGB-D sensor
-    vector<pair<float,int> > vDepthIdx;
+    vector<pair<float,int>> vDepthIdx;
     const int Nfeat = mLastFrame.Nleft == -1? mLastFrame.N : mLastFrame.Nleft;
     vDepthIdx.reserve(Nfeat);
-    for(int i=0; i<Nfeat;i++)
+    for(int i = 0; i < Nfeat; i++)
     {
         float z = mLastFrame.mvDepth[i];
         if(z>0)
@@ -3135,7 +3124,7 @@ void Tracking::UpdateLastFrame()
     // We insert all close points (depth<mThDepth)
     // If less than 100 close points, we insert the 100 closest ones.
     int nPoints = 0;
-    for(size_t j=0; j<vDepthIdx.size();j++)
+    for(size_t j = 0; j < vDepthIdx.size(); j++)
     {
         int i = vDepthIdx[j].second;
 
@@ -3236,7 +3225,7 @@ bool Tracking::TrackWithMotionModel()
 
     // Discard outliers
     int nmatchesMap = 0;
-    for(int i =0; i<mCurrentFrame.N; i++)
+    for(int i = 0; i < mCurrentFrame.N; i++)
     {
         if(mCurrentFrame.mvpMapPoints[i])
         {
@@ -3612,9 +3601,13 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
     mCurrentFrame.mpReferenceKF = pKF;
 
     // For 3D cuboid testing (optimize)
-    std::cout << "\033[33m Created new keyframe!  " << pKF->mnId << " local cuboid " << pKF->local_cuboids.size()
-              << "   total ID  " << pKF->mnFrameId << "\033[0m" << std::endl;
-    if (whether_detect_object)
+    if(mpSystem->isg2oObjectOptimize)
+    {
+        std::cout << "\033[33m Created new keyframe!  " << pKF->mnId << " local cuboid " << pKF->local_cuboids.size()
+                  << "   total ID  " << pKF->mnFrameId << "\033[0m" << std::endl;
+    }
+
+    if (whether_detect_object && mpSystem->isg2oObjectOptimize)
     {
         DetectCuboid(pKF);
         AssociateCuboids(pKF);
@@ -3730,7 +3723,7 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
     }
 
     //copied from localMapping, only for dynamic object
-    if (mono_allframe_Obj_depth_init && whether_dynamic_object)
+    if (mono_allframe_Obj_depth_init && whether_dynamic_object && mpSystem->isg2oObjectOptimize)
     {
         KeyFrame *mpCurrentKeyFrame = pKF;
 
@@ -4030,7 +4023,7 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
         // mCurrentFrame.mvpMapPoints indepent of new created mappoints in localmapping
     }
 
-    if (enable_ground_height_scale)
+    if (enable_ground_height_scale && mpSystem->isg2oObjectOptimize)
     {
         float img_width = float(mpAtlas->img_width);
         float img_height = float(mpAtlas->img_height);

@@ -150,11 +150,11 @@ void LocalMapping::Run()
                         Optimizer::LocalInertialBA(mpCurrentKeyFrame, &mbAbortBA, mpCurrentKeyFrame->GetMap(),num_FixedKF_BA,num_OptKF_BA,num_MPs_BA,num_edges_BA, bLarge, !mpCurrentKeyFrame->GetMap()->GetIniertialBA2());
                         b_doneLBA = true;
                     }
-                     else if(mpAtlas->KeyFramesInMap()>5)
-                     {
-                         std::cout << "Optimizer: BA with points and objects" << std::endl;
-                         Optimizer::LocalBACameraPointObjects(mpCurrentKeyFrame, &mbAbortBA, mpCurrentKeyFrame->GetMap(), num_FixedKF_BA, false, false);
-                     }
+                    else if(mpAtlas->KeyFramesInMap()>5 && mpSystem->isg2oObjectOptimize)
+                    {
+                        std::cout << "Optimizer: BA with points and objects" << std::endl;
+                        Optimizer::LocalBACameraPointObjects(mpCurrentKeyFrame, &mbAbortBA, mpCurrentKeyFrame->GetMap(), num_FixedKF_BA, false, false);
+                    }
                     else
                     {
                         Optimizer::LocalBundleAdjustment(mpCurrentKeyFrame,&mbAbortBA, mpCurrentKeyFrame->GetMap(),num_FixedKF_BA,num_OptKF_BA,num_MPs_BA,num_edges_BA);
@@ -180,7 +180,6 @@ void LocalMapping::Run()
                     vnLBA_KFfixed.push_back(num_FixedKF_BA);
                     vnLBA_MPs.push_back(num_MPs_BA);
                 }
-
 #endif
 
                 // Initialize IMU here
@@ -191,7 +190,6 @@ void LocalMapping::Run()
                     else
                         InitializeIMU(1e2, 1e5, true);
                 }
-
 
                 // Check redundant local Keyframes
                 KeyFrameCulling();

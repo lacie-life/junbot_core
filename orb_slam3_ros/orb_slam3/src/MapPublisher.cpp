@@ -477,6 +477,7 @@ namespace ORB_SLAM3
             marker.action = visualization_msgs::Marker::ADD;
             marker.color.r = color[2]/255.0; marker.color.g = color[1]/255.0; marker.color.b = color[0]/255.0; marker.color.a = 1.0;
             marker.scale.x = 0.01;
+
             //     8------7
             //    /|     /|
             //   / |    / |

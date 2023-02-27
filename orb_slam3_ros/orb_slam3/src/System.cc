@@ -48,11 +48,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 {
     // Output welcome message
     cout << endl <<
-    "ORB-SLAM3 Copyright (C) 2017-2020 Carlos Campos, Richard Elvira, Juan J. Gómez, José M.M. Montiel and Juan D. Tardós, University of Zaragoza." << endl <<
-    "ORB-SLAM2 Copyright (C) 2014-2016 Raúl Mur-Artal, José M.M. Montiel and Juan D. Tardós, University of Zaragoza." << endl <<
-    "This program comes with ABSOLUTELY NO WARRANTY;" << endl  <<
-    "This is free software, and you are welcome to redistribute it" << endl <<
-    "under certain conditions. See LICENSE.txt." << endl << endl;
+    "A modified version of ORB-SLAM 3" << endl;
 
     cout << "Input sensor was set to: ";
 
@@ -103,6 +99,17 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 
     float resolution = fsSettings["PointCloudMapping.Resolution"];
     int model = fsSettings["Semantic.Model"];
+    int g2oMode =  fsSettings["Semantic.ObjectOptimize"];
+
+    if(g2oMode == 0)
+    {
+        isg2oObjectOptimize = false;
+        std::cout << "No Object optimize \n";
+    }
+    else {
+        isg2oObjectOptimize = true;
+        std::cout << "Cube Object SLAM Optimize enabled \n";
+    }
 
     cv::FileNode modelNode = fsSettings["Semantic.ModelPath"];
     string modelPath = (string)modelNode;

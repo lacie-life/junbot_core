@@ -480,6 +480,8 @@ namespace ORB_SLAM3 {
 
         std::vector<Object_Map* > object_3d = mpMap->GetObjects();
 
+        std::cout << "Object Number: " << object_3d.size() << std::endl;
+
         for (size_t i = 0; i < object_3d.size(); i++)
         {
             if ((object_3d[i]->mvpMapObjectMappoints.size() < 10) || (object_3d[i]->bad_3d == true))

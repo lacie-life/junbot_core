@@ -288,6 +288,7 @@ private:
     // std::shared_ptr<Detector> mpDetector;
 public:
     bool isYoloDetection = true;
+    bool isg2oObjectOptimize = false;
 };
 
 }// namespace ORB_SLAM

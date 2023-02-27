@@ -421,8 +421,13 @@ void Viewer::Run()
             if(menuShowPoints)
             {
                 mpMapDrawer->DrawMapPoints();
-                // mpMapDrawer->DrawMapCuboids();
-                mpMapDrawer->DrawMapCuboids2();
+                if (mpSystem->isg2oObjectOptimize)
+                {
+                    mpMapDrawer->DrawMapCuboids2();
+                }
+                else{
+                    mpMapDrawer->DrawMapCuboids();
+                }
             }
             else
             {
