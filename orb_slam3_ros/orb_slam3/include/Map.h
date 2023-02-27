@@ -28,12 +28,15 @@
 #include "Atlas.h"
 #include "MapCuboidObject.h"
 #include "Object.h"
+#include "ObjectDatabase.h"
 
 #include <set>
 #include <pangolin/pangolin.h>
 #include <mutex>
 
 #include <boost/serialization/base_object.hpp>
+
+class ObjectDatabase;
 
 namespace ORB_SLAM3
 {
@@ -210,7 +213,6 @@ protected:
     // Index related to a big change in the map (loop closure, global BA)
     int mnBigChangeIdx;
 
-
     // View of the map in aerial sight (for the AtlasViewer)
     GLubyte* mThumbnail;
 
@@ -228,8 +230,9 @@ protected:
     Converter convert;
 
 protected:
-    // std::vectir<Object_Map*> mvObjectMap;
-    std::set<Object_Map*> mvObjectMap;
+    // std::vector<Object_Map*> mvObjectMap;
+    // std::set<Object_Map*> mvObjectMap;
+    ObjectDatabase* mpOD;
 
 public:
     void AddObject(Object_Map *pObj);
@@ -237,18 +240,9 @@ public:
 
 // For 3D Cuboid testing (optimize)
 public:
-    cv::Mat InitToGround, GroundToInit; // orb's init camera frame to my ground
-    Eigen::Matrix4f InitToGround_eigen;
-    Eigen::Matrix4d InitToGround_eigen_d, GroundToInit_eigen_d;
+    int img_width, img_height;
     Eigen::Matrix3f Kalib_f, invKalib_f;
     Eigen::Matrix3d Kalib, invKalib;
-
-    int img_width, img_height;
-
-    cv::Mat GroundToInit_opti;
-    cv::Mat InitToGround_opti;
-    cv::Mat RealGroundToMine_opti;
-    cv::Mat MineGroundToReal_opti;
 
     void AddMapObject(MapCuboidObject *pMO);
     void EraseMapObject(MapCuboidObject *pMO);

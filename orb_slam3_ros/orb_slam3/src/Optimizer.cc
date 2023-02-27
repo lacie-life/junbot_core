@@ -1659,7 +1659,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
 
 #ifdef ObjectFixScale
         typedef g2o::VertexCuboidFixScale g2o_object_vertex;
-    typedef g2o::EdgeSE3CuboidFixScaleProj g2o_camera_obj_2d_edge;
+        typedef g2o::EdgeSE3CuboidFixScaleProj g2o_camera_obj_2d_edge;
 #else
         typedef g2o::VertexCuboid g2o_object_vertex;
         typedef g2o::EdgeSE3CuboidProj g2o_camera_obj_2d_edge;

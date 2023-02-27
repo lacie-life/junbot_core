@@ -60,6 +60,8 @@ find_package(catkin REQUIRED COMPONENTS
         message_generation
         )
 
+find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
+
 find_package(Eigen3 3.1.0 REQUIRED)
 find_package(Pangolin REQUIRED)
 

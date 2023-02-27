@@ -75,6 +75,8 @@ void Atlas::CreateNewMap()
     mpCurrentMap->SetCurrentMap();
     mspMaps.insert(mpCurrentMap);
 
+    mpCurrentMap->Kalib = Kalib;
+
     std::cout << "New Map here \n";
 }
 

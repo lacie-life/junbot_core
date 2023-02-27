@@ -254,6 +254,11 @@ public:
         this->mvObject_2ds.push_back(Object_2d);
     }
 
+    bool operator ==(const int &x)
+    {
+        return(this->mnClass == x);
+    }
+
     // ************************************
     // object3d track
     bool UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, int Flag);

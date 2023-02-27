@@ -18,6 +18,8 @@
 
 
 #include "Map.h"
+#include "ObjectDatabase.h"
+#include "Object.h"
 
 #include <mutex>
 
@@ -31,6 +33,7 @@ namespace ORB_SLAM3 {
                  mbIsInertial(false), mbIMU_BA1(false), mbIMU_BA2(false) {
         mnId = nNextId++;
         mThumbnail = static_cast<GLubyte *>(NULL);
+        mpOD = new(ObjectDatabase);
     }
 
     Map::Map(int initKFid) : mnInitKFid(initKFid), mnMaxKFid(initKFid),/*mnLastLoopKFid(initKFid),*/ mnBigChangeIdx(0),
@@ -41,6 +44,7 @@ namespace ORB_SLAM3 {
                              mbIMU_BA1(false), mbIMU_BA2(false) {
         mnId = nNextId++;
         mThumbnail = static_cast<GLubyte *>(NULL);
+        mpOD = new(ObjectDatabase);
     }
 
     Map::~Map() {
@@ -443,13 +447,17 @@ namespace ORB_SLAM3 {
     void Map::AddObject(Object_Map *pObj)
     {
         unique_lock<mutex> lock(mMutexMap);
-        mvObjectMap.insert(pObj);
+        // mvObjectMap.insert(pObj);
+        mpOD->addObject(pObj);
     }
 
     vector<Object_Map*> Map::GetObjects()
     {
         unique_lock<mutex> lock(mMutexMap);
-        return vector<Object_Map*>(mvObjectMap.begin(), mvObjectMap.end());
+        // return vector<Object_Map*>(mvObjectMap.begin(), mvObjectMap.end());
+        std::vector<Object_Map*> objs = mpOD->getAllObject();
+
+        return objs;
     }
 
     void Map::AddMapObject(MapCuboidObject *pMO)

@@ -89,8 +89,6 @@ namespace ORB_SLAM3
         visualization_msgs::Marker mMST;
         visualization_msgs::Marker mCurrentCamera;
 
-
-
         int object_id_init;
         int IE_id;
         float fCameraSize;

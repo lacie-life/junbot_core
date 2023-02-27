@@ -33,19 +33,22 @@ public:
     ObjectDatabase();
     ~ObjectDatabase();
     void addObject(Cluster& cluster);
-    void addObject(ORB_SLAM3::Object_Map& object);
+    void addObject(ORB_SLAM3::Object_Map* object);
     cv::Scalar  getObjectColor(int class_id); // defined object color
     cv::Scalar  getObjectColor(string class_name); // defined object color
     float getObjectSize(int class_id);        // defined object size
 
     // Return the object data with the same name in the database
     std::vector<Cluster>  getObjectByName(std::string objectName);
-    std::vector<ORB_SLAM3::Object_Map> getObjectMapByName(std::string objectName);
+    std::vector<ORB_SLAM3::Object_Map*> getObjectMapByName(int objectName);
+
+    // Get all objects
+    std::vector<ORB_SLAM3::Object_Map*> getAllObject();
 
     // Semantic point cloud target array
     std::vector<Cluster> mClusters;
 
-    std::vector<ORB_SLAM3::Object_Map> mObjects;
+    std::vector<ORB_SLAM3::Object_Map*> mObjects;
 protected:
     // the color of each object
     std::vector<cv::Scalar> mvColors;
