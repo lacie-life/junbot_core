@@ -64,6 +64,9 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
         newParameterLoader(settings);
     }
     else{
+
+        std::cout << "Normal setting reading \n";
+
         cv::FileStorage fSettings(strSettingPath, cv::FileStorage::READ);
 
         bool b_parse_cam = ParseCamParamFile(fSettings);
@@ -91,7 +94,19 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
             mnFramesToResetIMU = mMaxFrames;
         }
 
-        if(!b_parse_cam || !b_parse_orb || !b_parse_imu)
+        bool b_parse_cube = true;
+
+        if(mpSystem->isYoloDetection)
+        {
+            b_parse_cube = ParseCUBEParamFile(fSettings);
+
+            if(!b_parse_imu)
+            {
+                std::cout << "*Error with the CUBE parameters in the config file*" << std::endl;
+            }
+        }
+
+        if(!b_parse_cam || !b_parse_orb || !b_parse_imu || (!b_parse_cube && mpSystem->isYoloDetection))
         {
             std::cout << "Tracking param \n";
             std::cerr << "**ERROR in the config file, the format is not correct**" << std::endl;
@@ -129,19 +144,6 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
         }
     }
 
-    // 3D cuboid testing
-    bool use_LSD_algorithm = false;
-    bool save_to_imgs = false;
-    bool save_to_txts = false;
-    int numOfOctave_ = 1;
-    float Octave_ratio = 2.0;
-    line_lbd_ptr = new line_lbd_detect(numOfOctave_, Octave_ratio);
-    line_lbd_ptr->use_LSD = use_LSD_algorithm;
-    line_lbd_ptr->save_imgs = save_to_imgs;
-    line_lbd_ptr->save_txts = save_to_txts;
-    line_lbd_ptr->line_length_thres = 15; // the threshold of removing short line.
-    // line detect ------------------------------------------------
-
 #ifdef REGISTER_TIMES
     vdRectStereo_ms.clear();
     vdResizeImage_ms.clear();
@@ -154,81 +156,6 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     vdTrackTotal_ms.clear();
 #endif
 
-    // For 3D Cuboid testing (optimize)
-    // TODO: Check param
-    InitToGround = cv::Mat::eye(4, 4, CV_32F);
-    // set initial camera pose wrt ground. by default camera parallel to ground, height=1.7 (kitti)
-    double init_x, init_y, init_z, init_qx, init_qy, init_qz, init_qw;
-    init_x = 0.0;
-    init_y = 0.0;
-    init_z = 2.25/2.0;
-    init_qx = -0.7071;
-    init_qy = 0.0;
-    init_qz = 0.0;
-    init_qw = 0.7071;
-    Eigen::Quaternionf pose_quat(init_qw, init_qx, init_qy, init_qz);
-    Eigen::Matrix3f rot = pose_quat.toRotationMatrix(); // 	The quaternion is required to be normalized
-    for (int row = 0; row < 3; row++)
-        for (int col = 0; col < 3; col++)
-            InitToGround.at<float>(row, col) = rot(row, col);
-
-    InitToGround.at<float>(0, 3) = init_x;
-    InitToGround.at<float>(1, 3) = init_y;
-    InitToGround.at<float>(2, 3) = init_z;
-    nominal_ground_height = init_z;
-
-    cv::Mat R = InitToGround.rowRange(0, 3).colRange(0, 3);
-    cv::Mat t = InitToGround.rowRange(0, 3).col(3);
-    cv::Mat Rinv = R.t();
-    cv::Mat Ow = -Rinv * t;
-    GroundToInit = cv::Mat::eye(4, 4, CV_32F);
-    Rinv.copyTo(GroundToInit.rowRange(0, 3).colRange(0, 3));
-    Ow.copyTo(GroundToInit.rowRange(0, 3).col(3));
-
-    std::cout << "InitToGround_eigen: \n" << InitToGround_eigen << std::endl;
-    InitToGround_eigen = Converter::toMatrix4f(InitToGround);
-    GroundToInit_eigen = Converter::toMatrix4f(GroundToInit);
-    std::cout << "InitToGround_eigen: \n" << InitToGround_eigen << std::endl;
-
-    mpAtlas->InitToGround = InitToGround;
-    mpAtlas->GroundToInit = GroundToInit.clone();
-    mpAtlas->InitToGround_eigen = InitToGround_eigen;
-    mpAtlas->InitToGround_eigen_d = InitToGround_eigen.cast<double>();
-    mpAtlas->GroundToInit_eigen_d = GroundToInit_eigen.cast<double>();
-    mpAtlas->GroundToInit_opti = GroundToInit.clone();
-    mpAtlas->InitToGround_opti = InitToGround.clone();
-    mpAtlas->RealGroundToMine_opti = cv::Mat::eye(4, 4, CV_32F);
-    mpAtlas->MineGroundToReal_opti = cv::Mat::eye(4, 4, CV_32F);
-
-    // For 3D cuboid testing (optimize)
-    // TODO: Add to settings
-    use_truth_trackid = false; // whether use ground truth tracklet ID.
-    whether_detect_object = true;
-    whether_read_offline_cuboidtxt = false;
-    whether_save_online_detected_cuboids = true;
-    whether_save_final_optimized_cuboids = false;
-
-    if (whether_detect_object)
-    {
-        if (whether_save_final_optimized_cuboids)
-        {
-            if (final_object_record_frame_ind == 1e5)
-            {
-                std::cout << "Please set final_object_record_frame_ind!!!" << std::endl;
-                whether_save_final_optimized_cuboids = false;
-            }
-        }
-    }
-
-    filtered_ground_height = 0;
-    first_absolute_scale_frameid = 0;
-    first_absolute_scale_framestamp = 0;
-
-    ground_everyKFs = 10;
-    ground_roi_middle = 3.0;    //# 3(1/3) or 4(1/2)
-    ground_roi_lower = 3.0;      //# 2 or 3
-    ground_inlier_pts = 20;
-    ground_dist_ratio = 0.08;
     std::cout << "Tracking:  Initial finish" << std::endl;
 
 }
@@ -1637,6 +1564,102 @@ bool Tracking::ParseIMUParamFile(cv::FileStorage &fSettings)
     return true;
 }
 
+bool Tracking::ParseCUBEParamFile(cv::FileStorage &fSettings)
+{
+
+    std::cout << "CUBE enabled \n";
+
+    // 3D cuboid testing
+    bool use_LSD_algorithm = false;
+    bool save_to_imgs = false;
+    bool save_to_txts = false;
+    int numOfOctave_ = 1;
+    float Octave_ratio = 2.0;
+    line_lbd_ptr = new line_lbd_detect(numOfOctave_, Octave_ratio);
+    line_lbd_ptr->use_LSD = use_LSD_algorithm;
+    line_lbd_ptr->save_imgs = save_to_imgs;
+    line_lbd_ptr->save_txts = save_to_txts;
+    line_lbd_ptr->line_length_thres = 15; // the threshold of removing short line.
+    // line detect ------------------------------------------------
+
+    // For 3D Cuboid testing (optimize)
+    // TODO: Check param
+    InitToGround = cv::Mat::eye(4, 4, CV_32F);
+    // set initial camera pose wrt ground. by default camera parallel to ground, height=1.7 (kitti)
+    double init_x, init_y, init_z, init_qx, init_qy, init_qz, init_qw;
+    init_x = 0.0;
+    init_y = 0.0;
+    init_z = 2.25/2.0;
+    init_qx = -0.7071;
+    init_qy = 0.0;
+    init_qz = 0.0;
+    init_qw = 0.7071;
+    Eigen::Quaternionf pose_quat(init_qw, init_qx, init_qy, init_qz);
+    Eigen::Matrix3f rot = pose_quat.toRotationMatrix(); // 	The quaternion is required to be normalized
+    for (int row = 0; row < 3; row++)
+        for (int col = 0; col < 3; col++)
+            InitToGround.at<float>(row, col) = rot(row, col);
+
+    InitToGround.at<float>(0, 3) = init_x;
+    InitToGround.at<float>(1, 3) = init_y;
+    InitToGround.at<float>(2, 3) = init_z;
+    nominal_ground_height = init_z;
+
+    cv::Mat R = InitToGround.rowRange(0, 3).colRange(0, 3);
+    cv::Mat t = InitToGround.rowRange(0, 3).col(3);
+    cv::Mat Rinv = R.t();
+    cv::Mat Ow = -Rinv * t;
+    GroundToInit = cv::Mat::eye(4, 4, CV_32F);
+    Rinv.copyTo(GroundToInit.rowRange(0, 3).colRange(0, 3));
+    Ow.copyTo(GroundToInit.rowRange(0, 3).col(3));
+
+    std::cout << "InitToGround_eigen: \n" << InitToGround_eigen << std::endl;
+    InitToGround_eigen = Converter::toMatrix4f(InitToGround);
+    GroundToInit_eigen = Converter::toMatrix4f(GroundToInit);
+    std::cout << "InitToGround_eigen: \n" << InitToGround_eigen << std::endl;
+
+    mpAtlas->InitToGround = InitToGround;
+    mpAtlas->GroundToInit = GroundToInit.clone();
+    mpAtlas->InitToGround_eigen = InitToGround_eigen;
+    mpAtlas->InitToGround_eigen_d = InitToGround_eigen.cast<double>();
+    mpAtlas->GroundToInit_eigen_d = GroundToInit_eigen.cast<double>();
+    mpAtlas->GroundToInit_opti = GroundToInit.clone();
+    mpAtlas->InitToGround_opti = InitToGround.clone();
+    mpAtlas->RealGroundToMine_opti = cv::Mat::eye(4, 4, CV_32F);
+    mpAtlas->MineGroundToReal_opti = cv::Mat::eye(4, 4, CV_32F);
+
+    // For 3D cuboid testing (optimize)
+    // TODO: Add to settings
+    use_truth_trackid = false; // whether use ground truth tracklet ID.
+    whether_read_offline_cuboidtxt = false;
+    whether_save_online_detected_cuboids = true;
+    whether_save_final_optimized_cuboids = false;
+
+    if (mpSystem->isCuboidEnable)
+    {
+        if (whether_save_final_optimized_cuboids)
+        {
+            if (final_object_record_frame_ind == 1e5)
+            {
+                std::cout << "Please set final_object_record_frame_ind!!!" << std::endl;
+                whether_save_final_optimized_cuboids = false;
+            }
+        }
+    }
+
+    filtered_ground_height = 0;
+    first_absolute_scale_frameid = 0;
+    first_absolute_scale_framestamp = 0;
+
+    ground_everyKFs = 10;
+    ground_roi_middle = 3.0;    //# 3(1/3) or 4(1/2)
+    ground_roi_lower = 3.0;      //# 2 or 3
+    ground_inlier_pts = 20;
+    ground_dist_ratio = 0.08;
+
+    return true;
+}
+
 void Tracking::SetLocalMapper(LocalMapping *pLocalMapper)
 {
     mpLocalMapper=pLocalMapper;
@@ -2836,7 +2859,7 @@ void Tracking::CreateInitialMapMonocular()
     mpAtlas->AddKeyFrame(pKFini);
     mpAtlas->AddKeyFrame(pKFcur);
 
-    if (whether_detect_object && mpSystem->isg2oObjectOptimize)
+    if (mpSystem->isCuboidEnable && mpSystem->isg2oObjectOptimize)
     {
         DetectCuboid(pKFini);
         AssociateCuboids(pKFini);
@@ -3607,7 +3630,7 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
                   << "   total ID  " << pKF->mnFrameId << "\033[0m" << std::endl;
     }
 
-    if (whether_detect_object && mpSystem->isg2oObjectOptimize)
+    if (mpSystem->isCuboidEnable && mpSystem->isg2oObjectOptimize)
     {
         DetectCuboid(pKF);
         AssociateCuboids(pKF);
@@ -3723,7 +3746,7 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
     }
 
     //copied from localMapping, only for dynamic object
-    if (mono_allframe_Obj_depth_init && whether_dynamic_object && mpSystem->isg2oObjectOptimize)
+    if (mono_allframe_Obj_depth_init && mpSystem->isDynamicObject && mpSystem->isg2oObjectOptimize)
     {
         KeyFrame *mpCurrentKeyFrame = pKF;
 
@@ -3737,7 +3760,7 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
         if (triangulate_dynamic_pts)
         {
             vector<MapPoint *> frameMapPointMatches;
-            if (use_dynamic_klt_features)
+            if (mpSystem->isUseDynamicKLTFeatures)
                 frameMapPointMatches = mCurrentFrame.mvpMapPointsHarris;
             else
                 frameMapPointMatches = mpCurrentKeyFrame->GetMapPointMatches();
@@ -3763,7 +3786,7 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
                             continue;
                         }
                         MapCuboidObject *objectLastframe;
-                        if (use_dynamic_klt_features)
+                        if (mpSystem->isUseDynamicKLTFeatures)
                             objectLastframe = mpLastKeyFrame->local_cuboids[mpLastKeyFrame->keypoint_associate_objectID_harris[pixelindLastKf]];
                         else
                             objectLastframe = mpLastKeyFrame->local_cuboids[mpLastKeyFrame->keypoint_associate_objectID[pixelindLastKf]];
@@ -3777,7 +3800,7 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
                             cube_pose_lastkf = objectLastframe->GetWorldPos();
                         // get new cube pose in this frame??? based on keypoint object asscoiate id.
                         MapCuboidObject *objectThisframe;
-                        if (use_dynamic_klt_features)
+                        if (mpSystem->isUseDynamicKLTFeatures)
                             objectThisframe = mpCurrentKeyFrame->local_cuboids[mCurrentFrame.keypoint_associate_objectID_harris[i]];
                         else
                             objectThisframe = mpCurrentKeyFrame->local_cuboids[mpCurrentKeyFrame->keypoint_associate_objectID[i]];
@@ -3793,7 +3816,7 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
                         cv::Mat Tcw_now_withdynamic = Tcw_now * Converter::toCvMat(objecttransform);
 
                         cv::KeyPoint kp1, kp2;
-                        if (use_dynamic_klt_features)
+                        if (mpSystem->isUseDynamicKLTFeatures)
                         {
                             kp1 = mpLastKeyFrame->mvKeysHarris[pixelindLastKf];
                             kp2 = mCurrentFrame.mvKeysHarris[i];
@@ -3842,7 +3865,7 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
         if (1) // randomly select N points, don't initialize all of them
         {
             bool actually_use_obj_depth = false;
-            if (mono_allframe_Obj_depth_init && whether_detect_object && associate_point_with_object)
+            if (mono_allframe_Obj_depth_init && mpSystem->isCuboidEnable && mpSystem->isAssociatePointWithObject)
                 if (mpCurrentKeyFrame->keypoint_associate_objectID.size() > 0)
                     actually_use_obj_depth = true;
 
@@ -3851,7 +3874,7 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
                 cout << "Tracking just about to initialize object depth point" << endl;
 
                 // detect new KLF feature points   away from existing featute points.
-                if (use_dynamic_klt_features)
+                if (mpSystem->isUseDynamicKLTFeatures)
                 {
                     // loop over all mappoints, create circle mask
                     // 		    objmask_img:  0 background, >0 object areas   change to--->   255 object areas. 0 background.
@@ -4000,7 +4023,7 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
                                 mpCurrentKeyFrame->SetupSimpleMapPoints(pNewMP, pixel_ind); // add to frame observation, add to map.
                                 pNewMP->is_triangulated = false;
                                 nPoints++;
-                                if (whether_dynamic_object)
+                                if (mpSystem->isDynamicObject)
                                 {
                                     pNewMP->is_dynamic = true;
                                 }
@@ -5575,11 +5598,11 @@ void Tracking::DetectCuboid(KeyFrame *pKF)
         }
     }
 
-    if (associate_point_with_object)
+    if (mpSystem->isAssociatePointWithObject)
     {
-        std::cout << "Tracking: associate_point_with_object  " << associate_point_with_object
-                  << "  whether_dynamic_object  " << whether_dynamic_object << std::endl;
-        if (!whether_dynamic_object) //for old non-dynamic object, associate based on 2d overlap... could also use instance segmentation
+        std::cout << "Tracking: associate_point_with_object  " << mpSystem->isAssociatePointWithObject
+                  << "  whether_dynamic_object  " << mpSystem->isDynamicObject << std::endl;
+        if (!mpSystem->isDynamicObject) //for old non-dynamic object, associate based on 2d overlap... could also use instance segmentation
         {
             pKF->keypoint_associate_objectID = vector<int>(pKF->mvKeys.size(), -1);
 
@@ -5663,7 +5686,7 @@ void Tracking::DetectCuboid(KeyFrame *pKF)
 
         std::cout << "[DetectCuboid]: " << pKF->keypoint_associate_objectID.size() << std::endl;
 
-        if (whether_dynamic_object) //  for dynamic object, I use instance segmentation
+        if (mpSystem->isDynamicObject) //  for dynamic object, I use instance segmentation
         {
             if (pKF->local_cuboids.size() > 0) // if there is object
             {
@@ -5781,7 +5804,7 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
         largest_shared_num_points_thres = 10; // kitti vehicle occupy large region
     }
 
-    if (whether_detect_object && mono_allframe_Obj_depth_init) // dynamic object is more difficult. especially reverse motion
+    if (mpSystem->isCuboidEnable && mono_allframe_Obj_depth_init) // dynamic object is more difficult. especially reverse motion
     {
         largest_shared_num_points_thres = 5;
     }
@@ -5912,7 +5935,7 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
     if (scene_unique_id == kitti)
     {
         remove_object_outlier = false;
-        if (whether_detect_object)
+        if (mpSystem->isCuboidEnable )
         {
             remove_object_outlier = true;
             minimum_object_observation = 3; // dynamic object has more outliers

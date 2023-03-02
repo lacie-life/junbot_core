@@ -34,6 +34,7 @@
 #include <boost/archive/xml_oarchive.hpp>
 
 #include "PointCloudMapping.h"
+#include "Parameter.h"
 
 
 namespace ORB_SLAM3
@@ -96,25 +97,6 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
             mStrSaveAtlasToFile = (string)node;
         }
     }
-
-    float resolution = fsSettings["PointCloudMapping.Resolution"];
-    int model = fsSettings["Semantic.Model"];
-    int g2oMode =  fsSettings["Semantic.ObjectOptimize"];
-
-    if(g2oMode == 0)
-    {
-        isg2oObjectOptimize = false;
-        std::cout << "No Object optimize \n";
-    }
-    else {
-        isg2oObjectOptimize = true;
-        std::cout << "Cube Object SLAM Optimize enabled \n";
-    }
-
-    cv::FileNode modelNode = fsSettings["Semantic.ModelPath"];
-    string modelPath = (string)modelNode;
-    std::cout << modelPath << endl;
-    float octoRes = fsSettings["octoMap.res"];
 
     node = fsSettings["loopClosing"];
     bool activeLC = true;
@@ -185,7 +167,22 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     mpMapDrawer = new MapDrawer(mpAtlas, strSettingsFile, settings_);
     mpFrameDrawer = new FrameDrawer(mpAtlas, mpMapDrawer, strSettingsFile);
     mpMapPublisher = new MapPublisher(mpAtlas, strSettingsFile);
-    // Yolo
+
+    // *****Yolo*******************************************
+    float resolution = fsSettings["PointCloudMapping.Resolution"];
+    int model = fsSettings["Semantic.Model"];
+
+    cv::FileNode modelNode = fsSettings["Semantic.ModelPath"];
+    string modelPath = (string)modelNode;
+    std::cout << modelPath << endl;
+    float octoRes = fsSettings["octoMap.res"];
+
+    isCuboidEnable = true;
+    isAssociatePointWithObject = associate_point_with_object;
+    isDynamicObject = false;
+    isRemoveDynamicFeature = false;
+    isUseDynamicKLTFeatures = use_dynamic_klt_features;
+
     if(model == 0)
     {
         cout << "Using YoLo detector \n";
@@ -196,6 +193,22 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
         cout << "Defaut: YoLo detector \n";
         isYoloDetection = true;
         mpDetector = new YoloDetection(modelPath);
+    }
+
+    // *****Cuboid*******************************************
+    if (isCuboidEnable)
+    {
+        int g2oMode =  fsSettings["Semantic.ObjectOptimize"];
+
+        if(g2oMode == 0)
+        {
+            isg2oObjectOptimize = false;
+            std::cout << "No Object optimize \n";
+        }
+        else {
+            isg2oObjectOptimize = true;
+            std::cout << "Cube Object SLAM Optimize enabled \n";
+        }
     }
 
     // Initialize pointcloud mapping

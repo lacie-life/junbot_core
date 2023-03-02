@@ -15,10 +15,10 @@ namespace ORB_SLAM3
 
     extern bool parallel_mapping;
 
-    extern bool whether_detect_object;
+//    extern bool whether_detect_object;
     extern bool whether_read_offline_cuboidtxt;
     extern bool associate_point_with_object;
-
+//
     extern bool whether_dynamic_object;
     extern bool remove_dynamic_features;
     extern bool use_dynamic_klt_features;

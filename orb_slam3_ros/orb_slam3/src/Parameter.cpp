@@ -8,16 +8,12 @@
 
 namespace ORB_SLAM3
 {
-    bool enable_viewer = true;
-    bool enable_viewmap = true;
-    bool enable_viewimage = true;
-
     bool parallel_mapping = true;
 
-    bool whether_detect_object = false;
+//    bool whether_detect_object = false;
     bool whether_read_offline_cuboidtxt = false;
     bool associate_point_with_object = true;
-
+//
     bool whether_dynamic_object = false;
     bool remove_dynamic_features = false;
     bool use_dynamic_klt_features = false;

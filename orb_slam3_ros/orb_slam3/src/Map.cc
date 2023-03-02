@@ -759,7 +759,7 @@ namespace ORB_SLAM3 {
 //        f.close();
 //        cerr << "Map: finished saving" << endl;
 //        struct stat st;
-//        stat(filename.c_str(), &st);// 获取文件大小
+//        stat(filename.c_str(), &st);
 //        cerr << "Map: saved " << st.st_size << " bytes" << endl;
 //
 //#if 0

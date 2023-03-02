@@ -286,9 +286,17 @@ private:
     boost::shared_ptr<PointCloudMapping> mpPointCloudMapping;
     YoloDetection* mpDetector;
     // std::shared_ptr<Detector> mpDetector;
+
 public:
     bool isYoloDetection = true;
     bool isg2oObjectOptimize = false;
+
+    bool isCuboidEnable = true;
+    bool isAssociatePointWithObject = true;
+
+    bool isDynamicObject = false;
+    bool isRemoveDynamicFeature = false;
+    bool isUseDynamicKLTFeatures = false;
 };
 
 }// namespace ORB_SLAM
