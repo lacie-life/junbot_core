@@ -1739,10 +1739,10 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
     this->IsolationForestDeleteOutliers();
 
     mCurrentFrame.mvObject_2ds.push_back(Object_2d);
-//    std::cout   <<"Successfully merged with the old object, cude h:" <<this->mCuboid3D.height
-//                <<", cude w:" <<this->mCuboid3D.width
-//                <<", cude l:" <<this->mCuboid3D.lenth
-//                <<std::endl;
+    std::cout   << "Successfully merged with the old object, cude h:" << this->mCuboid3D.height
+                << ", cude w:" << this->mCuboid3D.width
+                << ", cude l:" << this->mCuboid3D.lenth
+                << std::endl;
     return true;
 }
 
@@ -1964,8 +1964,6 @@ void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
 
         AddObj2d(ObjectFrame);//this->mvObject_2ds.push_back(ObjectFrame);
     }
-//    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 3>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
-//              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 
     // step 3. Add the RepeatObj common view relationship to the current obj3d
     // the co-view relationship
@@ -1988,8 +1986,6 @@ void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
                 mmAppearSametime.insert(make_pair(nObjId, 1));
         }
     }
-//    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 4>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
-//              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 
     // step 4. Update the id of the last observed frame of the current obj3d
     // update the last observed frame.
@@ -2025,19 +2021,20 @@ void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
         else if(RepeatObj->mvObject_2ds.size() >=  2 )
         {
             mnLastLastAddID = RepeatObj->mnLastLastAddID;
-            std::cout<<"[mergy debug]: size:" <<RepeatObj->mvObject_2ds.size() <<std::endl;
-            std::cout<<"[mergy debug]: width:" <<RepeatObj->mvObject_2ds[RepeatObj->mvObject_2ds.size() - 2]->mBox_cvRect.width <<std::endl;
-            std::cout<<"[mergy debug]: height:" <<RepeatObj->mvObject_2ds[RepeatObj->mvObject_2ds.size() - 2]->mBox_cvRect.height <<std::endl;
+            std::cout << "[mergy debug]: size:" << RepeatObj->mvObject_2ds.size() << std::endl;
+            std::cout << "[mergy debug]: width:" << RepeatObj->mvObject_2ds[RepeatObj->mvObject_2ds.size() - 2]->mBox_cvRect.width << std::endl;
+            std::cout << "[mergy debug]: height:" << RepeatObj->mvObject_2ds[RepeatObj->mvObject_2ds.size() - 2]->mBox_cvRect.height << std::endl;
             mLastLastRect = RepeatObj->mvObject_2ds[RepeatObj->mvObject_2ds.size() - 2]->mBox_cvRect;
         }
     }
-//    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 5>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
-//              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
 
     // step 5. update direction.
     // TODO: Modification type number
+    // 62, 58, 41, 77, 66, 75, 64, 45, 56, 60
     if (  (mnClass == 73) /*book*/ || (mnClass == 64) /*mouse*/ || (mnClass == 65)  /*remote*/
-        || (mnClass == 66) /*keybord*/ || (mnClass == 56) /*chair*/      )
+        || (mnClass == 66) /*keyboard*/ || (mnClass == 56) /*chair*/ || (mnClass == 62)
+        || (mnClass == 58) || (mnClass == 41)
+        || (mnClass == 77) || (mnClass == 45) || (mnClass == 60))
     {
         if(RepeatObj->mvAngleTimesAndScore.size() > 0)
         {
@@ -2095,9 +2092,6 @@ void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
             this->Update_Twobj();
         }
     }
-//        std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 6>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
-//                  << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-
 }
 
 

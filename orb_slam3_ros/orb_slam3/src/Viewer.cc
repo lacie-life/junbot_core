@@ -166,9 +166,7 @@ bool Viewer::ParseViewerParamFile(cv::FileStorage &fSettings)
     }
     else
     {
-        std::cerr << "*Viewer.ViewpointF parameter doesn't exist or is nA quaternion based camera for modern OpenGL
-
-ot a real number*" << std::endl;
+        std::cerr << "*Viewer.ViewpointF parameter doesn't exist or is not a real number*" << std::endl;
         b_miss_params = true;
     }
 
