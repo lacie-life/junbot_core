@@ -6411,11 +6411,11 @@ void Tracking::CreateObject_InTrackMotion(){
 
             // Incorporate old objects or generate new ones
             int result = obj_2ds[k]->creatObject();
-//            switch (result) {
-//                case -1:   cout << "The detection frame is close to the edge" << endl;   break;
-//                case 0:    cout << "Blend into old objects" << endl;   break;
-//                case 1:    cout << "Generate new objects" << endl;     break;
-//            }
+            switch (result) {
+                case -1:   cout << "The detection frame is close to the edge" << endl;   break;
+                case 0:    cout << "Blend into old objects" << endl;   break;
+                case 1:    cout << "Generate new objects" << endl;     break;
+            }
         }
 
 

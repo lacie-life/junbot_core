@@ -693,13 +693,14 @@ int Object_2D::creatObject()
     unique_lock<mutex> lock1(mMutexObjMapPoints);   
     unique_lock<mutex> lock2(mGlobalMutex);
     const cv::Mat ColorImage = mpCurrentFrame->mColorImage.clone();
-    int associate = Object2D_DataAssociationWith_Object3D();    // data association with object3d in map. 
-//    switch (associate) {
-//                case MotionIou:   cout << "Association：MotionIou. " << endl; return 0;
-//                case NoPara:    cout << "Association：NoPara. " << endl;  return 0;
-//                case ProIou:    cout << "Association：ProIou. " << endl;  return 0;
-//                case t_test:    cout << "Association：t_test. " << endl;  return 0;
-//    }
+    int associate = Object2D_DataAssociationWith_Object3D();    // data association with object3d in map.
+
+    switch (associate) {
+                case MotionIou:   cout << "Association：MotionIou. " << endl; return 0;
+                case NoPara:    cout << "Association：NoPara. " << endl;  return 0;
+                case ProIou:    cout << "Association：ProIou. " << endl;  return 0;
+                case t_test:    cout << "Association：t_test. " << endl;  return 0;
+    }
     if(associate)
         return 0;  // Association succeeded
 
@@ -718,8 +719,6 @@ int Object_2D::creatObject()
     const vector<Object_Map*> ObjectMaps  = mpMap->GetObjects();
     Object3D->mnId = ObjectMaps.size();
     Object3D->mnClass = mclass_id;
-
-//    std::cout<<"【debug】Start creating new objects,>>>>>>>>,id:"<< ObjectMaps.size()<<",>>>>>>>>,";
 
     Object3D->mnConfidence_foractive = 1;
     Object3D->mnAddedID_nouse = mpCurrentFrame->mnId;
