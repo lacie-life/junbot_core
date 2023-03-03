@@ -1875,7 +1875,6 @@ bool Object_Map::DoubleSampleTtest_fll(ORB_SLAM3::Object_Map *RepeatObj) {
 
 void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
 {
-//    std::cout<<">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 1>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"<<std::endl<<">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"<<std::endl;
     // step 1. Add RepeatObj to the current obj3d
     // update points.
     for (int i = 0; i < RepeatObj->mvpMapObjectMappoints.size(); i++)
@@ -1937,9 +1936,6 @@ void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
             }
         }
     }
-//    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll 2>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl
-//              << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>MergeTwoMapObjs_fll>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"<<std::endl;
-//    std::cout << "RepeatObj->mvObject_2ds.size(): " << RepeatObj->mvObject_2ds.size() << std::endl;
 
     // step 2. update frame objects.
     //int end;

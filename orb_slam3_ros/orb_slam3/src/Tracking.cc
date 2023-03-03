@@ -6426,6 +6426,7 @@ void Tracking::CreateObject_InTrackMotion(){
         // After updating the objects in the map, reacquire the objects in the map, 
         // and remove objects with fewer observations (by setting obj3d's bad_3d to true)
         const std::vector<Object_Map*> obj_3ds_new = mpMap->GetObjects();
+
         for (int i = (int)obj_3ds_new.size() - 1; i >= 0; i--)
         {
             Object_Map* obj3d = obj_3ds_new[i];
@@ -6457,13 +6458,18 @@ void Tracking::CreateObject_InTrackMotion(){
                             if (overlap)
                             {
                                 obj_3ds_new[i]->bad_3d = true;
-                                std::cout<<"object->bad Observation frame<10, and overlap" <<std::endl;
+                                std::cout << "object->bad Observation frame<10, and overlap" << std::endl;
                                 break;
                             }
                         }
                     }
                 }
             }
+
+            if(obj3d->bad_3d)
+                std::cout << "[Tracking] Object " << obj3d->mnId << " is bad \n";
+            else
+                std::cout << "[Tracking] Object " << obj3d->mnId << " is good \n";
         }
 
         // step 11.2 Update the co-view relationship between objects. (appears in the same frame).
