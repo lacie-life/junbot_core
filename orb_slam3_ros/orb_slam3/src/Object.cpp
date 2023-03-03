@@ -289,6 +289,9 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
         {
             
             bool bFlag = obj3d_IouMax->UpdateToObject3D(this, *mpCurrentFrame, MotionIou);
+
+            std::cout << "[Object2D_DataAssociationWith_Object3D] Step 1 \n";
+
             if (bFlag)
             {
                 bAssoByMotionIou = true;              // associated by IoU.
@@ -355,6 +358,8 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                     
                     AssoObjId_byNP = vAssoObjIds_byNP[i];
                     bool bFlag = ObjectMaps[AssoObjId_byNP]->UpdateToObject3D(this, *mpCurrentFrame, NoPara);
+
+                    std::cout << "[Object2D_DataAssociationWith_Object3D] Step 2.2 \n";
 
                     // if association successful, other objects are marked as potential association objects.
                     if (bFlag)
@@ -474,6 +479,10 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
             {
                 bool bFlag = ObjectMaps[MaxAssoObjId_byProIou]->UpdateToObject3D(this, *mpCurrentFrame, ProIou); // 4: project iou.
 
+                std::cout << "[Object2D_DataAssociationWith_Object3D] Step 3.2 \n";
+
+                // TODO: Crash here
+
                 // association succeeded.
                 if (bFlag)
                 {
@@ -487,6 +496,8 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
 
                     AddPotentialAssociatedObjects(ObjectMaps, MaxAssoObjId_byProIou, ObjectMaps[vAssoObjIds_byProIou[j]]->mnId);
                 }
+
+                std::cout << "[Object2D_DataAssociationWith_Object3D] Step 3.2 end \n";
             }
         }
     }
@@ -638,7 +649,11 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
             {
                 for (int i = 0; i < vObjByTId.size(); i++)
                 {
-                    bool bFlag = ObjectMaps[vObjByTId[i]]->UpdateToObject3D(this, *mpCurrentFrame, t_test); // 3 是指 T 方法.
+                    bool bFlag = ObjectMaps[vObjByTId[i]]->UpdateToObject3D(this, *mpCurrentFrame, t_test);
+
+                    std::cout << "[Object2D_DataAssociationWith_Object3D] Step 4.2 \n";
+
+                    std::cout << "Step \n";
 
                     if (bFlag)
                     {
