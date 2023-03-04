@@ -40,12 +40,7 @@
 #include <mutex>
 #include <chrono>
 
-
 using namespace std;
-
-//EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Vector9d)
-//EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Vector10d)
-//EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Vector6d)
 
 namespace ORB_SLAM3
 {
@@ -1472,7 +1467,6 @@ bool Tracking::ParseIMUParamFile(cv::FileStorage &fSettings)
 
     if(!mInsertKFsLost)
         cout << "Do not insert keyframes when lost visual tracking " << endl;
-
 
 
     float Ng, Na, Ngw, Naw;
@@ -5729,16 +5723,13 @@ void Tracking::DetectCuboid(KeyFrame *pKF)
     // points and object are related in local mapping, when creating mapPoints
 
     //dynamic object: didn't triangulate point in localmapping. but in tracking
-    std::cout << "Tracking: check the objects has enough points, keyframe num:" << checkframes.size() << std::endl;
+    std::cout << "[Tracking] check the objects has enough points, keyframe num:" << checkframes.size() << std::endl;
     for (size_t i = 0; i < checkframes.size(); i++)
     {
         KeyFrame *kfs = checkframes[i];
-        // std::cout << "Tracking: check the objects has enough points, object num:" << kfs->local_cuboids.size() << std::endl;
         for (size_t j = 0; j < kfs->local_cuboids.size(); j++)
         {
             MapCuboidObject *mPO = kfs->local_cuboids[j];
-
-//            std::cout << "[DetectCuboid debug] " << object_own_point_threshold <<  " \n";
 
             if (!mPO->become_candidate)
             {
@@ -5753,7 +5744,7 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
 {
     // loop over current KF's objects, check with all past objects (or local objects), compare the associated object map points.
     // (if a local object is not associated, could re-check here as frame-object-point might change overtime, especially due to triangulation.)
-    std::cout << "Tracking: AssociateCuboids  " << "mvpLocalKeyFrames.size()  " << mvpLocalKeyFrames.size() << std::endl;
+    std::cout << "[Tracking] AssociateCuboids  " << "mvpLocalKeyFrames.size()  " << mvpLocalKeyFrames.size() << std::endl;
 
     std::vector<MapCuboidObject *> LocalObjectsCandidates;
     std::vector<MapCuboidObject *> LocalObjectsLandmarks;
@@ -5763,13 +5754,12 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
     for (size_t i = 0; i < mvpLocalKeyFrames.size(); i++) // pKF is not in mvpLocalKeyFrames yet
     {
         KeyFrame *kfs = mvpLocalKeyFrames[i];
-         std::cout << "kfs->local_cuboids.size()  " << kfs->local_cuboids.size() << std::endl;
+         std::cout << "[Tracking] AssociateCuboids: kfs->local_cuboids.size()  " << kfs->local_cuboids.size() << std::endl;
         for (size_t j = 0; j < kfs->local_cuboids.size(); j++)
         {
             MapCuboidObject *mPO = kfs->local_cuboids[j];
             if (mPO->become_candidate && (!mPO->already_associated))
             {
-//                std::cout << "Step 1 \n";
                 LocalObjectsCandidates.push_back(kfs->local_cuboids[j]);
             }
         }
@@ -5790,7 +5780,7 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
         }
     }
 
-    std::cout << "Tracking: Associate cuboids #candidate: " << LocalObjectsCandidates.size() << " #landmarks " << LocalObjectsLandmarks.size()
+    std::cout << "[Tracking] Associate cuboids #candidate: " << LocalObjectsCandidates.size() << " #landmarks " << LocalObjectsLandmarks.size()
               << " #localKFs " << mvpLocalKeyFrames.size() << std::endl;
 
     int largest_shared_num_points_thres = 10;
@@ -5852,14 +5842,6 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
                     }
             }
         }
-
-//        if (use_truth_trackid) // find associate id based on tracket id.
-//        {
-//            if (trackletid_to_landmark.count(candidateObject->truth_tracklet_id))
-//                largest_shared_objectlandmark = trackletid_to_landmark[candidateObject->truth_tracklet_id];
-//            else
-//                largest_shared_objectlandmark == nullptr;
-//        }
 
         if (largest_shared_objectlandmark == nullptr) // if not found, create as new landmark.  either using original local pointer, or initialize as new
         {
@@ -6465,11 +6447,6 @@ void Tracking::CreateObject_InTrackMotion(){
                     }
                 }
             }
-
-//            if(obj3d->bad_3d)
-//                std::cout << "[Tracking] Object " << obj3d->mnId << " is bad \n";
-//            else
-//                std::cout << "[Tracking] Object " << obj3d->mnId << " is good \n";
         }
 
         // step 11.2 Update the co-view relationship between objects. (appears in the same frame).
