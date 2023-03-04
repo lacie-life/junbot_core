@@ -496,7 +496,7 @@ void Viewer::Run()
             }
         }
 
-        cv::imshow("ORB-SLAM3: Current Frame",toShow);
+        cv::imshow("JunBotView: Current Frame",toShow);
         cv::waitKey(mT);
 
         if(menuReset)
