@@ -136,7 +136,8 @@ class Object_2D {
 
     protected:
         std::mutex mMutexObjMapPoints;  
-        std::mutex mMutexPos;   
+        std::mutex mMutexPos;
+        std::mutex mMutexObj;
     public:
         static std::mutex mGlobalMutex; 
     // line.
@@ -311,6 +312,7 @@ public:
 protected:
     std::mutex mMutexPose;
     std::mutex mMutexObj2d;
+    std::mutex mMutexObj;
 
 public:
     bool WheatherInRectFrameOf(const cv::Mat &Tcw, const float &fx, const float &fy, const float &cx, const float &cy, const float &ImageWidth, const float &ImageHeight);  //计算到任意帧的投影

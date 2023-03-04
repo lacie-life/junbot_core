@@ -1001,6 +1001,8 @@ void Object_2D::AddObjectPoint(ORB_SLAM3::MapPoint *pMP) {
 
 void Object_2D::AddPotentialAssociatedObjects(vector<Object_Map*> obj3ds, int AssoId, int beAssoId){
 
+    unique_lock<mutex> lock2(mMutexObj);
+
     map<int, int>::iterator sit;
 
     std::cout << "[AddPotentialAssociatedObjects] Crash? 1\n";
@@ -1015,7 +1017,7 @@ void Object_2D::AddPotentialAssociatedObjects(vector<Object_Map*> obj3ds, int As
 
         int sit_sec = sit->second;
         obj3ds[AssoId]->mReObj.erase(obj3ds[beAssoId]->mnId);
-        obj3ds[AssoId]->mReObj.insert(make_pair(obj3ds[beAssoId]->mnId, sit_sec + 1));
+        obj3ds[AssoId]->mReObj.insert(std::make_pair(obj3ds[beAssoId]->mnId, sit_sec + 1));
 
         std::cout << "[AddPotentialAssociatedObjects] Crash? 4\n";
     }
@@ -1024,8 +1026,7 @@ void Object_2D::AddPotentialAssociatedObjects(vector<Object_Map*> obj3ds, int As
         std::cout << "[AddPotentialAssociatedObjects] Crash? 5\n";
 
         // TODO: Crash here
-
-        obj3ds[AssoId]->mReObj.insert(make_pair(obj3ds[beAssoId]->mnId, 1));
+        obj3ds[AssoId]->mReObj.insert(std::make_pair(obj3ds[beAssoId]->mnId, 1));
 
         std::cout << "[AddPotentialAssociatedObjects] Crash? 6\n";
     }
@@ -1816,6 +1817,8 @@ bool Object_Map::WhetherOverlap(Object_Map *CompareObj)
 // ************************************
 void Object_Map::SearchAndMergeMapObjs_fll(Map *mpMap)
 {
+    unique_lock<mutex> lock(mMutexObj);
+
     map<int, int>::iterator sit;
     std::vector<Object_Map*> obj_3ds = mpMap->GetObjects();
     for (sit = mReObj.end(); sit != mReObj.begin(); sit--)
