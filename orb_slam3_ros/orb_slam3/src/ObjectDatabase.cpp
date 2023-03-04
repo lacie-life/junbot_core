@@ -216,8 +216,8 @@ void ObjectDatabase::addObject(ORB_SLAM3::Object_Map* object)
                 }
             }
 
-            std::cout << "Object class: " << object->mnClass << "\n";
-            std::cout << "Center distance: " << center_distance << "\n";
+//            std::cout << "[ObjectDatabase] Object class: " << object->mnClass << "\n";
+//            std::cout << "[ObjectDatabase] Center distance: " << center_distance << "\n";
 
             // 5. If the distance is smaller than the object size,
             // it is considered to be the same object in the same space,

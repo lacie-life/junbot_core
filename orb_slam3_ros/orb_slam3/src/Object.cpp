@@ -378,6 +378,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                             break;
                         }
                     }
+                    std::cout << "[Object2D_DataAssociationWith_Object3D] Step 2.2 end \n";
                 }
             }
         }
@@ -448,7 +449,6 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                 MaxAssoObjId_byProIou = i;   //AssoObjId_byProIou  ProIouMaxObjId = i;
                 
                 vAssoObjIds_byProIou.push_back(i);
-//                std::cout<<"[ProIou] yes "<<std::endl;
             }
 
         }
@@ -481,20 +481,31 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
 
                 std::cout << "[Object2D_DataAssociationWith_Object3D] Step 3.2 \n";
 
-                // TODO: Crash here
-
                 // association succeeded.
                 if (bFlag)
                 {
                     bAssoByProjectIou = true;          // associated by projecting box.
+                    std::cout << "[Object2D_DataAssociationWith_Object3D] Step 3.2: Associated by projecting box \n";
                 }
+
+                std::cout << "[Object2D_DataAssociationWith_Object3D] Size: " << vAssoObjIds_byProIou.size() << "\n";
 
                 for (int j = vAssoObjIds_byProIou.size() - 1; j >= 0; j--)
                 {
+                    std::cout << "[Object2D_DataAssociationWith_Object3D] J: " << j << " "
+                    << MaxAssoObjId_byProIou << " "
+                    << ObjectMaps[vAssoObjIds_byProIou[j]]->mnId << "\n";
+
+
                     if (vAssoObjIds_byProIou[j] == MaxAssoObjId_byProIou)
+                    {
+                        std::cout << "[Object2D_DataAssociationWith_Object3D] Skip Id: " << j << "\n";
                         continue;
+                    }
 
                     AddPotentialAssociatedObjects(ObjectMaps, MaxAssoObjId_byProIou, ObjectMaps[vAssoObjIds_byProIou[j]]->mnId);
+
+                    std::cout << "[Object2D_DataAssociationWith_Object3D] Id: " << j << "\n";
                 }
 
                 std::cout << "[Object2D_DataAssociationWith_Object3D] Step 3.2 end \n";
@@ -571,7 +582,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                 (t_test_z < tTestData[min((df - 1), 121)][5]))
             {
                 vObjByTId.push_back(i);
-//                std::cout<<"[Ttest] yes 1 "<<std::endl;
+//                std::cout << "[Ttest] yes 1 " << std::endl;
             }
             // If the T-test is not satisfied, but the IOU is large, reducing the significance.
             else if (fIou > 0.25)
@@ -587,12 +598,12 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                 else if ((fIou > 0.25) && ((t_test_x + t_test_y + t_test_z) / 3 < 10))
                 {
                     vObjByTId.push_back(i);
-//                    std::cout<<"[Ttest] yes 3 "<<std::endl;
+//                    std::cout << "[Ttest] yes 3 " << std::endl;
                 }
                 else
                 {
                     vObjByTIdLower.push_back(i);
-//                    std::cout<<"[Ttest] yes 4 "<<std::endl;
+//                    std::cout << "[Ttest] yes 4 " << std::endl;
                 }
             }
             else if ((t_test_x + t_test_y + t_test_z) / 3 < 4)
@@ -604,7 +615,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                 fIou_force = max(fIou_force, fIou2_force);
 
                 if (fIou_force > 0.25){
-//                    std::cout<<"[Ttest] yes 5 "<<std::endl;
+//                    std::cout << "[Ttest] yes 5 " << std::endl;
                     vObjByTIdLower.push_back(i);
                 }
             }
@@ -711,10 +722,10 @@ int Object_2D::creatObject()
     int associate = Object2D_DataAssociationWith_Object3D();    // data association with object3d in map.
 
     switch (associate) {
-                case MotionIou:   cout << "Association：MotionIou. " << endl; return 0;
-                case NoPara:    cout << "Association：NoPara. " << endl;  return 0;
-                case ProIou:    cout << "Association：ProIou. " << endl;  return 0;
-                case t_test:    cout << "Association：t_test. " << endl;  return 0;
+                case MotionIou:   cout << "[creatObject] Association：MotionIou. " << endl; return 0;
+                case NoPara:    cout << "[creatObject] Association：NoPara. " << endl;  return 0;
+                case ProIou:    cout << "[creatObject] Association：ProIou. " << endl;  return 0;
+                case t_test:    cout << "[creatObject] Association：t_test. " << endl;  return 0;
     }
     if(associate)
         return 0;  // Association succeeded
@@ -769,7 +780,7 @@ int Object_2D::creatObject()
     //mpMap->mvObjectMap.push_back(ObjectMapSingle);
     mpMap->AddObject(Object3D);
 
-    std::cout << "save in map" << std::endl;
+    std::cout << "[Object] Save in map" << std::endl;
 
     return 1;  
 }
@@ -988,17 +999,37 @@ void Object_2D::AddObjectPoint(ORB_SLAM3::MapPoint *pMP) {
     sum_pos_3d += PointPosWorld;  
 }
 
-void Object_2D::AddPotentialAssociatedObjects( vector<Object_Map*> obj3ds, int AssoId, int beAssoId){
+void Object_2D::AddPotentialAssociatedObjects(vector<Object_Map*> obj3ds, int AssoId, int beAssoId){
+
     map<int, int>::iterator sit;
+
+    std::cout << "[AddPotentialAssociatedObjects] Crash? 1\n";
+
     sit = obj3ds[AssoId]->mReObj.find(obj3ds[beAssoId]->mnId);
+
+    std::cout << "[AddPotentialAssociatedObjects] Crash? 2\n";
+
     if (sit != obj3ds[AssoId]->mReObj.end())
     {
+        std::cout << "[AddPotentialAssociatedObjects] Crash? 3\n";
+
         int sit_sec = sit->second;
         obj3ds[AssoId]->mReObj.erase(obj3ds[beAssoId]->mnId);
         obj3ds[AssoId]->mReObj.insert(make_pair(obj3ds[beAssoId]->mnId, sit_sec + 1));
+
+        std::cout << "[AddPotentialAssociatedObjects] Crash? 4\n";
     }
     else
+    {
+        std::cout << "[AddPotentialAssociatedObjects] Crash? 5\n";
+
+        // TODO: Crash here
+
         obj3ds[AssoId]->mReObj.insert(make_pair(obj3ds[beAssoId]->mnId, 1));
+
+        std::cout << "[AddPotentialAssociatedObjects] Crash? 6\n";
+    }
+    std::cout << "[AddPotentialAssociatedObjects] Crash? 7\n";
 }
 
 // ************************************
@@ -1754,7 +1785,7 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
     this->IsolationForestDeleteOutliers();
 
     mCurrentFrame.mvObject_2ds.push_back(Object_2d);
-    std::cout   << "Successfully merged with the old object, cude h:" << this->mCuboid3D.height
+    std::cout   << "[Object] Successfully merged with the old object, cude h:" << this->mCuboid3D.height
                 << ", cude w:" << this->mCuboid3D.width
                 << ", cude l:" << this->mCuboid3D.lenth
                 << std::endl;
@@ -2378,10 +2409,10 @@ Object_Map::Object_Map() {
 
     mIE_rows = fSettings["IE.rows"];
     mIE_cols = fSettings["IE.cols"];
-    std::cout<<"IE_RecoverInit:2  "
-                <<", " << mIE_rows
-                <<", " << mIE_cols
-                <<std::endl;
+//    std::cout << "IE_RecoverInit:2  "
+//                << ", " << mIE_rows
+//                << ", " << mIE_cols
+//                << std::endl;
     mP_occ = fSettings["IE.P_occ"];
     mP_free = fSettings["IE.P_free"];
     mP_prior = fSettings["IE.P_prior"];

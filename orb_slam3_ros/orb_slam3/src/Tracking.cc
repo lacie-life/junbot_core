@@ -6412,9 +6412,9 @@ void Tracking::CreateObject_InTrackMotion(){
             // Incorporate old objects or generate new ones
             int result = obj_2ds[k]->creatObject();
             switch (result) {
-                case -1:   cout << "The detection frame is close to the edge" << endl;   break;
-                case 0:    cout << "Blend into old objects" << endl;   break;
-                case 1:    cout << "Generate new objects" << endl;     break;
+                case -1:   cout << "[Tracking] The detection frame is close to the edge" << endl;   break;
+                case 0:    cout << "[Tracking] Blend into old objects" << endl;   break;
+                case 1:    cout << "[Tracking] Generate new objects" << endl;     break;
             }
         }
 
@@ -6466,10 +6466,10 @@ void Tracking::CreateObject_InTrackMotion(){
                 }
             }
 
-            if(obj3d->bad_3d)
-                std::cout << "[Tracking] Object " << obj3d->mnId << " is bad \n";
-            else
-                std::cout << "[Tracking] Object " << obj3d->mnId << " is good \n";
+//            if(obj3d->bad_3d)
+//                std::cout << "[Tracking] Object " << obj3d->mnId << " is bad \n";
+//            else
+//                std::cout << "[Tracking] Object " << obj3d->mnId << " is good \n";
         }
 
         // step 11.2 Update the co-view relationship between objects. (appears in the same frame).
