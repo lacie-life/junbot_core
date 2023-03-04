@@ -40,7 +40,7 @@
     <param name="odom_alpha3"               value="0.1"/>
     <param name="odom_alpha4"               value="0.1"/>
     <param name="odom_frame_id"             value="t265_odom_frame"/>
-    <param name="base_frame_id"             value="base_link"/>
+    <param name="base_frame_id"             value="base_footprint"/>
 
   </node>
 </launch>

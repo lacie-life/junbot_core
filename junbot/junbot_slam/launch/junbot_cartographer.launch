@@ -16,7 +16,7 @@
 
 <launch>
   <!-- Arguments -->
-  <arg name="model" default="waffle" doc="model type [burger, waffle, waffle_pi]"/>
+  <arg name="model" default="jun" doc="model type [burger, waffle, waffle_pi]"/>
   <arg name="configuration_basename" default="junbot_t265.lua"/>
 
   <!-- move_base -->
@@ -29,9 +29,8 @@
         args="-configuration_directory $(find junbot_slam)/config
               -configuration_basename $(arg configuration_basename)"
         output="screen">
-    <remap from="/imu" to="/t265/imu"/>
     <!-- <remap from="/imu" to="/flat_imu"/> -->
-    <!--remap from="/imu" to="/t265/imu"/> -->
+    <remap from="/imu" to="/t265/imu"/>
     <remap from="/odom" to="/t265/odom/sample"/>
     <!--remap from="points2" to="/camera/depth/points" / -->
   </node>
@@ -42,10 +41,10 @@
         args="-resolution 0.05" />
 
   <!-- flat_world_imu_node -->
-  <node pkg="junbot_slam" type="flat_world_imu_node" name="flat_world_imu_node" output="screen">
+  <!-- <node pkg="junbot_slam" type="flat_world_imu_node" name="flat_world_imu_node" output="screen">
     <remap from="imu_in" to="/t265/imu" />
-    <!--remap from="imu_out" to="/flat_imu" /-->
-  </node>
+    <remap from="imu_out" to="/flat_imu" />
+  </node> -->
 
   
   
