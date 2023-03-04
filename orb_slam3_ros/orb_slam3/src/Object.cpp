@@ -4,6 +4,7 @@
 
 #include "Object.h"
 #include "Converter.h"
+#include <exception>
 
 std::string WORK_SPACE_PATH = "/home/lacie/slam_ws/src/junbot_planner/orb_slam3_ros";
 std::string yamlfile_object = "TUM2.yaml";
@@ -1007,29 +1008,36 @@ void Object_2D::AddPotentialAssociatedObjects(vector<Object_Map*> obj3ds, int As
 
     std::cout << "[AddPotentialAssociatedObjects] Crash? 1\n";
 
-    sit = obj3ds[AssoId]->mReObj.find(obj3ds[beAssoId]->mnId);
-
-    std::cout << "[AddPotentialAssociatedObjects] Crash? 2\n";
-
-    if (sit != obj3ds[AssoId]->mReObj.end())
+    for(sit = obj3ds[AssoId]->mReObj.begin(); sit != obj3ds[AssoId]->mReObj.begin(); sit++)
     {
-        std::cout << "[AddPotentialAssociatedObjects] Crash? 3\n";
+        int nObjId = sit->first;
 
-        int sit_sec = sit->second;
-        obj3ds[AssoId]->mReObj.erase(obj3ds[beAssoId]->mnId);
-        obj3ds[AssoId]->mReObj.insert(std::make_pair(obj3ds[beAssoId]->mnId, sit_sec + 1));
+        if(nObjId == obj3ds[beAssoId]->mnId)
+        {
 
-        std::cout << "[AddPotentialAssociatedObjects] Crash? 4\n";
+            if (sit != obj3ds[AssoId]->mReObj.end())
+            {
+                std::cout << "[AddPotentialAssociatedObjects] Crash? 3\n";
+
+                int sit_sec = sit->second;
+                obj3ds[AssoId]->mReObj.erase(obj3ds[beAssoId]->mnId);
+                obj3ds[AssoId]->mReObj.insert(std::make_pair(obj3ds[beAssoId]->mnId, sit_sec + 1));
+
+                std::cout << "[AddPotentialAssociatedObjects] Crash? 4\n";
+            }
+            else
+            {
+                std::cout << "[AddPotentialAssociatedObjects] Crash? 5\n";
+
+                // TODO: Crash here
+
+                obj3ds[AssoId]->mReObj.insert(std::make_pair(obj3ds[beAssoId]->mnId, 1));
+
+                std::cout << "[AddPotentialAssociatedObjects] Crash? 6\n";
+            }
+        }
     }
-    else
-    {
-        std::cout << "[AddPotentialAssociatedObjects] Crash? 5\n";
 
-        // TODO: Crash here
-        obj3ds[AssoId]->mReObj.insert(std::make_pair(obj3ds[beAssoId]->mnId, 1));
-
-        std::cout << "[AddPotentialAssociatedObjects] Crash? 6\n";
-    }
     std::cout << "[AddPotentialAssociatedObjects] Crash? 7\n";
 }
 
