@@ -215,3 +215,12 @@ target_link_libraries(d435i_rgbd_node
         ${PROJECT_NAME}
         ${catkin_LIBRARIES}
         )
+
+## D455 ROS node
+add_executable(D455_rgbd_node
+        src/D455_rgbd.cpp
+        src/common.cc)
+target_link_libraries(D455_rgbd_node
+        ${PROJECT_NAME}
+        ${catkin_LIBRARIES}
+        )
