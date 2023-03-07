@@ -329,6 +329,7 @@ namespace object_layer
 
         std::lock_guard<std::mutex> l(_data_mutex);
 
+        // TODO: Change cost value by object class
         // set costs of zone polygons
         for (int i = 0; i < _zone_polygons.size(); ++i)
         {

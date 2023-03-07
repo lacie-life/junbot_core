@@ -129,6 +129,7 @@ namespace object_layer
         std::vector<geometry_msgs::Point> _obstacle_points;                     // vector to save the obstacle points in source coordinates
         std::vector<Polygon> _zone_polygons;                                    // vector to save the zone polygons (more than 3 edges) in source coordinates
         std::vector<Polygon> _obstacle_polygons;                                // vector to save the obstacle polygons (including lines) in source coordinates
+        std::vector<std::string> _obstacle_classId;
         std::vector<Polygon> _form_polygons;                                    // vector to save the form polygons (including lines) in source coordinates
         std::vector<geometry_msgs::Point> _form_points;                         // vector to save the form points in source coordinates
 
