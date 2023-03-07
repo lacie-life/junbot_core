@@ -77,10 +77,6 @@ find_package(Boost COMPONENTS system filesystem serialization REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
 link_directories(${Boost_LIBRARY_DIR})
 
-# list(APPEND CMAKE_PREFIX_PATH "~/Github/libtorch/")
-# find_package(Torch REQUIRED)
-# include_directories(${TORCH_INCLUDE_DIRS})
-
 # cuda
 find_package(CUDA REQUIRED)
 include_directories(${CUDA_INCLUDE_DIRS})
@@ -126,7 +122,6 @@ include_directories(
 
 include(${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/DBoW2/CMakeLists.txt)
 include(${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/g2o/CMakeLists.txt)
-# include(${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/yolov5/CMakeLists.txt)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/orb_slam3/lib)
 
@@ -168,7 +163,6 @@ target_link_libraries(${PROJECT_NAME}
         ${Pangolin_LIBRARIES}
         ${PCL_LIBRARIES}
         ${OCTOMAP_LIBRARIES}
-        # ${TORCH_LIBRARIES}
         ${TRT_LIBS}
         ${CUDA_CUDA_LIBRARY}
         ${CUDA_CUDART_LIBRARY}
@@ -178,16 +172,6 @@ target_link_libraries(${PROJECT_NAME}
         -lboost_serialization
         -lcrypto
          nvToolsExt
-#        opencv_cudabgsegm
-#        opencv_cudaobjdetect
-#        opencv_cudastereo
-#        opencv_cudafeatures2d
-#        opencv_cudacodec
-#        opencv_cudaoptflow
-#        opencv_cudalegacy
-#        opencv_cudawarping
-#        opencv_cudaimgproc
-#        opencv_cudafilters
         )
 
 ## ROS node
