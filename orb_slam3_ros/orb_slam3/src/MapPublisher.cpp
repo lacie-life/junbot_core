@@ -586,6 +586,8 @@ namespace ORB_SLAM3
 
     void MapPublisher::PublishObject2Map(const std::vector<Object_Map *> &vpObjs)
     {
+        // TODO: Convert to Map Coordinate
+        
         if(vpObjs.size() <= 0)
         {
             return;
