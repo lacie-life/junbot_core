@@ -20,45 +20,45 @@ image_transport::Publisher tracking_img_pub;
 // Main functions
 //////////////////////////////////////////////////
 
-bool save_map_srv(orb_slam3_ros::SaveMap::Request &req, orb_slam3_ros::SaveMap::Response &res)
-{
-    res.success = pSLAM->SaveMap(req.name);
+//bool save_map_srv(orb_slam3_ros::SaveMap::Request &req, orb_slam3_ros::SaveMap::Response &res)
+//{
+//    res.success = pSLAM->SaveMap(req.name);
+//
+//    if (res.success)
+//        ROS_INFO("Map was saved as %s.osa", req.name.c_str());
+//    else
+//        ROS_ERROR("Map could not be saved.");
+//
+//    return res.success;
+//}
 
-    if (res.success)
-        ROS_INFO("Map was saved as %s.osa", req.name.c_str());
-    else
-        ROS_ERROR("Map could not be saved.");
-
-    return res.success;
-}
-
-bool save_traj_srv(orb_slam3_ros::SaveMap::Request &req, orb_slam3_ros::SaveMap::Response &res)
-{
-    const string cam_traj_file = req.name + "_cam_traj.txt";
-    const string kf_traj_file = req.name + "_kf_traj.txt";
-
-    try {
-        pSLAM->SaveTrajectoryEuRoC(cam_traj_file);
-        pSLAM->SaveKeyFrameTrajectoryEuRoC(kf_traj_file);
-        res.success = true;
-    } catch (const std::exception &e) {
-        std::cerr << e.what() << std::endl;
-        res.success = false;
-    } catch (...) {
-        std::cerr << "Unknows exeption" << std::endl;
-        res.success = false;
-    }
-
-    if (!res.success)
-        ROS_ERROR("Estimated trajectory could not be saved.");
-
-    return res.success;
-}
+//bool save_traj_srv(orb_slam3_ros::SaveMap::Request &req, orb_slam3_ros::SaveMap::Response &res)
+//{
+//    const string cam_traj_file = req.name + "_cam_traj.txt";
+//    const string kf_traj_file = req.name + "_kf_traj.txt";
+//
+//    try {
+//        pSLAM->SaveTrajectoryEuRoC(cam_traj_file);
+//        pSLAM->SaveKeyFrameTrajectoryEuRoC(kf_traj_file);
+//        res.success = true;
+//    } catch (const std::exception &e) {
+//        std::cerr << e.what() << std::endl;
+//        res.success = false;
+//    } catch (...) {
+//        std::cerr << "Unknows exeption" << std::endl;
+//        res.success = false;
+//    }
+//
+//    if (!res.success)
+//        ROS_ERROR("Estimated trajectory could not be saved.");
+//
+//    return res.success;
+//}
 
 void setup_services(ros::NodeHandle &node_handler, std::string node_name)
 {
-    static ros::ServiceServer save_map_service = node_handler.advertiseService(node_name + "/save_map", save_map_srv);
-    static ros::ServiceServer save_traj_service = node_handler.advertiseService(node_name + "/save_traj", save_traj_srv);
+//    static ros::ServiceServer save_map_service = node_handler.advertiseService(node_name + "/save_map", save_map_srv);
+//    static ros::ServiceServer save_traj_service = node_handler.advertiseService(node_name + "/save_traj", save_traj_srv);
 }
 
 void setup_publishers(ros::NodeHandle &node_handler, image_transport::ImageTransport &image_transport, std::string node_name)
@@ -275,9 +275,9 @@ sensor_msgs::PointCloud2 mappoint_to_pointcloud(std::vector<ORB_SLAM3::MapPoint*
             tf::Vector3 point_translation(P3Dw.x(), P3Dw.y(), P3Dw.z());
 
             float data_array[num_channels] = {
-                point_translation.x(),
-                point_translation.y(),
-                point_translation.z()
+                    (float)point_translation.x(),
+                    (float)point_translation.y(),
+                    (float)point_translation.z()
             };
 
             memcpy(cloud_data_ptr+(i*cloud.point_step), data_array, num_channels*sizeof(float));

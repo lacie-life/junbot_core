@@ -160,7 +160,7 @@ cuda_add_library(${PROJECT_NAME} SHARED
         ${SOURCES}
         )
 
- set(TRT_LIBS nvinfer)
+set(TRT_LIBS nvinfer)
 
 target_link_libraries(${PROJECT_NAME}
         ${OpenCV_LIBS}

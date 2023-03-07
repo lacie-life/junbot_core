@@ -27,7 +27,7 @@
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 
-#include <orb_slam3_ros/SaveMap.h> // This file is created automatically, see here http://wiki.ros.org/ROS/Tutorials/CreatingMsgAndSrv#Creating_a_srv
+//#include <orb_slam3_ros/SaveMap.h> // This file is created automatically, see here http://wiki.ros.org/ROS/Tutorials/CreatingMsgAndSrv#Creating_a_srv
 
 // ORB-SLAM3-specific libraries
 #include "System.h"
@@ -54,8 +54,8 @@ void publish_tf_transform(Sophus::SE3f, string, string, ros::Time);
 void publish_body_odom(Sophus::SE3f, Eigen::Vector3f, Eigen::Vector3f, ros::Time);
 void publish_kf_markers(std::vector<Sophus::SE3f>, ros::Time);
 
-bool save_map_srv(orb_slam3_ros::SaveMap::Request&, orb_slam3_ros::SaveMap::Response&);
-bool save_traj_srv(orb_slam3_ros::SaveMap::Request&, orb_slam3_ros::SaveMap::Response&);
+//bool save_map_srv(orb_slam3_ros::SaveMap::Request&, orb_slam3_ros::SaveMap::Response&);
+//bool save_traj_srv(orb_slam3_ros::SaveMap::Request&, orb_slam3_ros::SaveMap::Response&);
 
 cv::Mat SE3f_to_cvMat(Sophus::SE3f);
 tf::Transform SE3f_to_tfTransform(Sophus::SE3f);
