@@ -24,8 +24,12 @@ add_executable(adaptive src/adaptive.cpp)
 target_link_libraries(adaptive ${catkin_LIBRARIES})
 add_dependencies(adaptive ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-# %EndTag(FULLTEXT)%
+
 add_executable(adaptiveControl src/adaptiveControl.cpp)
 target_link_libraries(adaptiveControl ${catkin_LIBRARIES})
 add_dependencies(adaptiveControl ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_executable(objectLayer src/ObjectLayer.cpp)
+target_link_libraries(objectLayer ${catkin_LIBRARIES})
+add_dependencies(objectLayer ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
