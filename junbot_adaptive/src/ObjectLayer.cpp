@@ -6,11 +6,15 @@
 #include <std_msgs/String.h>
 #include <custom_msgs/Obstacles.h>
 #include <custom_msgs/Form.h>
+#include <nav_msgs/Odometry.h>
+#include <tf/transform_listener.h>
 #include <vision_msgs/Detection3DArray.h>
 #include <vision_msgs/Detection3D.h>
 #include <iostream>
 
 ros::Publisher obstaclePub;
+ros::Subscriber pos_sub;
+tf::TransformListener *robotPoselistener;
 
 void ObjDBCallBack(const vision_msgs::Detection3DArray::ConstPtr& msg)
 {
@@ -32,34 +36,57 @@ void ObjDBCallBack(const vision_msgs::Detection3DArray::ConstPtr& msg)
 
         vision_msgs::Detection3D detect = msg->detections.at(i);
 
+        geometry_msgs::PointStamped center_point;
+
+        center_point.point.x = detect.bbox.center.position.x;
+        center_point.point.y = detect.bbox.center.position.y;
+        center_point.point.z = 0.0;
+
+        geometry_msgs::PointStamped map_point;
+
+        center_point.header.frame_id = "/base_link";
+
+        try {
+            robotPoselistener->transformPoint("/map", center_point, map_point);
+
+        } catch (tf::TransformException& ex) {
+            ROS_WARN("robot pose tf listener wrong ");
+            try {
+                robotPoselistener->waitForTransform("/map", "/base_link", ros::Time(0),
+                                                    ros::Duration(0.4));
+            } catch (tf::TransformException& ex) {
+                ROS_WARN("robot pose tf listener wrong ");
+            }
+        }
+
         // TODO: Convert vision_msgs::Detection3D to custom_msgs::Obstacles
-        // TODO: Convert to map coordinate ?
+        // TODO: Convert to map coordinate
 
         // 1
         geometry_msgs::Point p1;
-        p1.x = detect.bbox.center.position.x - detect.bbox.size.x/2;
-        p1.y = detect.bbox.center.position.y + detect.bbox.size.y/2;
+        p1.x = center_point.point.x - detect.bbox.size.x/2;
+        p1.y = center_point.point.y + detect.bbox.size.y/2;
         p1.z = 0.0;
         obs.form.push_back(p1);
 
         // 2
         geometry_msgs::Point p2;
-        p2.x = detect.bbox.center.position.x + detect.bbox.size.x/2;
-        p2.y = detect.bbox.center.position.y + detect.bbox.size.y/2;
+        p2.x = center_point.point.x + detect.bbox.size.x/2;
+        p2.y = center_point.point.y + detect.bbox.size.y/2;
         p2.z = 0.0;
         obs.form.push_back(p2);
 
         // 3
         geometry_msgs::Point p3;
-        p2.x = detect.bbox.center.position.x + detect.bbox.size.x/2;
-        p2.y = detect.bbox.center.position.y - detect.bbox.size.y/2;
+        p2.x = center_point.point.x + detect.bbox.size.x/2;
+        p2.y = center_point.point.y - detect.bbox.size.y/2;
         p2.z = 0.0;
         obs.form.push_back(p3);
 
         // 4
         geometry_msgs::Point p4;
-        p2.x = detect.bbox.center.position.x - detect.bbox.size.x/2;
-        p2.y = detect.bbox.center.position.y - detect.bbox.size.y/2;
+        p2.x = center_point.point.x - detect.bbox.size.x/2;
+        p2.y = center_point.point.y - detect.bbox.size.y/2;
         p2.z = 0.0;
         obs.form.push_back(p4);
 
@@ -85,6 +112,18 @@ int main(int argc, char **argv)
     ros::Subscriber sub = nh.subscribe("detect_array", 1000, ObjDBCallBack);
 
     obstaclePub = nh.advertise<custom_msgs::Obstacles>("/object_costmap_layer/obstacles", 1000);
+
+    robotPoselistener = new tf::TransformListener;
+
+    try
+    {
+        robotPoselistener->waitForTransform("/map", "/base_link", ros::Time(0),
+                                              ros::Duration(0.4));
+    }
+    catch (tf::TransformException &ex)
+    {
+        ROS_WARN("robot pose tf listener wrong ");
+    }
 
     ros::spin();
 

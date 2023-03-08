@@ -10,7 +10,7 @@
 #include <tf/transform_listener.h>
 
 // TODO: Subscribe map infor
-ros::Subscriber m_plannerPathSub;
+ros::Subscriber plannerPathSub;
 ros::Subscriber map_sub;
 
 void mapCallback(nav_msgs::OccupancyGrid::ConstPtr map);

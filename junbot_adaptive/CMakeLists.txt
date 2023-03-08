@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(junbot_adaptive)
 
 ## Find catkin and any catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs genmsg move_base_msgs  custom_msgs geometry_msgs)
+find_package(catkin REQUIRED COMPONENTS tf roscpp rospy std_msgs genmsg move_base_msgs  custom_msgs geometry_msgs)
 
 ## Declare a catkin package
 catkin_package(
