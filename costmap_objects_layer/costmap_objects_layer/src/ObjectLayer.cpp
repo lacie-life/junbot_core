@@ -429,6 +429,9 @@ namespace object_layer
                 continue;
             master_grid.setCost(mx, my, cost);
         }
+
+        // TODO: Check inflation_layer
+        // https://github.com/ros-planning/navigation/blob/noetic-devel/costmap_2d/include/costmap_2d/inflation_layer.h
     }
 
     void ObjectLayer::polygonOutlineCells(const std::vector<PointInt> &polygon, std::vector<PointInt> &polygon_cells)
