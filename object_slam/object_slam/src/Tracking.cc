@@ -1696,7 +1696,6 @@ Sophus::SE3f Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat 
 
     if(mImGray.channels()==3)
     {
-        //cout << "Image with 3 channels" << endl;
         if(mbRGB)
         {
             cvtColor(mImGray,mImGray,cv::COLOR_RGB2GRAY);
@@ -1710,7 +1709,6 @@ Sophus::SE3f Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat 
     }
     else if(mImGray.channels()==4)
     {
-        //cout << "Image with 4 channels" << endl;
         if(mbRGB)
         {
             cvtColor(mImGray,mImGray,cv::COLOR_RGBA2GRAY);
@@ -1723,8 +1721,6 @@ Sophus::SE3f Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat 
         }
     }
 
-    //cout << "Incoming frame creation" << endl;
-
     if (mSensor == System::STEREO && !mpCamera2)
         mCurrentFrame = Frame(mImGray,imGrayRight,timestamp,mpORBextractorLeft,mpORBextractorRight,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera);
     else if(mSensor == System::STEREO && mpCamera2)
@@ -1733,8 +1729,6 @@ Sophus::SE3f Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat 
         mCurrentFrame = Frame(mImGray,imGrayRight,timestamp,mpORBextractorLeft,mpORBextractorRight,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,&mLastFrame,*mpImuCalib);
     else if(mSensor == System::IMU_STEREO && mpCamera2)
         mCurrentFrame = Frame(mImGray,imGrayRight,timestamp,mpORBextractorLeft,mpORBextractorRight,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,mpCamera2,mTlr,&mLastFrame,*mpImuCalib);
-
-    //cout << "Incoming frame ended" << endl;
 
     mCurrentFrame.mNameFile = filename;
     mCurrentFrame.mnDataset = mnNumDataset;
@@ -1841,14 +1835,16 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
         mCurrentFrame = Frame(imRGB, mImGray, mImDepth, mImMask, timestamp,
                               mpORBextractorLeft, line_lbd_ptr, mpORBVocabulary,
                               mK, mDistCoef, mbf, mThDepth, objects, mpCamera);
-//        mCurrentFrame = Frame(mImGray,mImDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera);
+
+        // mCurrentFrame = Frame(mImGray,mImDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera);
     }
     else if (mSensor == System::IMU_RGBD && mpSystem->isYoloDetection)
     {
         mCurrentFrame = Frame(imRGB, mImGray, mImDepth, mImMask, timestamp,
                               mpORBextractorLeft, line_lbd_ptr, mpORBVocabulary,
                               mK, mDistCoef, mbf, mThDepth, objects, mpCamera, &mLastFrame,*mpImuCalib);
-//        mCurrentFrame = Frame(mImGray,mImDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,&mLastFrame,*mpImuCalib);
+
+        // mCurrentFrame = Frame(mImGray,mImDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth,mpCamera,&mLastFrame,*mpImuCalib);
     }
 
     if(mCurrentFrame.mnId == 0)
@@ -2137,11 +2133,8 @@ void Tracking::Track()
         }
         else if(mCurrentFrame.mTimeStamp>mLastFrame.mTimeStamp+1.0)
         {
-            // cout << mCurrentFrame.mTimeStamp << ", " << mLastFrame.mTimeStamp << endl;
-            // cout << "id last: " << mLastFrame.mnId << "    id curr: " << mCurrentFrame.mnId << endl;
             if(mpAtlas->isInertial())
             {
-
                 if(mpAtlas->isImuInitialized())
                 {
                     cout << "Timestamp jump detected. State set to LOST. Reseting IMU integration..." << endl;
@@ -2161,10 +2154,8 @@ void Tracking::Track()
                 }
                 return;
             }
-
         }
     }
-
 
     if ((mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD) && mpLastKeyFrame)
         mCurrentFrame.SetNewBias(mpLastKeyFrame->GetImuBias());
@@ -2204,7 +2195,6 @@ void Tracking::Track()
         pCurrentMap->SetLastMapChange(nCurMapChangeIndex);
         mbMapUpdated = true;
     }
-
 
     if(mState==NOT_INITIALIZED)
     {
@@ -2341,7 +2331,6 @@ void Tracking::Track()
                     return;
                 }
             }
-
         }
         else
         {
@@ -2502,7 +2491,6 @@ void Tracking::Track()
 
 #ifdef REGISTER_TIMES
         std::chrono::steady_clock::time_point time_EndLMTrack = std::chrono::steady_clock::now();
-
         double timeLMTrack = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_EndLMTrack - time_StartLMTrack).count();
         vdLMTrack_ms.push_back(timeLMTrack);
 #endif
@@ -2568,7 +2556,6 @@ void Tracking::Track()
 
 #ifdef REGISTER_TIMES
             std::chrono::steady_clock::time_point time_EndNewKF = std::chrono::steady_clock::now();
-
             double timeNewKF = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_EndNewKF - time_StartNewKF).count();
             vdNewKF_ms.push_back(timeNewKF);
 #endif
@@ -2601,7 +2588,6 @@ void Tracking::Track()
                 }
 
             CreateMapInAtlas();
-
             return;
         }
 
@@ -2630,12 +2616,10 @@ void Tracking::Track()
             mlFrameTimes.push_back(mlFrameTimes.back());
             mlbLost.push_back(mState==LOST);
         }
-
     }
 
 #ifdef REGISTER_LOOP
     if (Stop()) {
-
         // Safe area to stop
         while(isStopped())
         {
@@ -2644,7 +2628,6 @@ void Tracking::Track()
     }
 #endif
 }
-
 
 void Tracking::StereoInitialization()
 {
@@ -2755,20 +2738,18 @@ void Tracking::StereoInitialization()
         mpMapDrawer->SetCurrentCameraPose(mCurrentFrame.GetPose());
         mpMapPublisher->SetCurrentCameraPose(Converter::toCvMat(mCurrentFrame.GetPose()));
 
-        mState=OK;
+        mState = OK;
     }
 }
 
 
 void Tracking::MonocularInitialization()
 {
-
     if(!mbReadyToInitializate)
     {
         // Set Reference Frame
-        if(mCurrentFrame.mvKeys.size()>100)
+        if(mCurrentFrame.mvKeys.size() > 100)
         {
-
             mInitialFrame = Frame(mCurrentFrame);
             mLastFrame = Frame(mCurrentFrame);
             mvbPrevMatched.resize(mCurrentFrame.mvKeysUn.size());
@@ -2785,7 +2766,6 @@ void Tracking::MonocularInitialization()
                 }
                 mpImuPreintegratedFromLastKF = new IMU::Preintegrated(IMU::Bias(),*mpImuCalib);
                 mCurrentFrame.mpImuPreintegrated = mpImuPreintegratedFromLastKF;
-
             }
 
             mbReadyToInitializate = true;
@@ -2795,7 +2775,7 @@ void Tracking::MonocularInitialization()
     }
     else
     {
-        if (((int)mCurrentFrame.mvKeys.size()<=100)||((mSensor == System::IMU_MONOCULAR)&&(mLastFrame.mTimeStamp-mInitialFrame.mTimeStamp>1.0)))
+        if (((int)mCurrentFrame.mvKeys.size() <= 100) || ((mSensor == System::IMU_MONOCULAR) && (mLastFrame.mTimeStamp-mInitialFrame.mTimeStamp > 1.0)))
         {
             mbReadyToInitializate = false;
 
@@ -2866,7 +2846,7 @@ void Tracking::CreateInitialMapMonocular()
         if(mvIniMatches[i]<0)
             continue;
 
-        //Create MapPoint.
+        // Create MapPoint.
         Eigen::Vector3f worldPos;
         worldPos << mvIniP3D[i].x, mvIniP3D[i].y, mvIniP3D[i].z;
         MapPoint* pMP = new MapPoint(worldPos,pKFcur,mpAtlas->GetCurrentMap());
@@ -2880,11 +2860,11 @@ void Tracking::CreateInitialMapMonocular()
         pMP->ComputeDistinctiveDescriptors();
         pMP->UpdateNormalAndDepth();
 
-        //Fill Current Frame structure
+        // Fill Current Frame structure
         mCurrentFrame.mvpMapPoints[mvIniMatches[i]] = pMP;
         mCurrentFrame.mvbOutlier[mvIniMatches[i]] = false;
 
-        //Add to Map
+        // Add to Map
         mpAtlas->AddMapPoint(pMP);
     }
 
@@ -2984,16 +2964,23 @@ void Tracking::CreateMapInAtlas()
     mpAtlas->CreateNewMap();
     if (mSensor==System::IMU_STEREO || mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_RGBD)
         mpAtlas->SetInertialSensor();
-    mbSetInit=false;
 
-    mnInitialFrameId = mCurrentFrame.mnId+1;
+    mbSetInit = false;
+
+    mnInitialFrameId = mCurrentFrame.mnId + 1;
     mState = NO_IMAGES_YET;
 
     // Restart the variable with information about the last KF
     mbVelocity = false;
-    //mnLastRelocFrameId = mnLastInitFrameId; // The last relocation KF_id is the current id, because it is the new starting point for new map
-    Verbose::PrintMess("First frame id in map: " + to_string(mnLastInitFrameId+1), Verbose::VERBOSITY_NORMAL);
-    mbVO = false; // Init value for know if there are enough MapPoints in the last KF
+
+    // The last relocation KF_id is the current id, because it is the new starting point for new map
+    // mnLastRelocFrameId = mnLastInitFrameId;
+
+    Verbose::PrintMess("First frame id in map: " + to_string(mnLastInitFrameId + 1), Verbose::VERBOSITY_NORMAL);
+
+    // Init value for know if there are enough MapPoints in the last KF
+    mbVO = false;
+
     if(mSensor == System::MONOCULAR || mSensor == System::IMU_MONOCULAR)
     {
         mbReadyToInitializate = false;
@@ -3057,17 +3044,18 @@ bool Tracking::TrackReferenceKeyFrame()
     mCurrentFrame.mvpMapPoints = vpMapPointMatches;
     mCurrentFrame.SetPose(/*Converter::toSophus(fusion(cv::Mat::eye(4, 4, CV_32F))) */ mLastFrame.GetPose());
 
-    //mCurrentFrame.PrintPointDistribution();
-
+    // mCurrentFrame.PrintPointDistribution();
 
     // cout << " TrackReferenceKeyFrame mLastFrame.mTcw:  " << mLastFrame.mTcw << endl;
+
     Optimizer::PoseOptimization(&mCurrentFrame);
 
     // Discard outliers
     int nmatchesMap = 0;
     for(int i = 0; i < mCurrentFrame.N; i++)
     {
-        //if(i >= mCurrentFrame.Nleft) break;
+        // if(i >= mCurrentFrame.Nleft) break;
+
         if(mCurrentFrame.mvpMapPoints[i])
         {
             if(mCurrentFrame.mvbOutlier[i])
@@ -3105,7 +3093,6 @@ void Tracking::UpdateLastFrame()
 
     if(mnLastKeyFrameId==mLastFrame.mnId || mSensor==System::MONOCULAR || mSensor==System::IMU_MONOCULAR || !mbOnlyTracking)
     {
-//        std::cout << "What happened here ? \n";
         return;
     }
 
@@ -3121,12 +3108,16 @@ void Tracking::UpdateLastFrame()
 
     // Create "visual odometry" MapPoints
     // We sort points according to their measured depth by the stereo/RGB-D sensor
-    vector<pair<float,int>> vDepthIdx;
+
+    std::vector<std::pair<float, int>> vDepthIdx;
     const int Nfeat = mLastFrame.Nleft == -1? mLastFrame.N : mLastFrame.Nleft;
+
     vDepthIdx.reserve(Nfeat);
+
     for(int i = 0; i < Nfeat; i++)
     {
         float z = mLastFrame.mvDepth[i];
+
         if(z>0)
         {
             vDepthIdx.push_back(make_pair(z,i));
@@ -3138,8 +3129,9 @@ void Tracking::UpdateLastFrame()
 
     sort(vDepthIdx.begin(),vDepthIdx.end());
 
-    // We insert all close points (depth<mThDepth)
+    // We insert all close points (depth < mThDepth)
     // If less than 100 close points, we insert the 100 closest ones.
+
     int nPoints = 0;
     for(size_t j = 0; j < vDepthIdx.size(); j++)
     {
@@ -3178,7 +3170,6 @@ void Tracking::UpdateLastFrame()
 
         if(vDepthIdx[j].first>mThDepth && nPoints>100)
             break;
-
     }
 }
 

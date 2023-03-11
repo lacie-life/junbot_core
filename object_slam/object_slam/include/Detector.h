@@ -36,7 +36,6 @@ protected:
     //std::vector<std::vector<Object>> mvvObjects;
     //mutex  mvvObjectsMutex;
 
-
     uint16_t  lastKeyframeSize =0;
     YoloDetection* mDetector;
 };

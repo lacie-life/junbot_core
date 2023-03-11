@@ -108,6 +108,12 @@ public:
         BINARY_FILE=1,
     };
 
+    // Object Association Method
+    enum ObjectAssociation{
+        LINE = 0,
+        PCL_SEG = 1,
+    };
+
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     // Initialize the SLAM system. It launches the Local Mapping, Loop Closing and Viewer threads.
@@ -285,7 +291,6 @@ private:
     // Point cloud mapping
     boost::shared_ptr<PointCloudMapping> mpPointCloudMapping;
     YoloDetection* mpDetector;
-    // std::shared_ptr<Detector> mpDetector;
 
 public:
     bool isYoloDetection = true;
@@ -297,6 +302,8 @@ public:
     bool isDynamicObject = false;
     bool isRemoveDynamicFeature = false;
     bool isUseDynamicKLTFeatures = false;
+
+    ObjectAssociation mAssociationType = ObjectAssociation::LINE;
 };
 
 }// namespace ORB_SLAM

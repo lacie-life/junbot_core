@@ -50,7 +50,6 @@ namespace ORB_SLAM3 {
 #endif
     }
 
-
     //Copy Constructor
     Frame::Frame(const Frame &frame)
             : mpcpi(frame.mpcpi), mpORBvocabulary(frame.mpORBvocabulary), mpORBextractorLeft(frame.mpORBextractorLeft),
@@ -135,7 +134,6 @@ namespace ORB_SLAM3 {
         threadRight.join();
 #ifdef REGISTER_TIMES
         std::chrono::steady_clock::time_point time_EndExtORB = std::chrono::steady_clock::now();
-
         mTimeORB_Ext = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_EndExtORB - time_StartExtORB).count();
 #endif
 
@@ -151,7 +149,6 @@ namespace ORB_SLAM3 {
         ComputeStereoMatches();
 #ifdef REGISTER_TIMES
         std::chrono::steady_clock::time_point time_EndStereoMatches = std::chrono::steady_clock::now();
-
         mTimeStereoMatch = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_EndStereoMatches - time_StartStereoMatches).count();
 #endif
 
@@ -167,7 +164,6 @@ namespace ORB_SLAM3 {
 
             mfGridElementWidthInv = static_cast<float>(FRAME_GRID_COLS) / (mnMaxX - mnMinX);
             mfGridElementHeightInv = static_cast<float>(FRAME_GRID_ROWS) / (mnMaxY - mnMinY);
-
 
             fx = K.at<float>(0, 0);
             fy = K.at<float>(1, 1);
@@ -232,10 +228,8 @@ namespace ORB_SLAM3 {
         ExtractORB(0, imGray, 0, 0);
 #ifdef REGISTER_TIMES
         std::chrono::steady_clock::time_point time_EndExtORB = std::chrono::steady_clock::now();
-
-    mTimeORB_Ext = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_EndExtORB - time_StartExtORB).count();
+        mTimeORB_Ext = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_EndExtORB - time_StartExtORB).count();
 #endif
-
 
         N = mvKeys.size();
 
@@ -415,9 +409,9 @@ namespace ORB_SLAM3 {
         std::chrono::steady_clock::time_point time_StartExtORB = std::chrono::steady_clock::now();
 #endif
         ExtractORB(0, imGray, 0, 0);
+
 #ifdef REGISTER_TIMES
         std::chrono::steady_clock::time_point time_EndExtORB = std::chrono::steady_clock::now();
-
         mTimeORB_Ext = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_EndExtORB - time_StartExtORB).count();
 #endif
 
@@ -591,7 +585,7 @@ namespace ORB_SLAM3 {
         mvInvLevelSigma2 = mpORBextractorLeft->GetInverseScaleSigmaSquares();
     }
 
-// Camera parameters can be raised separately to make a class
+    // Camera parameters can be raised separately to make a class
     void Frame::ComputeImageBounds() {
         int Camera_width = 480, Camera_height = 640;
         // if(Camera::DistCoef.at<float>(0)!=0.0)
@@ -650,14 +644,14 @@ namespace ORB_SLAM3 {
 
         int nReserve = 0.5f * N / (nCells);
 
-        for (unsigned int i = 0; i < FRAME_GRID_COLS; i++)
+        for (unsigned int i = 0; i < FRAME_GRID_COLS; i++){
             for (unsigned int j = 0; j < FRAME_GRID_ROWS; j++) {
                 mGrid[i][j].reserve(nReserve);
                 if (Nleft != -1) {
                     mGridRight[i][j].reserve(nReserve);
                 }
             }
-
+        }
 
         for (int i = 0; i < N; i++) {
             const cv::KeyPoint &kp = (Nleft == -1) ? mvKeysUn[i]
@@ -958,7 +952,6 @@ namespace ORB_SLAM3 {
                 }
             }
         }
-
         return vIndices;
     }
 
@@ -1303,9 +1296,9 @@ namespace ORB_SLAM3 {
                            static_cast<KannalaBrandt8 *>(mpCamera2)->mvLappingArea[1]);
         threadLeft.join();
         threadRight.join();
+
 #ifdef REGISTER_TIMES
         std::chrono::steady_clock::time_point time_EndExtORB = std::chrono::steady_clock::now();
-
         mTimeORB_Ext = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_EndExtORB - time_StartExtORB).count();
 #endif
 
@@ -1347,7 +1340,6 @@ namespace ORB_SLAM3 {
         ComputeStereoFishEyeMatches();
 #ifdef REGISTER_TIMES
         std::chrono::steady_clock::time_point time_EndStereoMatches = std::chrono::steady_clock::now();
-
         mTimeStereoMatch = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_EndStereoMatches - time_StartStereoMatches).count();
 #endif
 
@@ -1362,7 +1354,6 @@ namespace ORB_SLAM3 {
         mpMutexImu = new std::mutex();
 
         UndistortKeyPoints();
-
     }
 
     void Frame::ComputeStereoFishEyeMatches() {

@@ -168,7 +168,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     mpFrameDrawer = new FrameDrawer(mpAtlas, mpMapDrawer, strSettingsFile);
     mpMapPublisher = new MapPublisher(mpAtlas, strSettingsFile);
 
-    // *****Yolo*******************************************
+    // **********************Object detection****************************
     float resolution = fsSettings["PointCloudMapping.Resolution"];
     int model = fsSettings["Semantic.Model"];
 
@@ -195,7 +195,19 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
         mpDetector = new YoloDetection(modelPath);
     }
 
-    // *****Cuboid*******************************************
+    // **********************Object Association*************
+    int AssociationType = fsSettings["Semantic.ObjectAssociation"];
+    if(AssociationType == 0)
+    {
+        mAssociationType = ObjectAssociation::LINE;
+        std::cout << "Object will association by line to create 3d cuboid \n";
+    }
+    else if (AssociationType == 1){
+        mAssociationType = ObjectAssociation::PCL_SEG;
+        std::cout << "Object will association by point cloud segmentation to create 3d cuboid \n";
+    }
+
+    // *********************Cuboid**************************
     if (isCuboidEnable)
     {
         int g2oMode =  fsSettings["Semantic.ObjectOptimize"];
@@ -244,6 +256,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
                                      mSensor==IMU_MONOCULAR || mSensor==IMU_STEREO || mSensor==IMU_RGBD, strSequence);
     mptLocalMapping = new thread(&ORB_SLAM3::LocalMapping::Run,mpLocalMapper);
     mpLocalMapper->mInitFr = initFr;
+
     if(settings_)
         mpLocalMapper->mThFarPoints = settings_->thFarPoints();
     else
@@ -361,10 +374,8 @@ Sophus::SE3f System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, 
             mpTracker->GrabImuData(vImuMeas[i_imu]);
 
     mpTracker->mvImuFromLastFrame.assign(vImuMeas.begin(), vImuMeas.end());
-    // std::cout << "start GrabImageStereo" << std::endl;
-    Sophus::SE3f Tcw = mpTracker->GrabImageStereo(imLeftToFeed,imRightToFeed,timestamp,filename);
 
-    // std::cout << "out grabber" << std::endl;
+    Sophus::SE3f Tcw = mpTracker->GrabImageStereo(imLeftToFeed,imRightToFeed,timestamp,filename);
 
     unique_lock<mutex> lock2(mMutexState);
     mTrackingState = mpTracker->mState;
@@ -604,8 +615,6 @@ void System::Shutdown()
 #ifdef REGISTER_TIMES
     mpTracker->PrintTimeStats();
 #endif
-
-
 }
 
 bool System::isShutDown() {
@@ -670,7 +679,6 @@ void System::SaveTrajectoryTUM(const string &filename)
         f << setprecision(6) << *lT << " " <<  setprecision(9) << twc(0) << " " << twc(1) << " " << twc(2) << " " << q.x() << " " << q.y() << " " << q.z() << " " << q.w() << endl;
     }
     f.close();
-    // cout << endl << "trajectory saved!" << endl;
 }
 
 void System::SaveKeyFrameTrajectoryTUM(const string &filename)
@@ -870,13 +878,10 @@ void System::SaveTrajectoryEuRoC(const string &filename, Map* pMap)
     for(auto lit=mpTracker->mlRelativeFramePoses.begin(),
         lend=mpTracker->mlRelativeFramePoses.end();lit!=lend;lit++, lRit++, lT++, lbL++)
     {
-        //cout << "1" << endl;
         if(*lbL)
             continue;
 
-
         KeyFrame* pKF = *lRit;
-        //cout << "KF: " << pKF->mnId << endl;
 
         Sophus::SE3f Trw;
 
@@ -884,27 +889,18 @@ void System::SaveTrajectoryEuRoC(const string &filename, Map* pMap)
         if (!pKF)
             continue;
 
-        //cout << "2.5" << endl;
-
         while(pKF->isBad())
         {
-            //cout << " 2.bad" << endl;
             Trw = Trw * pKF->mTcp;
             pKF = pKF->GetParent();
-            //cout << "--Parent KF: " << pKF->mnId << endl;
         }
 
         if(!pKF || pKF->GetMap() != pMap)
         {
-            //cout << "--Parent KF is from another map" << endl;
             continue;
         }
 
-        //cout << "3" << endl;
-
         Trw = Trw * pKF->GetPose()*Twb; // Tcp*Tpw*Twb0=Tcb0 where b0 is the new world reference
-
-        // cout << "4" << endl;
 
         if (mSensor == IMU_MONOCULAR || mSensor == IMU_STEREO || mSensor==IMU_RGBD)
         {
@@ -920,10 +916,7 @@ void System::SaveTrajectoryEuRoC(const string &filename, Map* pMap)
             Eigen::Vector3f twc = Twc.translation();
             f << setprecision(6) << 1e9*(*lT) << " " <<  setprecision(9) << twc(0) << " " << twc(1) << " " << twc(2) << " " << q.x() << " " << q.y() << " " << q.z() << " " << q.w() << endl;
         }
-
-        // cout << "5" << endl;
     }
-    //cout << "end saving trajectory" << endl;
     f.close();
     cout << endl << "End of saving trajectory to " << filename << " ..." << endl;
 }
