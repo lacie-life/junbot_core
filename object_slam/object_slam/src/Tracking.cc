@@ -5948,6 +5948,7 @@ void Tracking::AssociateCuboids(KeyFrame *pKF)
 }
 
 // TODO: This function should be placed in the constructor of object
+// TODO: Improve Cuboid tracker
 void Tracking::CreateObject_InTrackMotion(){
 
     // *****************************
