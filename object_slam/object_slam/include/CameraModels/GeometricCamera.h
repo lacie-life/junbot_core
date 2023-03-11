@@ -52,7 +52,6 @@ namespace ORB_SLAM3 {
             ar & mvParameters;
         }
 
-
     public:
         GeometricCamera() {}
         GeometricCamera(const std::vector<float> &_vParameters) : mvParameters(_vParameters) {}
@@ -105,6 +104,5 @@ namespace ORB_SLAM3 {
         unsigned int mnType;
     };
 }
-
 
 #endif //CAMERAMODELS_GEOMETRICCAMERA_H

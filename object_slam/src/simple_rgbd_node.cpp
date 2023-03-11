@@ -38,7 +38,7 @@ int main(int argc, char **argv)
 
     if(argc != 6)
     {
-        cerr << endl << "Usage: rosrun orb_slam3_ros simple_rgbd_node path_to_vocabulary path_to_settings path_to_sequence path_to_association_depth path_to_association_rgb" << endl;
+        cerr << endl << "Usage: rosrun object_slam simple_rgbd_node path_to_vocabulary path_to_settings path_to_sequence path_to_association_depth path_to_association_rgb" << endl;
         return 1;
     }
 
@@ -170,8 +170,6 @@ void LoadImages(const string &strAssociationFilenameDepth, const string &strAsso
             ss >> sD;
             vstrImageFilenamesD.push_back(sD);
 
-//            cout << sD << endl;
-
             string _s;
             stringstream _ss;
             getline(fAssociationRGB, _s);
@@ -179,9 +177,6 @@ void LoadImages(const string &strAssociationFilenameDepth, const string &strAsso
             _ss >> t;
             _ss >> sRGB;
             vstrImageFilenamesRGB.push_back(sRGB);
-
-//            cout << sRGB << endl;
-
         }
     }
 }

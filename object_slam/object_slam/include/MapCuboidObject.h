@@ -22,14 +22,6 @@ namespace ORB_SLAM3
 //    class KeyFrame;
     class MapPoint;
     class Map;
-//    struct cmpKeyframe
-//    {
-//        //sort frame based on ID
-//        bool operator()(const KeyFrame *a, const KeyFrame *b) const
-//        {
-//            return a->mnId < b->mnId;
-//        }
-//    };
 
     class MapCuboidObject
     {

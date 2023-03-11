@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.2)
-project(orb_slam3_ros)
+project(object_slam)
 
 IF (NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Release)
@@ -108,43 +108,43 @@ catkin_package(
 include_directories(
         ${PROJECT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/include
-        ${PROJECT_SOURCE_DIR}/orb_slam3
-        ${PROJECT_SOURCE_DIR}/orb_slam3/include
-        ${PROJECT_SOURCE_DIR}/orb_slam3/include/CameraModels
-        ${PROJECT_SOURCE_DIR}/orb_slam3/include/cuda
-        ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty
-        ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/Sophus
-        ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/yolov5
+        ${PROJECT_SOURCE_DIR}/object_slam
+        ${PROJECT_SOURCE_DIR}/object_slam/include
+        ${PROJECT_SOURCE_DIR}/object_slam/include/CameraModels
+        ${PROJECT_SOURCE_DIR}/object_slam/include/cuda
+        ${PROJECT_SOURCE_DIR}/object_slam/Thirdparty
+        ${PROJECT_SOURCE_DIR}/object_slam/Thirdparty/Sophus
+        ${PROJECT_SOURCE_DIR}/object_slam/Thirdparty/yolov5
         ${EIGEN3_INCLUDE_DIR}
         ${Pangolin_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
 )
 
-include(${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/DBoW2/CMakeLists.txt)
-include(${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/g2o/CMakeLists.txt)
+include(${PROJECT_SOURCE_DIR}/object_slam/Thirdparty/DBoW2/CMakeLists.txt)
+include(${PROJECT_SOURCE_DIR}/object_slam/Thirdparty/g2o/CMakeLists.txt)
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/orb_slam3/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/object_slam/lib)
 
 file(GLOB HEADERS 
-        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/*.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/*.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/CameraModels/*.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/cuda/*.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/line_lbd/*.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/line_lbd/*.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/line_lbd/line_descriptor/*.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/include/detect_3d_cuboid/*.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/object_slam/include/*.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/object_slam/include/*.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/object_slam/include/CameraModels/*.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/object_slam/include/cuda/*.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/object_slam/include/line_lbd/*.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/object_slam/include/line_lbd/*.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/object_slam/include/line_lbd/line_descriptor/*.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/object_slam/include/detect_3d_cuboid/*.h
         )
 
 file(GLOB SOURCES 
-        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/*.cc
-        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/*.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/CameraModels/*.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/cuda/*.cu
-        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/line_detect/libs/*.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/line_detect/libs/*.hpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/line_detect/*.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/orb_slam3/src/detect_3d_cuboid/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/object_slam/src/*.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/object_slam/src/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/object_slam/src/CameraModels/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/object_slam/src/cuda/*.cu
+        ${CMAKE_CURRENT_SOURCE_DIR}/object_slam/src/line_detect/libs/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/object_slam/src/line_detect/libs/*.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/object_slam/src/line_detect/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/object_slam/src/detect_3d_cuboid/*.cpp
         )
 
 source_group("Header Files" FILES ${HEADERS})
@@ -166,9 +166,9 @@ target_link_libraries(${PROJECT_NAME}
         ${TRT_LIBS}
         ${CUDA_CUDA_LIBRARY}
         ${CUDA_CUDART_LIBRARY}
-        ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/DBoW2/lib/libDBoW2.so
-        ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/g2o/lib/libg2o.so
-        ${PROJECT_SOURCE_DIR}/orb_slam3/Thirdparty/yolov5/lib/libyolov5-detector.so
+        ${PROJECT_SOURCE_DIR}/object_slam/Thirdparty/DBoW2/lib/libDBoW2.so
+        ${PROJECT_SOURCE_DIR}/object_slam/Thirdparty/g2o/lib/libg2o.so
+        ${PROJECT_SOURCE_DIR}/object_slam/Thirdparty/yolov5/lib/libyolov5-detector.so
         -lboost_serialization
         -lcrypto
          nvToolsExt

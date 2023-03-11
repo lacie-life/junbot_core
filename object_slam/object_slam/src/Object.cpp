@@ -6,7 +6,7 @@
 #include "Converter.h"
 #include <exception>
 
-std::string WORK_SPACE_PATH = "/home/lacie/slam_ws/src/junbot_planner/orb_slam3_ros";
+std::string WORK_SPACE_PATH = "/home/lacie/slam_ws/src/junbot_planner/object_slam";
 std::string yamlfile_object = "TUM2.yaml";
 bool MotionIou_flag = true;
 bool NoPara_flag = true;
