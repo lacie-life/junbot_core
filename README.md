@@ -35,7 +35,18 @@
    - [ ] Planner? Which param need to change?
       - [ ] CostMap param?
       - [ ] Planner param?
-   - [ ] ....
+
+   - Adaptive Costmap layer
+      - [ ] Create an new layer for optimize coner
+      - [ ] Algorithm
+        - Input:
+          - Sub Map topic => gridmap
+          - Sub object in object layer
+          - Sub trajectory in path planner
+        - Processing:
+          - Custom theshold for coner 
+        - Output:
+          - List coner need to change in coner layer => update costmap => update path planner
    
  - [ ] Evaluate results
    - [ ] SLAM 
