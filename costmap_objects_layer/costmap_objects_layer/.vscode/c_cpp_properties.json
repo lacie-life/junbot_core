@@ -1,0 +1,44 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/opt/ros/noetic/include/**",
+        "/home/hn/junbot_ws/devel/include/**",
+        "/home/hn/junbot_ws/src/junbot_planner/navigation/amcl/include/**",
+        "/home/hn/junbot_ws/src/junbot_planner/navigation/base_local_planner/include/**",
+        "/home/hn/junbot_ws/src/junbot_planner/navigation/carrot_planner/include/**",
+        "/home/hn/junbot_ws/src/junbot_planner/navigation/clear_costmap_recovery/include/**",
+        "/home/hn/junbot_ws/src/junbot_planner/navigation/costmap_2d/include/**",
+        "/home/hn/junbot_ws/src/junbot_planner/costmap_objects_layer/costmap_objects_layer/include/**",
+        "/home/hn/junbot_ws/src/junbot_planner/navigation/dwa_local_planner/include/**",
+        "/home/hn/junbot_ws/src/junbot_planner/navigation/global_planner/include/**",
+        "/home/hn/junbot_ws/src/junbot_planner/junbot_simulations/junbot_fake/include/**",
+        "/home/hn/junbot_ws/src/junbot_planner/junbot_simulations/junbot_gazebo/include/**",
+        "/home/hn/junbot_ws/src/junbot_planner/junbot_gui/include/**",
+        "/home/hn/junbot_ws/src/junbot_planner/junbot_planner/include/**",
+        "/home/hn/junbot_ws/src/junbot_planner/junbot/junbot_slam/include/**",
+        "/home/hn/junbot_ws/src/junbot_planner/navigation/map_server/include/**",
+        "/home/hn/junbot_ws/src/junbot_planner/navigation/move_base/include/**",
+        "/home/hn/junbot_ws/src/junbot_planner/navigation/move_slow_and_clear/include/**",
+        "/home/hn/junbot_ws/src/junbot_planner/navigation/nav_core/include/**",
+        "/home/hn/junbot_ws/src/junbot_planner/navigation/navfn/include/**",
+        "/home/hn/junbot_ws/src/octomap_rviz_plugins/include/**",
+        "/home/hn/junbot_ws/src/octomap_mapping/octomap_server/include/**",
+        "/home/hn/junbot_ws/src/junbot_planner/orb_slam3_ros/include/**",
+        "/home/hn/junbot_ws/src/junbot_planner/navigation/rotate_recovery/include/**",
+        "/home/hn/junbot_ws/src/junbot_planner/navigation/voxel_grid/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}
