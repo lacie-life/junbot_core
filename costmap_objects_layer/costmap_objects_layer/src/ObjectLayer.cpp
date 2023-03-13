@@ -339,7 +339,7 @@ namespace object_layer
         // set costs of obstacle polygons
         for (int i = 0; i < _obstacle_polygons.size(); ++i)
         {
-            setPolygonCost(master_grid, _obstacle_polygons[i], costmap_2d::LETHAL_OBSTACLE, min_i, min_j, max_i, max_j, true);
+            setPolygonCost(master_grid, _obstacle_polygons[i], costmap_2d::LETHAL_OBSTACLE, min_i, min_j, max_i, max_j, true, _obstacle_classId[i]);
         }
 
         // set cost of obstacle points
@@ -402,7 +402,7 @@ namespace object_layer
     }
 
     void ObjectLayer::setPolygonCost(costmap_2d::Costmap2D &master_grid, const Polygon &polygon, unsigned char cost,
-                                      int min_i, int min_j, int max_i, int max_j, bool fill_polygon)
+                                      int min_i, int min_j, int max_i, int max_j, bool fill_polygon, std::string classId)
     {
         std::vector<PointInt> map_polygon;
         for (unsigned int i = 0; i < polygon.size(); ++i)
@@ -429,6 +429,9 @@ namespace object_layer
                 continue;
             master_grid.setCost(mx, my, cost);
         }
+
+        // TODO: Check inflation_layer
+        // https://github.com/ros-planning/navigation/blob/noetic-devel/costmap_2d/include/costmap_2d/inflation_layer.h
     }
 
     void ObjectLayer::polygonOutlineCells(const std::vector<PointInt> &polygon, std::vector<PointInt> &polygon_cells)
@@ -588,6 +591,7 @@ namespace object_layer
         {
             _obstacle_polygons.clear();
             _obstacle_points.clear();
+            _obstacle_classId.clear();
         }
 
         for (int i = 0; i < obstacles_msg->list.size(); ++i)
@@ -614,6 +618,7 @@ namespace object_layer
                         vector_to_add.push_back(pt);
                     }
                     _obstacle_polygons.push_back(vector_to_add);
+//                    _obstacle_classId.push_back(obstacles_msg->list[i].id);
                 }
             }
             else if (obstacles_msg->list[i].form.size() == 2)
@@ -647,6 +652,7 @@ namespace object_layer
                 vector_to_add.push_back(point);
 
                 _obstacle_polygons.push_back(vector_to_add);
+//                _obstacle_classId.push_back(obstacles_msg->list[i].id);
             }
             else
             {
@@ -656,6 +662,7 @@ namespace object_layer
                     vector_to_add.push_back(obstacles_msg->list[i].form[j]);
                 }
                 _obstacle_polygons.push_back(vector_to_add);
+                _obstacle_classId.push_back(obstacles_msg->list[i].id);
             }
         }
         computeMapBounds();

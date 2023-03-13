@@ -1,0 +1,15 @@
+<launch>  
+	<!-- SLAM  -->
+	<node pkg="object_slam" name="simple_rgbd_node" type="simple_rgbd_node"
+	args="/home/lacie/slam_ws/src/junbot_planner/object_slam/object_slam/Vocabulary/ORBvoc.txt.bin
+	/home/lacie/slam_ws/src/junbot_planner/object_slam/config/RGB-D/TUM2.yaml
+	/home/lacie/Github/Data/TUM/rgbd_dataset_freiburg2_large_with_loop
+	/home/lacie/Github/Data/TUM/rgbd_dataset_freiburg2_large_with_loop/depth.txt 
+	/home/lacie/Github/Data/TUM/rgbd_dataset_freiburg2_large_with_loop/rgb.txt"
+	output="screen"/>
+
+	<include file="$(find object_slam)/launch/transform.launch" />
+	<include file="$(find object_slam)/launch/octomap.launch" />
+	<node pkg="rviz" name="rviz" type="rviz" /> 
+	
+</launch>

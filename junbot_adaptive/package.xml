@@ -70,6 +70,7 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>move_base_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
+  <depend>tf</depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

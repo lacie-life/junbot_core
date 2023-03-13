@@ -14,8 +14,9 @@
    
    - [ ] Turning object database
    	   - [x] Segment 3D bounding box
-   	   - [ ] Darknet-ros-3d test [[Link](https://github.com/IntelligentRoboticsLabs/gb_visual_detection_3d)]
+   	   - [ ] Darknet-ros-3d + ObjectDatabase test [[Link](https://github.com/IntelligentRoboticsLabs/gb_visual_detection_3d)]
    	   - [x] Object filter (sometime crashed)
+   	   - [ ] Improve Object tracker
    	   - [ ] Improve Object filter
    - [x] Add ZED example
  
