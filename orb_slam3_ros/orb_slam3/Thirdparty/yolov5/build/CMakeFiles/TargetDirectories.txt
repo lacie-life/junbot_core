@@ -1,4 +1,0 @@
-/home/hn/junbot_ws/src/junbot_planner/orb_slam3_ros/orb_slam3/Thirdparty/yolov5/build/CMakeFiles/rebuild_cache.dir
-/home/hn/junbot_ws/src/junbot_planner/orb_slam3_ros/orb_slam3/Thirdparty/yolov5/build/CMakeFiles/edit_cache.dir
-/home/hn/junbot_ws/src/junbot_planner/orb_slam3_ros/orb_slam3/Thirdparty/yolov5/build/CMakeFiles/test_detector.dir
-/home/hn/junbot_ws/src/junbot_planner/orb_slam3_ros/orb_slam3/Thirdparty/yolov5/build/CMakeFiles/yolov5-detector.dir
