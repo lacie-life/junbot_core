@@ -40,7 +40,7 @@
       - [ ] Create an new layer for optimize coner
       - [ ] Algorithm
         - Input:
-          [] Sub Map topic => gridmap
+          [x] Sub Map topic => global costmap 
           [] Sub object in object layer from orb (temp: init object layer)
           [x] Sub trajectory in path planner
         - Processing:
