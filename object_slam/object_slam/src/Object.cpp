@@ -6,7 +6,7 @@
 #include "Converter.h"
 #include <exception>
 
-std::string WORK_SPACE_PATH = "/home/lacie/slam_ws/src/junbot_planner/object_slam";
+std::string WORK_SPACE_PATH = "/home/lacie/slam_ws/src/junbot_planner/object_slam/object_slam";
 std::string yamlfile_object = "TUM2.yaml";
 bool MotionIou_flag = true;
 bool NoPara_flag = true;
@@ -187,7 +187,6 @@ void Object_2D::MergeTwo_Obj2D(Object_2D *Old_Object2D)
             this->mvMapPonits.push_back(pMPLast);  
         }
     }
-    
     //this->ComputeMeanAndDeviation();
 }
 
@@ -211,7 +210,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
     const vector<Object_Map*> ObjectMaps  = mpMap->GetObjects();
 
     // ****************************************************
-    //         STEP 1. Motion  IoU  association.              *
+    //         STEP 1. Motion  IoU  association.          *
     // ****************************************************
     float IouMax = 0;                           //
     bool bAssoByMotionIou = false;              // 
@@ -283,7 +282,6 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                 {
                     IouMax = Iou;
                     ObjID_IouMax = i;
-//                    std::cout<<"[MotionIou] yes "<<std::endl;
                 }
 
             }
@@ -400,22 +398,19 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
     bool bAssoByProjectIou = false;
     int MaxAssoObjId_byProIou = -1;  //int nAssoByProId = -1;
     vector<int> vAssoObjIds_byProIou;
+
     if(ProIou_flag)//if((flag != "NA") && (flag != "IoU") && (flag != "NP"))
     {
         float fIouMax = 0.0;
-
-//        std::cout << "Number object in current map: " << (int)ObjectMaps.size() << "\n";
 
         for (int i = (int)ObjectMaps.size() - 1; i >= 0; i--)
         {
             Object_Map* obj3D = ObjectMaps[i];
             if (mclass_id != obj3D->mnClass){
-                // std::cout << "[ProIou] Object class is different" << std::endl;
                 continue;
             }
 
             if (obj3D->bad_3d){
-//                std::cout << "[ProIou] object bad" << std::endl;
                 continue;
             }
 
@@ -423,7 +418,6 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
             {
                 int df = (int) obj3D->mvObject_2ds.size();
                 if ((mvMapPonits.size() >= 10) && (df > 8)) {
-//                    std::cout << "[ProIou] Use with small samples and multiple objects" << std::endl;
                     continue;
                 }
             }
@@ -504,7 +498,6 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                     << MaxAssoObjId_byProIou << " "
                     << ObjectMaps[vAssoObjIds_byProIou[j]]->mnId << "\n";
 
-
                     if (vAssoObjIds_byProIou[j] == MaxAssoObjId_byProIou)
                     {
                         std::cout << "[Object2D_DataAssociationWith_Object3D] Skip Id: " << j << "\n";
@@ -520,7 +513,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
             }
         }
     }
-    // Projected box data association END ---------------------------------------------------------------------------------------
+    // Projected box data association
 
     // ************************************************
     //          STEP 4. t-test data association       *
@@ -544,6 +537,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
     int nAssoByTId = -1;
     vector<int> vObjByTId;
     vector<int> vObjByTIdLower; // potential association.
+
     if(Ttest_flag)//if((flag != "NA") && (flag != "IoU") && (flag != "NP"))
     {
         for (int i = (int)ObjectMaps.size() - 1; i >= 0; i--)
@@ -590,7 +584,6 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                 (t_test_z < tTestData[min((df - 1), 121)][5]))
             {
                 vObjByTId.push_back(i);
-//                std::cout << "[Ttest] yes 1 " << std::endl;
             }
             // If the T-test is not satisfied, but the IOU is large, reducing the significance.
             else if (fIou > 0.25)
@@ -600,18 +593,15 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                     (t_test_z < tTestData[min((df - 1), 121)][8]))
                 {
                     vObjByTId.push_back(i);
-//                    std::cout<<"[Ttest] yes 2 "<<std::endl;
                 }
 
                 else if ((fIou > 0.25) && ((t_test_x + t_test_y + t_test_z) / 3 < 10))
                 {
                     vObjByTId.push_back(i);
-//                    std::cout << "[Ttest] yes 3 " << std::endl;
                 }
                 else
                 {
                     vObjByTIdLower.push_back(i);
-//                    std::cout << "[Ttest] yes 4 " << std::endl;
                 }
             }
             else if ((t_test_x + t_test_y + t_test_z) / 3 < 4)
@@ -623,7 +613,6 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                 fIou_force = max(fIou_force, fIou2_force);
 
                 if (fIou_force > 0.25){
-//                    std::cout << "[Ttest] yes 5 " << std::endl;
                     vObjByTIdLower.push_back(i);
                 }
             }
@@ -711,11 +700,11 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
     // *************************************************
     //if (bAssoByMotionIou || bAssoByNp || bAssoByProjectIou || bAssoByTtest)
     //    return true;
-     if (bAssoByMotionIou )
+     if (bAssoByMotionIou)
         return MotionIou;
-     if ( bAssoByNp)
+     if (bAssoByNp)
         return NoPara;
-     if ( bAssoByProjectIou)
+     if (bAssoByProjectIou)
         return ProIou;
      if (bAssoByTtest)
         return t_test;
@@ -960,8 +949,9 @@ int Object_2D::NoParaDataAssociation(Object_Map *Object3D)
     }
 
     // step 2. `compute the rank sum.`
-    // notes: Note that when we calculate the ranks of several equivalent elements, the average of the ranks of these elements is used as their rank in the entire sequence.
-     // This is why w_x_00 / 2 is added
+    // notes: Note that when we calculate the ranks of several equivalent elements,
+    // the average of the ranks of these elements is used as their rank in the entire sequence.
+    // This is why w_x_00 / 2 is added
     // w_x_12 + w_x_00 / 2 The sort corresponding to m; w_x_21 + w_x_00 / 2 is the sort corresponding to n. It feels wrong
     // W = min(W_p, W_q)
     // zhang: w = (n*n - R)   + n(n+1)/2
@@ -1006,6 +996,7 @@ void Object_2D::AddObjectPoint(ORB_SLAM3::MapPoint *pMP) {
     const cv::Mat PointPosWorld = Converter::toCvMat(pMP->GetWorldPos());                 // world frame.
     sum_pos_3d += PointPosWorld;  
 }
+
 
 void Object_2D::AddPotentialAssociatedObjects(vector<Object_Map*> obj3ds, int AssoId, int beAssoId){
 
@@ -1052,7 +1043,9 @@ void Object_2D::AddPotentialAssociatedObjects(vector<Object_Map*> obj3ds, int As
 // object3d
 // ************************************
 void Object_Map::ComputeMeanAndDeviation_3D() {
+
     mSumPointsPos = cv::Mat::zeros(3,1,CV_32F);
+
     // remove bad points.
     {
         unique_lock<mutex> lock(mMutexMapPoints);
@@ -1103,6 +1096,7 @@ void Object_Map::ComputeMeanAndDeviation_3D() {
     // step 2. standard deviation of centroids (observations from different frames).
     float sum_x2_c = 0, sum_y2_c = 0, sum_z2_c = 0;
     vector<float> x_c, y_c, z_c;
+
     for (size_t i = 0; i < this->mvObject_2ds.size(); i++)
     {
         cv::Mat pos = this->mvObject_2ds[i]->mPos_world.clone();
@@ -1113,6 +1107,7 @@ void Object_Map::ComputeMeanAndDeviation_3D() {
         sum_y2_c += (pos.at<float>(1) - pos_ave.at<float>(1)) * (pos.at<float>(1) - pos_ave.at<float>(1));
         sum_z2_c += (pos.at<float>(2) - pos_ave.at<float>(2)) * (pos.at<float>(2) - pos_ave.at<float>(2));
     }
+
     mCenterStandar_x = sqrt(sum_x2_c / (this->mvObject_2ds.size()));
     mCenterStandar_y = sqrt(sum_y2_c / (this->mvObject_2ds.size()));
     mCenterStandar_z = sqrt(sum_z2_c / (this->mvObject_2ds.size()));
@@ -1126,7 +1121,6 @@ void Object_Map::ComputeMeanAndDeviation_3D() {
 
         if ((x_pt.size() == 0) || (y_pt.size() == 0) || (z_pt.size() == 0)) {
             this->bad_3d = true;
-//            std::cout<<"object->bad Points are 0" <<std::endl;
             return;
         }
 
