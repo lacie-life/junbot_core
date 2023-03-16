@@ -39,10 +39,10 @@
    - Adaptive Costmap layer
       - [ ] Create an new layer for optimize coner
       - [ ] Algorithm
-        - Input:
-          [x] Sub Map topic => global costmap 
-          [] Sub object in object layer from orb (temp: init object layer)
-          [x] Sub trajectory in path planner
+        - Input: 
+            -[x] Sub Map topic => global costmap 
+            -[] Sub object in object layer from orb (temp: init object layer)
+            -[x] Sub trajectory in path planner
         - Processing:
           - Custom theshold for coner 
         - Output:
