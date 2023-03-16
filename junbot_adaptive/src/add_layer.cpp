@@ -50,19 +50,19 @@ int main(int argc, char **argv)
             }
             temp.list.push_back(obs);
         }
-//        // add circle
-//        for (int i = 0; i < number_circle; i++)
-//        {
-//            custom_msgs::Form obs;
-//            for (int n = 0 ; n < 1; n++) {
-//                geometry_msgs::Point p;
-//                p.x = circle_[i][0];
-//                p.y = circle_[i][1];
-//                p.z = circle_[i][2];
-//                obs.form.push_back(p);
-//            }
-//            temp.list.push_back(obs);
-//        }
+       // add circle
+       for (int i = 0; i < number_circle; i++)
+       {
+           custom_msgs::Form obs;
+           for (int n = 0 ; n < 1; n++) {
+               geometry_msgs::Point p;
+               p.x = circle_[i][0];
+               p.y = circle_[i][1];
+               p.z = circle_[i][2];
+               obs.form.push_back(p);
+           }
+           temp.list.push_back(obs);
+       }
         chatter_pub.publish(temp);
         ros::spinOnce();
         ++count;

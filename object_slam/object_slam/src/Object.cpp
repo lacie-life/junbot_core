@@ -193,7 +193,8 @@ void Object_2D::MergeTwo_Obj2D(Object_2D *Old_Object2D)
 
 int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
 {
-//    std::cout << "Check if it is connected to the old object" << std::endl;
+    std::cout << "Check if it is connected to the old object" << std::endl;
+
     const cv::Mat image = mpCurrentFrame->mColorImage.clone();
     const cv::Mat Rcw = cv::Mat::zeros(3,3,CV_32F);
     const cv::Mat tcw = cv::Mat::eye(3,1,CV_32F);
@@ -208,6 +209,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
     cv::Rect RectProject;                   // bounding box constructed by projecting points.
 
     const vector<Object_Map*> ObjectMaps  = mpMap->GetObjects();
+
     // ****************************************************
     //         STEP 1. Motion  IoU  association.              *
     // ****************************************************
@@ -216,17 +218,20 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
     int AssoObjId_byIou = -1;                   // the associated map object ID.
     int ObjID_IouMax = -1;                      // temporary variable. 
     float IouThreshold = 0.5;                   // IoU threshold.
+
     if(MotionIou_flag)//if((flag != "NA") && (flag != "NP"))
     {
-
         for (int i = 0; i < (int)ObjectMaps.size(); i++)
         {
             Object_Map* obj3d = ObjectMaps[i];
+
             if (mclass_id != obj3d->mnClass)
                 continue;
+
             if (obj3d->bad_3d)
                 continue;
-            if ((mpCurrentFrame->mnId-1) == obj3d->mnLastAddID )   
+
+            if ((mpCurrentFrame->mnId-1) == obj3d->mnLastAddID)
             {
                 // step 1.1 predict object bounding box according to last frame and next to last frame.
                 if ((mpCurrentFrame->mnId-2) == obj3d->mnLastLastAddID)
@@ -273,7 +278,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                     cv::resize(mat_test, mat_test, cv::Size(640 * 0.5, 480 * 0.5), 0, 0, cv::INTER_CUBIC);
                     cv::imshow("[MotionIou]", mat_test);
                 }
-//                std::cout<<"[MotionIou] iou:"<<Iou <<std::endl;
+                std::cout << "[MotionIou] iou:" << Iou << std::endl;
                 if ((Iou > IouThreshold) && (Iou > IouMax))
                 {
                     IouMax = Iou;
@@ -300,7 +305,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
             }
         }
     }
-    // Iou data association END ----------------------------------------------------------------------------
+    // Iou data association
 
     // *************************************************
     //      STEP 2. Nonparametric data association     *
@@ -308,14 +313,16 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
     bool bAssoByNp = false;
     int  AssoObjId_byNP  = -1; //;nAssoByNPId
     vector<int> vAssoObjIds_byNP;     // potential associated objects.
+
     if(NoPara_flag)//if((flag != "NA") && (flag != "IoU"))
     {
-        
         for (int i = (int)ObjectMaps.size() - 1; (i >= 0) ; i--)
         {
             Object_Map* obj3d = ObjectMaps[i];
+
             if (mclass_id != obj3d->mnClass)
                 continue;
+
             if (obj3d->bad_3d)
                 continue;
 
@@ -790,7 +797,7 @@ int Object_2D::creatObject()
 int Object_2D::NoParaDataAssociation(Object_Map *Object3D)
 {
     // step 1. sample size.
-    // 2d object ponits in the frame -- m.
+    // 2d object points in the frame -- m.
     int m = (int)mvMapPonits.size();
     int OutPointNum1 = 0;
     for (int i = 0; i < (int)mvMapPonits.size(); i++)
@@ -990,7 +997,7 @@ int Object_2D::NoParaDataAssociation(Object_Map *Object3D)
         return 1;       // success.
     else
         return 2;       // failure.
-} // Object_2D::NoParaDataAssociation() END ------------------------------------------------------------
+} // Object_2D::NoParaDataAssociation()
 
 void Object_2D::AddObjectPoint(ORB_SLAM3::MapPoint *pMP) {
     unique_lock<mutex> lock2(mGlobalMutex);

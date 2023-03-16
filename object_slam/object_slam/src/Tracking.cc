@@ -6286,7 +6286,6 @@ void Tracking::CreateObject_InTrackMotion(){
             nGoodObjId++;;
 
             // Create an object in the map.
-//            std::cout<<"【debug】INIT object"<<std::endl;
             Object_Map *Object3D = new Object_Map;
             Object3D->mvObject_2ds.push_back(obj2d);   // 2D objects in each frame associated with this 3D map object.
             Object3D->mnId = nGoodObjId;             // 3d objects in the map.
@@ -6300,9 +6299,7 @@ void Tracking::CreateObject_InTrackMotion(){
             Object3D->mSumPointsPos = 0; //cv::Mat::zeros(3,1,CV_32F);
             Object3D->mAveCenter3D = obj2d->mPos_world;  ; //cv::Mat::zeros(3,1,CV_32F);
 
-//            std::cout<<"【debug】INIT Object Store feature points"<<std::endl;
             // add properties of the point and save it to the object.
-
             for (size_t i = 0; i < obj2d->mvMapPonits.size(); i++)
             {
                 if(obj2d->mvMapPonits[i]->isBad())
@@ -6322,15 +6319,13 @@ void Tracking::CreateObject_InTrackMotion(){
 
             // save this 2d object to current frame (associates with a 3d object in the map).
             mCurrentFrame.mvObject_2ds.push_back(obj2d);
-//            std::cout<<"【debug】INIT object deposited obj2d"<<std::endl;
 
             // updata map object.
             Object3D->ComputeMeanAndDeviation_3D();
-//            std::cout<<"【debug】INIT Object Calculate mean"<<std::endl;
+
             //mpMap->mvObjectMap.push_back(ObjectMapSingle);
             mpMap->AddObject(Object3D);
-//            std::cout<<"【debug】INIT object deposited map"<<std::endl;
-//            std::cout<<"【debug】INIT object object id:"<<Object3D->mnLastAddID<<", frame id:"<<mCurrentFrame.mnId<<std::endl;
+
             // The object is initialized
             mbObjectIni = true;
             mnObjectIniFrameID = mCurrentFrame.mnId;
