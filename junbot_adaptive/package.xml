@@ -66,11 +66,7 @@
   <build_export_depend>custom_msgs</build_export_depend>
   <build_export_depend>vision_msgs</build_export_depend>
   <exec_depend>custom_msgs</exec_depend>
-<<<<<<< HEAD
-  <exec_depend>vision_msgs</exec_depend>
-=======
   <exec_depend>nav_msgs</exec_depend>
->>>>>>> 4788f1ac00b49a177e13d0065c95c74de72c0a28
   <exec_depend>roscpp</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
