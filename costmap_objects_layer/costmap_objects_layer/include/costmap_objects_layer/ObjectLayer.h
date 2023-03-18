@@ -61,7 +61,7 @@ namespace object_layer
         /// \param max_j          maximum bound on the vertical map index/coordinate
         /// \param fill_polygon   if true, tue cost for the interior of the polygon will be set as well
         void setPolygonCost(costmap_2d::Costmap2D &master_grid, const Polygon &polygon,
-                            unsigned char cost, int min_i, int min_j, int max_i, int max_j, bool fill_polygon);
+                            unsigned char cost, int min_i, int min_j, int max_i, int max_j, bool fill_polygon, std::string classId = "");
 
         /// \brief                     converts polygon (in map coordinates) to a set of cells in the map
         /// \note                      This method is mainly based on Costmap2D::convexFillCells() but accounts for a self - implemented polygonOutlineCells() method and allows negative map coordinates
@@ -129,6 +129,7 @@ namespace object_layer
         std::vector<geometry_msgs::Point> _obstacle_points;                     // vector to save the obstacle points in source coordinates
         std::vector<Polygon> _zone_polygons;                                    // vector to save the zone polygons (more than 3 edges) in source coordinates
         std::vector<Polygon> _obstacle_polygons;                                // vector to save the obstacle polygons (including lines) in source coordinates
+        std::vector<std::string> _obstacle_classId;
         std::vector<Polygon> _form_polygons;                                    // vector to save the form polygons (including lines) in source coordinates
         std::vector<geometry_msgs::Point> _form_points;                         // vector to save the form points in source coordinates
 

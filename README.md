@@ -14,8 +14,9 @@
    
    - [ ] Turning object database
    	   - [x] Segment 3D bounding box
-   	   - [ ] Darknet-ros-3d test [[Link](https://github.com/IntelligentRoboticsLabs/gb_visual_detection_3d)]
+   	   - [ ] Darknet-ros-3d + ObjectDatabase test [[Link](https://github.com/IntelligentRoboticsLabs/gb_visual_detection_3d)]
    	   - [x] Object filter (sometime crashed)
+   	   - [ ] Improve Object tracker
    	   - [ ] Improve Object filter
    - [x] Add ZED example
  
@@ -34,7 +35,18 @@
    - [ ] Planner? Which param need to change?
       - [ ] CostMap param?
       - [ ] Planner param?
-   - [ ] ....
+
+   - Adaptive Costmap layer
+      - [ ] Create an new layer for optimize coner
+      - [ ] Algorithm
+        - Input: 
+            - [x] Sub Map topic => global costmap 
+            - [ ] Sub object in object layer from orb (temp: init object layer)
+            - [x] Sub trajectory in path planner
+        - Processing:
+          - Custom theshold for coner 
+        - Output:
+          - List coner need to change in coner layer => update costmap => update path planner
    
  - [ ] Evaluate results
    - [ ] SLAM 

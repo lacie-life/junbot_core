@@ -51,12 +51,14 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
+  <build_depend>nav_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>move_base_msgs</build_depend>
   <build_depend>custom_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>vision_msgs</build_depend>
   <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>nav_msgs</build_export_depend>
   <build_export_depend>rospy</build_export_depend>
   <build_export_depend>std_msgs</build_export_depend>
   <build_export_depend>move_base_msgs</build_export_depend>
@@ -64,12 +66,17 @@
   <build_export_depend>custom_msgs</build_export_depend>
   <build_export_depend>vision_msgs</build_export_depend>
   <exec_depend>custom_msgs</exec_depend>
+<<<<<<< HEAD
   <exec_depend>vision_msgs</exec_depend>
+=======
+  <exec_depend>nav_msgs</exec_depend>
+>>>>>>> 4788f1ac00b49a177e13d0065c95c74de72c0a28
   <exec_depend>roscpp</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>move_base_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
+  <depend>tf</depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

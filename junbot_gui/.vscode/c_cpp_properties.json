@@ -1,0 +1,40 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/hn/simulation_ws/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/hn/simulation_ws/src/turtlebot3/navigation/amcl/include/**",
+        "/home/hn/simulation_ws/src/turtlebot3/navigation/base_local_planner/include/**",
+        "/home/hn/simulation_ws/src/turtlebot3/navigation/carrot_planner/include/**",
+        "/home/hn/simulation_ws/src/turtlebot3/navigation/clear_costmap_recovery/include/**",
+        "/home/hn/simulation_ws/src/turtlebot3/navigation/costmap_2d/include/**",
+        "/home/hn/simulation_ws/src/turtlebot3/navigation/dwa_local_planner/include/**",
+        "/home/hn/simulation_ws/src/turtlebot3/navigation/global_planner/include/**",
+        "/home/hn/simulation_ws/src/junbot_gui/include/**",
+        "/home/hn/simulation_ws/src/turtlebot3/navigation/map_server/include/**",
+        "/home/hn/simulation_ws/src/turtlebot3/navigation/move_base/include/**",
+        "/home/hn/simulation_ws/src/turtlebot3/navigation/move_slow_and_clear/include/**",
+        "/home/hn/simulation_ws/src/turtlebot3/navigation/nav_core/include/**",
+        "/home/hn/simulation_ws/src/turtlebot3/navigation/navfn/include/**",
+        "/home/hn/simulation_ws/src/turtlebot3/navigation/rotate_recovery/include/**",
+        "/home/hn/simulation_ws/src/turtlebot3/turtlebot3_adaptive/include/**",
+        "/home/hn/simulation_ws/src/turtlebot3_simulations/turtlebot3_fake/include/**",
+        "/home/hn/simulation_ws/src/turtlebot3_simulations/turtlebot3_gazebo/include/**",
+        "/home/hn/simulation_ws/src/turtlebot3/turtlebot3_slam/include/**",
+        "/home/hn/simulation_ws/src/turtlebot3/navigation/voxel_grid/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}
