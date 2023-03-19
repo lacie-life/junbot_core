@@ -27,14 +27,14 @@
 
 - [ ] Re-path planning?
    - [x] Plan of re-path planning
-   - [ ] How to represent map with object for navigation stack ? (Grid map / OctoMap) ? 
+   - [x] How to represent map with object for navigation stack ? (Grid map / OctoMap) ? 
       - [x] CostMap layer? ([Ref](http://wiki.ros.org/costmap_2d/Tutorials/Creating%20a%20New%20Layer))
-      - [ ] Node Add Object
-      - [ ] Get waypoint path
-      - [ ] ...
-   - [ ] Planner? Which param need to change?
-      - [ ] CostMap param?
-      - [ ] Planner param?
+      - [x] Node Add Object
+      - [x] Get waypoint path
+      - [x] Node subcribe global costmap 
+   - [x] Planner? Which param need to change?
+      - [x] CostMap param => add object zone 
+      - ~~[x] Planner param (Only tuning)~~
 
    - Adaptive Costmap layer
       - [ ] Create an new layer for optimize coner
@@ -48,8 +48,10 @@
         - Output:
           - List coner need to change in coner layer => update costmap => update path planner
    
- - [ ] Evaluate results
-   - [ ] SLAM 
+ - [ ] Evaluate results (MavelMind)
+   - [ ] Improve GUI
+   - [ ] <b> Trajectory collection by MavelMind </b>
+   - [ ] SLAM
    - [ ] Re-path planning
 
 # Install 
@@ -62,7 +64,15 @@
 - [octomap_mapping](https://github.com/OctoMap/octomap_mapping)
 - [octomap_rviz_plugins](https://github.com/OctoMap/octomap_rviz_plugins)
 
-2. orb_slam3_ros
+2. Support packages 
+
+```
+sudo apt install qtmultimedia5-dev
+
+sudo apt-get install ros-noetic-ddynamic-reconfigure
+```
+
+3. orb_slam3_ros
 
 - CUDA 11.6 [[Link](https://developer.nvidia.com/cuda-11-6-0-download-archive)]
   - <i> Choose option and follow instructions </i>
@@ -73,10 +83,6 @@
 
 - PCL 1.8 [[Link](https://github.com/PointCloudLibrary/pcl/archive/refs/tags/pcl-1.8.0.zip)]
   - <i> Uncompress and build </i>
-
-- Libtorch 1.12.1+cu116 (cxx11-abi) [[Link](https://download.pytorch.org/libtorch/cu116/libtorch-cxx11-abi-shared-with-deps-1.12.1%2Bcu116.zip)]
-  - <i> Unzip and change path to libtorch in  CMakeLists.txt</i>
-  - For Jetson, follow this [link](https://github.com/pytorch/pytorch/blob/master/docs/libtorch.rst#building-libtorch-using-cmake) or using TensorRT
 
 - Pangolin
 
@@ -96,11 +102,11 @@ cmake --build .
 sudo make install
 ```
 
-- TensorRT (Option)
+- TensorRT
 - ZED SDK (Option)
 - Realsense SDK (Option)
 
-3. TensorRT with Yolov5 model (Replace for libtorch in Jetson series)
+3. TensorRT with Yolov5 model
 
 ```
 git clone -b v7.0 https://github.com/ultralytics/yolov5.git
