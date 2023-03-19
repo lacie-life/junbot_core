@@ -1,0 +1,54 @@
+# Camera 1
+
+- Type: D435i
+- Serial: 044322073454
+
+- Intrinsic of "Depth" / 640x480 / {Z16}
+  Width:      	640
+  Height:     	480
+  PPX:        	323.087310791016
+  PPY:        	235.014022827148
+  Fx:         	388.802459716797
+  Fy:         	388.802459716797
+  Distortion: 	Brown Conrady
+  Coeffs:     	0  	0  	0  	0  	0  
+  FOV (deg):  	78.91 x 63.37
+
+- Intrinsic of "Color" / 640x480 / {YUYV/RGB8/BGR8/RGBA8/BGRA8/Y16}
+  Width:      	640
+  Height:     	480
+  PPX:        	315.798370361328
+  PPY:        	226.742065429688
+  Fx:         	607.157348632812
+  Fy:         	607.830505371094
+  Distortion: 	Inverse Brown Conrady
+  Coeffs:     	0  	0  	0  	0  	0  
+  FOV (deg):  	55.58 x 43.08
+
+# Camera 2
+
+- Type: D435i
+- Serial: 044122070773
+
+- Intrinsic of "Depth" / 640x480 / {Z16}
+  Width:      	640
+  Height:     	480
+  PPX:        	323.247375488281
+  PPY:        	242.061233520508
+  Fx:         	385.490447998047
+  Fy:         	385.490447998047
+  Distortion: 	Brown Conrady
+  Coeffs:     	0  	0  	0  	0  	0  
+  FOV (deg):  	79.39 x 63.81
+
+- Intrinsic of "Color" / 640x480 / {YUYV/RGB8/BGR8/RGBA8/BGRA8/Y16}
+  Width:      	640
+  Height:     	480
+  PPX:        	315.699493408203
+  PPY:        	241.644165039062
+  Fx:         	605.839599609375
+  Fy:         	606.218078613281
+  Distortion: 	Inverse Brown Conrady
+  Coeffs:     	0  	0  	0  	0  	0  
+  FOV (deg):  	55.68 x 43.2
+

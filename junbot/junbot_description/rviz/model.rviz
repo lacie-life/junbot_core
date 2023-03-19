@@ -148,8 +148,6 @@ Visualization Manager:
           Value: true
         caster_back_link:
           Value: true
-        imu_link:
-          Value: true
         odom:
           Value: true
         wheel_left_link:
@@ -168,8 +166,6 @@ Visualization Manager:
               base_scan:
                 {}
               caster_back_link:
-                {}
-              imu_link:
                 {}
               wheel_left_link:
                 {}

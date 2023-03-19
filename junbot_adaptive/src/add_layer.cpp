@@ -17,6 +17,7 @@ int main(int argc, char **argv)
         // create message msg with date type is string
         std_msgs::String msg;
         // creat variable ss with data type is stringstream
+        //-4.729493, -5.122387
         float point_[8][3] = {{-3,0.75,0},
                               {-4,0.75,0},
                               {-3,6,0},
