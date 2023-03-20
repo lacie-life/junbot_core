@@ -47,7 +47,6 @@ Object_2D::Object_2D(Map* Map, Frame* CurrentFrame, const BoxSE &box) {
     this->mpCurrentFrame = CurrentFrame;
     this->mpMap = Map;
 
-    
     this->sum_pos_3d = cv::Mat::zeros(3, 1, CV_32F);
 //    std::cout << ">>>   End" << std::endl;
 }

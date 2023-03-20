@@ -5969,7 +5969,6 @@ void Tracking::CreateObject_InTrackMotion(){
     // ***************************************
     // STEP 2. associate objects with points * 
     // ***************************************
-    //AssociateObjAndPoints(objs_2ds);
     for (int i = 0; i < mCurrentFrame.N; i++)
     {
         if (mCurrentFrame.mvpMapPoints[i])
@@ -6054,7 +6053,6 @@ void Tracking::CreateObject_InTrackMotion(){
         mCurrentFrame.vObjsLines.push_back(ObjectLinesAfterMerge);   
     }
 
-
     // ***************************************************
     // STEP 4.
     // (1)compute the mean and standard of points.*
@@ -6090,6 +6088,7 @@ void Tracking::CreateObject_InTrackMotion(){
 
     const cv::Mat Rcw = Tcw_.rowRange(0, 3).colRange(0, 3);
     const cv::Mat tcw = Tcw_.rowRange(0, 3).col(3);
+
     for (auto &obj2d : obj_2ds)
     {
         // record the coordinates of each point in the xy(uv) directions.
@@ -6495,12 +6494,6 @@ void Tracking::CreateObject_InTrackMotion(){
         }
     }
 }
-
-void Tracking::AssociateObjAndPoints(vector<Object_2D *> obj_2ds)
-{
-
-} // AssociateObjAndPoints() END -----------------------------------
-
 
 cv::Mat Tracking::DrawQuadricProject(cv::Mat &im,
                                      const cv::Mat &P,   // projection matrix.
