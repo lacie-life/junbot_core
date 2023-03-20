@@ -16,7 +16,7 @@
 
 /* Authors: Yoonseok Pyo */
 
-#include <junbot_fake/turtlebot3_fake.h>
+#include <turtlebot3_fake/turtlebot3_fake.h>
 
 Turtlebot3Fake::Turtlebot3Fake()
 : nh_priv_("~")
