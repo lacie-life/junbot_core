@@ -208,16 +208,16 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
 
     const vector<Object_Map*> ObjectMaps  = mpMap->GetObjects();
 
-    // ****************************************************
-    //         STEP 1. Motion  IoU  association.          *
-    // ****************************************************
     float IouMax = 0;                           //
     bool bAssoByMotionIou = false;              // 
     int AssoObjId_byIou = -1;                   // the associated map object ID.
     int ObjID_IouMax = -1;                      // temporary variable. 
     float IouThreshold = 0.5;                   // IoU threshold.
 
-    if(MotionIou_flag)//if((flag != "NA") && (flag != "NP"))
+    // ****************************************************
+    //         STEP 1. Motion  IoU  association.          *
+    // ****************************************************
+    if(MotionIou_flag)
     {
         for (int i = 0; i < (int)ObjectMaps.size(); i++)
         {
@@ -236,6 +236,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                 {   // The following assumptions are based on: Near three frames, the detection frame of the same object moves the same on the image
                     // 0____ll___l____c
                     // c = l - ll + l = 2 * l - ll
+
                     // left-top.
                     float left_top_x = obj3d->mLastRect.x * 2 - obj3d->mLastLastRect.x;     // cv::Rect The x represents the x-coordinate of the upper left corner of the square
                     if (left_top_x < 0)
@@ -243,6 +244,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                     float left_top_y = obj3d->mLastRect.y * 2 - obj3d->mLastLastRect.y;     // cv::Rect The y represents the y coordinate of the upper left corner of the square
                     if (left_top_y < 0)
                         left_top_y = 0;
+
                     // right-bottom.
                     float right_down_x = (obj3d->mLastRect.x + obj3d->mLastRect.width) * 2 - (obj3d->mLastLastRect.x + obj3d->mLastLastRect.width);
                     if (left_top_x > image.cols)
@@ -261,7 +263,10 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                     IouThreshold = 0.6;
                 }
                 else
-                    RectPredict = obj3d->mLastRect;    // If it is not close to three frames, the object detection frame is considered to be the same as the previous frame
+                {
+                    // If it is not close to three frames, the object detection frame is considered to be the same as the previous frame
+                    RectPredict = obj3d->mLastRect;
+                }
 
                 // step 1.2 compute IoU, record the max IoU and the map object ID.
                 float Iou = Converter::bboxOverlapratio(RectCurrent, RectPredict);
@@ -276,7 +281,9 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                     cv::resize(mat_test, mat_test, cv::Size(640 * 0.5, 480 * 0.5), 0, 0, cv::INTER_CUBIC);
                     cv::imshow("[MotionIou]", mat_test);
                 }
+
                 std::cout << "[MotionIou] iou:" << Iou << std::endl;
+
                 if ((Iou > IouThreshold) && (Iou > IouMax))
                 {
                     IouMax = Iou;
@@ -290,10 +297,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
         Object_Map* obj3d_IouMax = ObjectMaps[ObjID_IouMax];
         if ((IouMax > 0) && (ObjID_IouMax >= 0))
         {
-            
             bool bFlag = obj3d_IouMax->UpdateToObject3D(this, *mpCurrentFrame, MotionIou);
-
-            std::cout << "[Object2D_DataAssociationWith_Object3D] Step 1 \n";
 
             if (bFlag)
             {
@@ -311,7 +315,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
     int  AssoObjId_byNP  = -1; //;nAssoByNPId
     vector<int> vAssoObjIds_byNP;     // potential associated objects.
 
-    if(NoPara_flag)//if((flag != "NA") && (flag != "IoU"))
+    if(NoPara_flag)
     {
         for (int i = (int)ObjectMaps.size() - 1; (i >= 0) ; i--)
         {
@@ -364,8 +368,6 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                     AssoObjId_byNP = vAssoObjIds_byNP[i];
                     bool bFlag = ObjectMaps[AssoObjId_byNP]->UpdateToObject3D(this, *mpCurrentFrame, NoPara);
 
-                    std::cout << "[Object2D_DataAssociationWith_Object3D] Step 2.2 \n";
-
                     // if association successful, other objects are marked as potential association objects.
                     if (bFlag)
                     {
@@ -383,12 +385,11 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                             break;
                         }
                     }
-                    std::cout << "[Object2D_DataAssociationWith_Object3D] Step 2.2 end \n";
                 }
             }
         }
     }
-    // Nonparametric data association END --------------------------------------------------------------------------------------------------------
+    // Nonparametric data association
 
 
     // ****************************************************
@@ -398,7 +399,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
     int MaxAssoObjId_byProIou = -1;  //int nAssoByProId = -1;
     vector<int> vAssoObjIds_byProIou;
 
-    if(ProIou_flag)//if((flag != "NA") && (flag != "IoU") && (flag != "NP"))
+    if(ProIou_flag)
     {
         float fIouMax = 0.0;
 
@@ -448,7 +449,6 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
             {
                 fIouMax = fIou;
                 MaxAssoObjId_byProIou = i;   //AssoObjId_byProIou  ProIouMaxObjId = i;
-                
                 vAssoObjIds_byProIou.push_back(i);
             }
 
@@ -480,16 +480,11 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
             {
                 bool bFlag = ObjectMaps[MaxAssoObjId_byProIou]->UpdateToObject3D(this, *mpCurrentFrame, ProIou); // 4: project iou.
 
-                std::cout << "[Object2D_DataAssociationWith_Object3D] Step 3.2 \n";
-
                 // association succeeded.
                 if (bFlag)
                 {
                     bAssoByProjectIou = true;          // associated by projecting box.
-                    std::cout << "[Object2D_DataAssociationWith_Object3D] Step 3.2: Associated by projecting box \n";
                 }
-
-                std::cout << "[Object2D_DataAssociationWith_Object3D] Size: " << vAssoObjIds_byProIou.size() << "\n";
 
                 for (int j = vAssoObjIds_byProIou.size() - 1; j >= 0; j--)
                 {
@@ -499,16 +494,11 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
 
                     if (vAssoObjIds_byProIou[j] == MaxAssoObjId_byProIou)
                     {
-                        std::cout << "[Object2D_DataAssociationWith_Object3D] Skip Id: " << j << "\n";
                         continue;
                     }
 
                     AddPotentialAssociatedObjects(ObjectMaps, MaxAssoObjId_byProIou, ObjectMaps[vAssoObjIds_byProIou[j]]->mnId);
-
-                    std::cout << "[Object2D_DataAssociationWith_Object3D] Id: " << j << "\n";
                 }
-
-                std::cout << "[Object2D_DataAssociationWith_Object3D] Step 3.2 end \n";
             }
         }
     }
@@ -537,7 +527,7 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
     vector<int> vObjByTId;
     vector<int> vObjByTIdLower; // potential association.
 
-    if(Ttest_flag)//if((flag != "NA") && (flag != "IoU") && (flag != "NP"))
+    if(Ttest_flag)
     {
         for (int i = (int)ObjectMaps.size() - 1; i >= 0; i--)
         {
@@ -658,10 +648,6 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
                 {
                     bool bFlag = ObjectMaps[vObjByTId[i]]->UpdateToObject3D(this, *mpCurrentFrame, t_test);
 
-                    std::cout << "[Object2D_DataAssociationWith_Object3D] Step 4.2 \n";
-
-                    std::cout << "Step \n";
-
                     if (bFlag)
                     {
                         bAssoByTtest = true;
@@ -692,13 +678,11 @@ int Object_2D::Object2D_DataAssociationWith_Object3D()  //cv::Mat &image
             }
         }
     }
-    // t-test data association END ---------------------------------------------------------------------------------------
+    // t-test data association
 
     // *************************************************
     //             STEP 4. create a new object         *
     // *************************************************
-    //if (bAssoByMotionIou || bAssoByNp || bAssoByProjectIou || bAssoByTtest)
-    //    return true;
      if (bAssoByMotionIou)
         return MotionIou;
      if (bAssoByNp)
@@ -714,6 +698,7 @@ int Object_2D::creatObject()
 {
     unique_lock<mutex> lock1(mMutexObjMapPoints);   
     unique_lock<mutex> lock2(mGlobalMutex);
+
     const cv::Mat ColorImage = mpCurrentFrame->mColorImage.clone();
     int associate = Object2D_DataAssociationWith_Object3D();    // data association with object3d in map.
 
@@ -735,6 +720,7 @@ int Object_2D::creatObject()
         return -1;  
     }
 
+    // TODO: Improve Association method
     // create a 3d object in the map.
     Object_Map *Object3D = new Object_Map;  
     Object3D->mvObject_2ds.push_back(this);
@@ -781,7 +767,7 @@ int Object_2D::creatObject()
     return 1;  
 }
 
-//  nonparametric test.
+//  Nonparametric test
 int Object_2D::NoParaDataAssociation(Object_Map *Object3D)
 {
     // step 1. sample size.
@@ -912,6 +898,38 @@ int Object_2D::NoParaDataAssociation(Object_Map *Object3D)
         if (!bSampleMapPoints)
         {
             // Re-extract point from Object3D->mvpMapObjectMappoints, and perform
+            for (int jj = 0; jj < (int)Object3D->mvpMapObjectMappoints.size(); jj++)
+            {
+                MapPoint *p2 = Object3D->mvpMapObjectMappoints[jj];
+                if (p2->isBad())
+                    continue;
+
+                cv::Mat x3D2 = Converter::toCvMat(p2->GetWorldPos());
+                double x2 = x3D2.at<float>(0, 0);
+                double y2 = x3D2.at<float>(1, 0);
+                double z2 = x3D2.at<float>(2, 0);
+
+                if (x_2d > x2)
+                    w_x_2d_bigger_3d++;
+                else if (x_2d < x2)
+                    w_x_3d_bigger_2d++;
+                else if (x_2d == x2)
+                    w_x_3d_equal_2d++;
+
+                if (y_2d > y2)
+                    w_y_2d_bigger_3d++;
+                else if (y_2d < y2)
+                    w_y_3d_bigger_2d++;
+                else if (y_2d == y2)
+                    w_y_3d_equal_2d++;
+
+                if (z_2d > z2)
+                    w_z_2d_bigger_3d++;
+                else if (z_2d < z2)
+                    w_z_3d_bigger_2d++;
+                else if (z_2d == z2)
+                    w_z_3d_equal_2d++;
+            }
         }
 
         // will 3d point
@@ -1562,9 +1580,10 @@ vector<MapPoint* > Object_Map::GetNewObjectMappoints(){
 
 // MotionIou 1,  NoPara 2,  t_test 3,  ProIou 4
 // return Reasons for false: class id does not match; IOU is too small; Frame id is not incremented;
-bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, int Flag){
-
-//    std::cout << "UpdateToObject3D " << Flag << std::endl;
+bool Object_Map::UpdateToObject3D(Object_2D* Object_2d,
+                                  Frame &mCurrentFrame,
+                                  int Flag)
+{
 
     if (Object_2d->mclass_id != mnClass)
         return false;
@@ -1580,7 +1599,9 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
     // NoPara and t_test thought that the IOU matching degree was not good before, 
     // so it is necessary to verify whether the IOU matches again.
     {
-        // notes：ProjectRect1 represents the target frame projection on the object map; ProjectRect2 represents the target frame projection integrated into the current frame
+        // notes：
+        // ProjectRect1 represents the target frame projection on the object map;
+        // ProjectRect2 represents the target frame projection integrated into the current frame
         cv::Rect ProjectRect_3D;
         cv::Rect ProjectRect_3Dand2D;
 
@@ -1591,7 +1612,10 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
         // mixed points of frame object and map object.
         vector<float> x_pt;
         vector<float> y_pt;
-        // notes: Obj_c_MapPonits is the 3D point on the object, mvpMapObjectMappoints is the point on the object map
+
+        // notes:
+        // Obj_c_MapPonits is the 3D point on the object,
+        // mvpMapObjectMappoints is the point on the object map
         for (int i = 0; i < Object_2d->mvMapPonits.size(); ++i)
         {
             MapPoint *pMP = Object_2d->mvMapPonits[i];
@@ -1608,6 +1632,7 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
             x_pt.push_back(u);
             y_pt.push_back(v);
         }
+
         for (int j = 0; j < mvpMapObjectMappoints.size(); ++j)
         {
             MapPoint *pMP = mvpMapObjectMappoints[j];
@@ -1661,7 +1686,7 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
         mLastLastRect = mLastRect;
         mLastRect = Object_2d->mBox_cvRect;
         mnConfidence_foractive++;
-        AddObj2d(Object_2d);//this->mvObject_2ds.push_back(Object_2d);
+        AddObj2d(Object_2d);
     }
     else
         return false;
@@ -1675,7 +1700,10 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
 
         cv::Mat pointPos = Converter::toCvMat(pMP->GetWorldPos());
         cv::Mat mDis = mAveCenter3D - pointPos;
-        float fDis = sqrt(mDis.at<float>(0) * mDis.at<float>(0) + mDis.at<float>(1) * mDis.at<float>(1) + mDis.at<float>(2) * mDis.at<float>(2));
+
+        float fDis = sqrt(mDis.at<float>(0) * mDis.at<float>(0)
+                            + mDis.at<float>(1) * mDis.at<float>(1)
+                            + mDis.at<float>(2) * mDis.at<float>(2));
 
         float th = 1.0;
         if (mvObject_2ds.size() > 5)
@@ -1701,7 +1729,6 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
             pMP->viewdCount_forObjectId.insert(make_pair(this->mnId, 1));
         }
 
-
         // notes: Check for duplicate map points and add new map points
         {
             unique_lock<mutex> lock(mMutexMapPoints);
@@ -1723,7 +1750,6 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
             if (new_point)
             {
                 mvpMapObjectMappoints.push_back(pMP);
-
                 mvpMapObjectMappoints_NewForActive.push_back(pMP);
 
                 cv::Mat x3d = Converter::toCvMat(pMP->GetWorldPos());
@@ -1732,7 +1758,8 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
         }
     }
 
-    // step 4. the historical point cloud is projected into the image, and the points not in the box(should not on the edge) are removed.
+    // step 4. the historical point cloud is projected into the image,
+    // and the points not in the box(should not on the edge) are removed.
     // Project the historical point into the image, if not in the box, propose
     if ((Object_2d->mBox_cvRect.x > 25) && (Object_2d->mBox_cvRect.y > 25) &&
         (Object_2d->mBox_cvRect.x + Object_2d->mBox_cvRect.width < mCurrentFrame.mColorImage.cols - 25) &&
@@ -1787,7 +1814,6 @@ bool Object_Map::UpdateToObject3D(Object_2D* Object_2d, Frame &mCurrentFrame, in
     }
 
     // step 5. update object mean.
-
     this->ComputeMeanAndDeviation_3D();
 
     // step 6. i-Forest.

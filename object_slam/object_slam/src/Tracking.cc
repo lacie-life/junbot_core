@@ -3278,7 +3278,7 @@ bool Tracking::TrackLocalMap()
     UpdateLocalMap();
     SearchLocalPoints();
 
-    // TOO check outliers before PO
+    // TODO: check outliers before PO
     int aux1 = 0, aux2=0;
     for(int i=0; i<mCurrentFrame.N; i++)
         if( mCurrentFrame.mvpMapPoints[i])
@@ -3607,6 +3607,10 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
     pKF->SetNewBias(mCurrentFrame.mImuBias);
     mpReferenceKF = pKF;
     mCurrentFrame.mpReferenceKF = pKF;
+
+    // keyframe created by objects.
+    if (CreateByObjs)
+        pKF->mbCreatedByObjs = true;
 
     // For 3D cuboid testing (optimize)
     if(mpSystem->isg2oObjectOptimize)
@@ -6152,7 +6156,7 @@ void Tracking::CreateObject_InTrackMotion(){
             if (Converter::bboxOverlapratioLatter(obj_2ds[f]->mBox_cvRect, obj_2ds[l]->mBox_cvRect) > 0.05)
                 num++;
         }
-        // overlap with more than 3 objects.  overlaps with three objects
+        // overlap with more than 3 objects
         if (num > 4)
             obj_2ds[f]->bad = true;
     }
@@ -6280,7 +6284,9 @@ void Tracking::CreateObject_InTrackMotion(){
         {
             // Initialize the object map need enough points.
             if (obj2d->mvMapPonits.size() < 10)
-            {  continue;    }
+            {
+                continue;
+            }
 
             nGoodObjId++;;
 
@@ -6303,6 +6309,7 @@ void Tracking::CreateObject_InTrackMotion(){
             {
                 if(obj2d->mvMapPonits[i]->isBad())
                     continue;
+
                 MapPoint *pMP = obj2d->mvMapPonits[i];
                 pMP->object_mnId = Object3D->mnId;
                 pMP->object_class = Object3D->mnClass;
@@ -6344,7 +6351,9 @@ void Tracking::CreateObject_InTrackMotion(){
         // and the projection bounding box of obj3d in the Currentframe is calculated, 
         // and stored in mRectProject_forDataAssociate2D of obj3d
         // To view obj3d, you can associate objects in Currentframe
+
         const std::vector<Object_Map*> obj_3ds = mpMap->GetObjects();
+
         for (int i = 0; i < (int)obj_3ds.size(); i++)
         {
             Object_Map* obj3d = obj_3ds[i];
@@ -6355,7 +6364,8 @@ void Tracking::CreateObject_InTrackMotion(){
             if(ProIou_only30_flag) {
                 if (obj3d->mnLastAddID > mCurrentFrame.mnId - 30)
                 {
-                    obj3d->ComputeProjectRectFrameToCurrentFrame(mCurrentFrame);  // Project the point in obj3d to the current frame and calculate the projected bounding box
+                    // Project the point in obj3d to the current frame and calculate the projected bounding box
+                    obj3d->ComputeProjectRectFrameToCurrentFrame(mCurrentFrame);
                     mCurrentFrame.mvObject_3ds.push_back(obj_3ds[i]);
                 }
                 else {
@@ -6363,7 +6373,8 @@ void Tracking::CreateObject_InTrackMotion(){
                 }
             }
             else{
-                obj3d->ComputeProjectRectFrameToCurrentFrame(mCurrentFrame);  // Project the point in obj3d to the current frame and calculate the projected bounding box
+                // Project the point in obj3d to the current frame and calculate the projected bounding box
+                obj3d->ComputeProjectRectFrameToCurrentFrame(mCurrentFrame);
                 mCurrentFrame.mvObject_3ds.push_back(obj3d);
             }
         }
@@ -6386,10 +6397,9 @@ void Tracking::CreateObject_InTrackMotion(){
             }
         }
 
-
-    // **************************************************************
-    // STEP 11. After a round of object generation, manage the objects in the map*
-    // **************************************************************
+        // **************************************************************
+        // STEP 11. After a round of object generation, manage the objects in the map*
+        // **************************************************************
         // step 11.1 remove objects with too few observations.
         // After updating the objects in the map, reacquire the objects in the map, 
         // and remove objects with fewer observations (by setting obj3d's bad_3d to true)
@@ -6486,6 +6496,7 @@ void Tracking::CreateObject_InTrackMotion(){
             Rcw.copyTo(P.rowRange(0, 3).colRange(0, 3));
             tcw.copyTo(P.rowRange(0, 3).col(3));
             P = mCurrentFrame.mK * P;
+
             DrawQuadricProject( this->mCurrentFrame.mQuadricImage,
                                         P,
                                         axe,
@@ -6597,6 +6608,7 @@ cv::Mat Tracking::DrawQuadricProject(cv::Mat &im,
     return im;
 }
 
+// Estimate object orientation.
 void Tracking::SampleObjYaw(Object_Map* obj3d)
 {
     int numMax = 0;
