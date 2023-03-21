@@ -16,6 +16,7 @@ bool iforest_flag = true;
 bool little_mass_flag = false;
 bool ProIou_only30_flag = true;
 
+// TODO: Improve cube merging
 namespace ORB_SLAM3
 {
 
