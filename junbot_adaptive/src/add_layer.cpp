@@ -18,17 +18,13 @@ int main(int argc, char **argv)
         std_msgs::String msg;
         // creat variable ss with data type is stringstream
         //-4.729493, -5.122387
-        float point_[8][3] = {{-3,0.75,0},
-                              {-4,0.75,0},
-                              {-3,6,0},
-                              {-4,6,0},
-                              {-1.5, 0, 0},
-                              {-2, 0, 0},
-                              {-1.5, 2, 0},
-                              {-2, 2, 0}};
+        float point_[4][3] = {{0.72+0.1, 0.2 -0.8,0},
+                              {0.25+0.1,-0.27-0.8,0},
+                              {0.72+0.1,-0.27-0.8,0},
+                              {0.25+0.1, 0.2 -0.8,0}};
 
         int number_circle = 8;
-        int number_objs = 2;
+        int number_objs = 1;
 
         custom_msgs::Obstacles temp;
         // add object layer
