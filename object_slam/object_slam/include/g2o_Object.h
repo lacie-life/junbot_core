@@ -15,11 +15,11 @@
 #include <math.h>
 #include <algorithm> // std::swap
 
-//typedef Eigen::Matrix<double, 9, 1> Vector9d;
-//typedef Eigen::Matrix<double, 9, 9> Matrix9d;
-//typedef Eigen::Matrix<double, 10, 1> Vector10d;
-//typedef Eigen::Matrix<double, 6, 1> Vector6d;
-//typedef Eigen::Matrix<double, 6, 6> Matrix6d;
+// typedef Eigen::Matrix<double, 9, 1> Vector9d;
+// typedef Eigen::Matrix<double, 9, 9> Matrix9d;
+// typedef Eigen::Matrix<double, 10, 1> Vector10d;
+// typedef Eigen::Matrix<double, 6, 1> Vector6d;
+// typedef Eigen::Matrix<double, 6, 6> Matrix6d;
 
 namespace g2o
 {

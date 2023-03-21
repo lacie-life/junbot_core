@@ -492,7 +492,7 @@ namespace ORB_SLAM3 {
             Cuboid3D cube = object_3d[i]->mCuboid3D;
 
             glBegin(GL_LINES);
-            glLineWidth(5);
+            glLineWidth(mGraphLineWidth * 4);
             glColor3f(230 /255.0, 0.0, 0.0);
 
             //     7------6
