@@ -4,6 +4,9 @@
 
 - [x] Create point cloud by ORB-SLAM3 (Pending release code)
 - [x] Publish point cloud to ROS
+- [ ] System calibration
+   - [ ] Multi camera fusion
+   - [x] Robot TF
 - [ ] Explore enviroment
    
    - [ ] ~~Replace Yolo with Segmentation net => remove dynamic object (by interest class)~~
@@ -14,16 +17,18 @@
    
    - [ ] Turning object database
    	   - [x] Segment 3D bounding box
-   	   - [ ] Darknet-ros-3d + ObjectDatabase test [[Link](https://github.com/IntelligentRoboticsLabs/gb_visual_detection_3d)]
+   	    	- [ ] ~~Option 1: Segment point cloud by PointNet++ => get 3D bounding box of object (office enviroment) [[Ref](https://github.com/sc19aas/3D-object-detection)]~~
+ 		- [x] Option 2: detect 3d cuboid [[Ref](https://github.com/aibo-kit/new_3dbbox_generation_method.git)] [[Ref](https://wym.netlify.app/2019-02-22-cubeslam/)]
+   	   	- [ ] ~~Darknet-ros-3d + ObjectDatabase test [[Link](https://github.com/IntelligentRoboticsLabs/gb_visual_detection_3d)]~~
+   	   
    	   - [x] Object filter (sometime crashed)
-   	   - [ ] Improve Object tracker
-   	   - [ ] Improve Object filter
+   	   - [ ] <b> Improve Object tracker </b>
+   	   - [ ] <b> Improve Object filter </b>
+   	   - [ ] Add object pose optimize ?
+   	   - [ ] Object Map
+   	   
    - [x] Add ZED example
- 
- - [ ] ~~Option 1: Segment point cloud by PointNet++ => get 3D bounding box of object (office enviroment) [[Ref](https://github.com/sc19aas/3D-object-detection)]~~
- 
- - [x] Option 2: detect 3d cuboid [[Ref](https://github.com/aibo-kit/new_3dbbox_generation_method.git)] [[Ref](https://wym.netlify.app/2019-02-22-cubeslam/)]
-  
+   - [x] Add D455 example 
 
 - [ ] Re-path planning?
    - [x] Plan of re-path planning
@@ -49,8 +54,8 @@
           - List coner need to change in coner layer => update costmap => update path planner
    
  - [ ] Evaluate results (MavelMind)
-   - [ ] Improve GUI
    - [ ] <b> Trajectory collection by MavelMind </b>
+   - [ ] Improve GUI
    - [ ] SLAM
    - [ ] Re-path planning
 
@@ -72,7 +77,7 @@ sudo apt install qtmultimedia5-dev
 sudo apt-get install ros-noetic-ddynamic-reconfigure
 ```
 
-3. orb_slam3_ros
+3. object_slam (Skip CUDA Install if use jetpack in Jetson series)
 
 - CUDA 11.6 [[Link](https://developer.nvidia.com/cuda-11-6-0-download-archive)]
   - <i> Choose option and follow instructions </i>
@@ -108,6 +113,7 @@ sudo make install
 
 3. TensorRT with Yolov5 model
 
+3.1. Generate TensorRT model
 ```
 git clone -b v7.0 https://github.com/ultralytics/yolov5.git
 # create conda envs and install requierments.txt for running gen_wts.py
@@ -130,6 +136,16 @@ make
 
 # Generate engine file (engine include 80 class of coco dataset)
 ./yolov5_det -s yolov5s.wts yolov5s.engine s
+```
+
+3.2. Build Detector
+
+```
+cd junbot_planner/object_slam/object_slam/Thirdparty/yolov5
+mkdir build
+cd build
+cmake ..
+make
 ```
 
 # Bug 

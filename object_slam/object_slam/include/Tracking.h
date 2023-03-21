@@ -444,7 +444,6 @@ public:
 // 3d cuboid testing
 public:
     void CreateObject_InTrackMotion();
-    void AssociateObjAndPoints(std::vector<Object_2D *> objs_2d);
 
 private:
     std::string mStrSettingPath;

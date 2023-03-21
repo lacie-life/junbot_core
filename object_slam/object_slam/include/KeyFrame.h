@@ -568,6 +568,7 @@ public:
     std::vector<Object_2D*> obj_2ds;     // 2d objects.
     bool mbByNewObj = false;           // keyframe created by keyframe.
     std::vector<Object_Map*> obj_3ds;
+    bool mbCreatedByObjs = false;           // keyframe created by object
 
 public:
     GeometricCamera* mpCamera, *mpCamera2;
