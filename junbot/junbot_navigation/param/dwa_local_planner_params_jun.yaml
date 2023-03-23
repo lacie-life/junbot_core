@@ -42,7 +42,7 @@ DWAPlannerROS:
 # Oscillation Prevention Parameters
   oscillation_reset_dist: 0.05
 
-# # Debugging
+# Debugging
   plugins:
     - { name: static_layer, type: "costmap_2d::StaticLayer" }
     - { name: object_layer, type: "object_layer::ObjectLayer" }

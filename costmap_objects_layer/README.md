@@ -13,6 +13,7 @@ rostopic pub /virtual_costamp_layer/obsctacles custom_msgs/Obstacles "list: [for
 ## Polygon
 ```
 rostopic pub /object_costamp_layer/obsctacles custom_msgs/Obstacles "list: [form: [{x: -1.5, y: 0.0, z: 0.0}, {x: -2.0, y: 0.0, z: 0.0}, {x: -1.5, y: 2.0, z: 0.0}, {x: -2.0, y: 2.0, z: 0.0}]]"
+rostopic pub /object_costamp_layer/obsctacles custom_msgs/Obstacles "list: [form: [{x: 0.72+0.1, y: 0.2-0.8, z: 0}, {x: 0.25+0.1, y: -0.27-0.8, z: 0},{x: 0.72+0.1,y: -0.27-0.8, z: 0},{x: 0.25+0.1,y: 0.2 -0.8,z: 0}};"
 ```
 ## Multiple
 ```
