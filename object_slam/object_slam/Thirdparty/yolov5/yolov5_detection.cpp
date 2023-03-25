@@ -61,10 +61,10 @@ void YoLoObjectDetection::detectObject(const cv::Mat& _frame, std::vector<Detect
     cuda_batch_preprocess(img_batch, gpu_buffers[0], kInputW, kInputH, stream);
 
     // Time check
-    // auto start = std::chrono::system_clock::now();
+//     auto start = std::chrono::system_clock::now();
     doInference(*context, stream, (void**)gpu_buffers, cpu_output_buffer, kBatchSize);
-    // auto end = std::chrono::system_clock::now();
-    // std::cout << "inference time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
+//     auto end = std::chrono::system_clock::now();
+//     std::cout << "inference time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
 
     // NMS
     std::vector<std::vector<Detection>> res_batch;
@@ -74,6 +74,7 @@ void YoLoObjectDetection::detectObject(const cv::Mat& _frame, std::vector<Detect
     {
 //        std::cout << res_batch.size() << std::endl;
         auto& res = res_batch[0];
+        std::cout << "[YoLoObjectDetection] " << res.size() << std::endl;
         for(int i = 0; i < res.size(); i++)
         {
             Detection det;
@@ -81,6 +82,8 @@ void YoLoObjectDetection::detectObject(const cv::Mat& _frame, std::vector<Detect
             objects.push_back(det);
         }
     }
+
+//    std::cout << "Size: " << objects.size() << std::endl;
 }
 
 void YoLoObjectDetection::prepare_buffers(ICudaEngine* engine, float** gpu_input_buffer, float** gpu_output_buffer, float** cpu_output_buffer)

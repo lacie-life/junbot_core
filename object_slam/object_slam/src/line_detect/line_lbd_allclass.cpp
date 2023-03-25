@@ -136,6 +136,7 @@ line_lbd_detect::line_lbd_detect(int numoctaves,float octaveratio): numoctaves_(
 
 void line_lbd_detect::detect_raw_lines(const cv::Mat& gray_img, std::vector< KeyLine>& keylines_out)
 {
+    // TODO: Checking here
     if (use_LSD)
     {
         LSDDetector::LSDOptions opts;   // lsd parameters  see Stvo-PL  I actually didn't use it.
@@ -146,7 +147,7 @@ void line_lbd_detect::detect_raw_lines(const cv::Mat& gray_img, std::vector< Key
         opts.min_length   = 0;   
             
         lsd->detect( gray_img, keylines_out, octaveratio_, numoctaves_,opts);  // seems different from my LSD.  already removed boundary lines
-        // std::cout<<"lsd edge size "<<keylines_out.size()<<std::endl;
+        // std::cout << "lsd edge size " << keylines_out.size() << std::endl;
     }
     else 
     {

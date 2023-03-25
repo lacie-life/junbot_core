@@ -480,7 +480,7 @@ namespace ORB_SLAM3 {
 
         std::vector<Object_Map* > object_3d = mpMap->GetObjects();
 
-        std::cout << "[MapDrawer] Object Number: " << object_3d.size() << std::endl;
+        // std::cout << "[MapDrawer] Object Number: " << object_3d.size() << std::endl;
 
         for (size_t i = 0; i < object_3d.size(); i++)
         {

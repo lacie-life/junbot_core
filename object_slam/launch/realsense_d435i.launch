@@ -72,7 +72,6 @@
   <arg name="stereo_module/exposure/2"  default="1"/>
   <arg name="stereo_module/gain/2"      default="16"/>
   
-  
 
   <group ns="$(arg camera)">
     <include file="$(find realsense2_camera)/launch/includes/nodelet.launch.xml">

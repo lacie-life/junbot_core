@@ -16,7 +16,7 @@
     	<remap from="/camera/depth_registered/image_raw"    to="/zed2/zed_node/depth/depth_registered"/>
 
 		<!-- Parameters for ROS -->
-    	<param name="world_frame_id"    type="string"   value="world" />
+    	<param name="worl4d_frame_id"    type="string"   value="world" />
     	<param name="cam_frame_id"      type="string"   value="camera" />
 		<param name="enable_pangolin"   type="bool"     value="true" />
 		

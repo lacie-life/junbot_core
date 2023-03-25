@@ -587,7 +587,6 @@ namespace ORB_SLAM3
     void MapPublisher::PublishObject2Map(const std::vector<Object_Map *> &vpObjs)
     {
         // TODO: Convert to Map Coordinate
-        
         if(vpObjs.size() <= 0)
         {
             return;
@@ -643,11 +642,10 @@ namespace ORB_SLAM3
         marker.lifetime = ros::Duration(0.2);
         //marker.id= IE_id ;  //TODO: absolute number
         marker.type = visualization_msgs::Marker::POINTS;
-        marker.scale.x=0.03;
-        marker.scale.y=0.08;
-        marker.pose.orientation.w=1.0;  //????
+        marker.scale.x = 0.03;
+        marker.scale.y = 0.08;
+        marker.pose.orientation.w = 1.0;  //????
         marker.action=visualization_msgs::Marker::ADD;
-
 
         for(size_t i=0; i< vObjs.size(); i++){
             Object_Map* obj = vObjs[i];
@@ -696,7 +694,6 @@ namespace ORB_SLAM3
                 }
             }
         }
-
     }
 
     void MapPublisher::SetCurrentCameraPose(const cv::Mat &Tcw)

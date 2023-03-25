@@ -19,3 +19,16 @@ https://blog.csdn.net/weixin_51925771/article/details/118405623
  
 https://blog.csdn.net/hai_fellow_Z/article/details/123681382
 
+# Note
+
+```
+# ZED 2 run
+roslaunch zed_wrapper zed2.launch
+# Object SLAM run
+roslaunch object_slam slam_rgbd_zed.launch
+
+# D435i run
+roslaunch realsense2_camera rs_camera.launch
+# Object SLAM run
+roslaunch object_slam d435i_rgbd_slam.launch
+```

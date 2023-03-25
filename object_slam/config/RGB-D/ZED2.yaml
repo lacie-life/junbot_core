@@ -73,6 +73,11 @@ Viewer.ViewpointY: -0.7
 Viewer.ViewpointZ: -1.8
 Viewer.ViewpointF: 500
 
+Viewer.pangolin: 1
+Viewer.rviz: 1
+Viewer.readlocalobject: 0
+Viewer.show_object3d_frame: 1
+
 #--------------------------------------------------------------------------------------------
 # PointCloud Mapping
 #--------------------------------------------------------------------------------------------
@@ -82,7 +87,9 @@ PointCloudMapping.Resolution: 0.01
 # Semantic Mapping
 #---------------------------------------------------------------------------------------------
 Semantic.Model: 0 # Yolov5: 0
-Semantic.ModelPath: "/home/lacie/slam_ws/src/junbot_planner/orb_slam3_ros/config/Model/yolov5s.engine"
+Semantic.ModelPath: "/home/lacie/slam_ws/src/junbot_planner/object_slam/config/Model"
+Semantic.ObjectAssociation: 0 # Cudoid_3d: 0, PointCloud_Segmentation: 1
+Semantic.ObjectOptimize: 0
 
 #--------------------------------------------------------------------------------------------
 # OctoMap Parameters
@@ -93,3 +100,27 @@ octoMap.res: 0.05
 # Dynamic point
 #--------------------------------------------------------------------------------------------
 Dynamic.flow: 10.0
+
+#--------------------------------------------------------------------------------------------
+# 3D cuboid
+#--------------------------------------------------------------------------------------------
+IE.rows: 18
+IE.cols: 18
+IE.P_occ: 0.6
+IE.P_free: 0.4
+IE.P_prior: 0.5
+IE.Threshold: 5
+
+#--------------------------------------------------------------------------------------------
+# MapPublisher
+#--------------------------------------------------------------------------------------------
+# 1: robot_camera tf; 2: use imu
+ConstraintType: 1
+Trobot_camera.qx: 0.0003
+Trobot_camera.qy: 0.8617
+Trobot_camera.qz: -0.5072
+Trobot_camera.qw: -0.0145
+Trobot_camera.tx: 0.0 #-0.6832
+Trobot_camera.ty: 0.0 #2.6909
+Trobot_camera.tz: 1.7373
+
