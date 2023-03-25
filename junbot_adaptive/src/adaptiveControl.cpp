@@ -71,6 +71,9 @@ int main(int argc, char **argv) {
             for (int j = 0; j < 4; ++j) {
                 std::vector<geometry_msgs::Point> waypointError;
                 custom_msgs::Form temp;
+
+                // Check Object to trajectory distance
+                // TODO: Add static layer to trajectory
                 for (int k = 0; k < path.poses.size(); ++k) {
                     distance = calculateDistance(object.list[i].form[j].x, object.list[i].form[j].y,path.poses[k].pose.position.x, path.poses[k].pose.position.y);
                     if (distance <= 0.4) {
@@ -81,6 +84,8 @@ int main(int argc, char **argv) {
                         waypointError.push_back(p);
                     }
                 }
+
+                // TODO: Optimize zone + class object ID
                 if (waypointError.size()>1)
                 {
                     geometry_msgs::Point _begin = waypointError.at(0);
@@ -91,6 +96,7 @@ int main(int argc, char **argv) {
                     temp.form.push_back(_mid);
                     temp.form.push_back(_end);
                     temp.form.push_back(object.list[i].form[j]);
+                    
                     temp.id = "zone";
 
                     ROS_INFO("Layer Publish");
