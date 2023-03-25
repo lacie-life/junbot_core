@@ -7,8 +7,8 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "talker");
     // Create a handle to this process node
     ros::NodeHandle n;
-    // Publisher is chatter_pub publishing to topic /object_costamp_layer/obsctacles with queue_size 1000
-    ros::Publisher chatter_pub = n.advertise<custom_msgs::Obstacles>("/object_costamp_layer/obsctacles_temp", 1000);
+    // Publisher is chatter_pub publishing to topic /object_costmap_layer/obsctacles with queue_size 1000
+    ros::Publisher chatter_pub = n.advertise<custom_msgs::Obstacles>("/object_costmap_layer/obsctacles_temp", 1000);
 
     int  count = 0;
     ros::Rate rate(100);

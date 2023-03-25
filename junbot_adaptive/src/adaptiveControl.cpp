@@ -59,8 +59,8 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "listener");
     ros::NodeHandle n;
     ros::Subscriber subPlan = n.subscribe("/move_base/DWAPlannerROS/global_plan", 10000, globalPlanCallback);
-    ros::Subscriber subObj = n.subscribe("/object_costamp_layer/obsctacles_temp", 10000, objectCallback);
-    ros::Publisher pubObj = n.advertise<custom_msgs::Obstacles>("/object_costamp_layer/obsctacles", 1000);
+    ros::Subscriber subObj = n.subscribe("/object_costmap_layer/obsctacles_temp", 10000, objectCallback);
+    ros::Publisher pubObj = n.advertise<custom_msgs::Obstacles>("/object_costmap_layer/obsctacles", 1000);
     ros::Rate rate(100);
     while (ros::ok())
     {

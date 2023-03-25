@@ -34,7 +34,7 @@ int main(int argc, char** argv)
     ros::NodeHandle nh;
 
     ros::Subscriber sub = nh.subscribe("detect_array", 1000, ObjDBCallBack);
-    obstaclePub = nh.advertise<custom_msgs::Obstacles>("/object_costamp_layer/obstacles", 1000);
+    obstaclePub = nh.advertise<custom_msgs::Obstacles>("/object_costmap_layer/obstacles", 1000);
 
     ros::spin();
 

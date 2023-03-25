@@ -13,8 +13,8 @@ scan: {sensor_frame: laser, data_type: LaserScan, topic: scan, marking: true, cl
 
 object_layer:
   enabled:              true
-  zone_topics:          [/object_costamp_layer/zone]
-  obstacle_topics:      [/object_costamp_layer/obsctacles]
+  zone_topics:          [/object_costmap_layer/zone]
+  obstacle_topics:      [/object_costmap_layer/obsctacles]
   one_zone:             true     
   forms:    
      - [0.4, 0.0]
