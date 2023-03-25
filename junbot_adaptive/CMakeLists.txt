@@ -38,3 +38,32 @@ add_executable(subscribeTraj src/subscribeTraj.cpp)
 target_link_libraries(subscribeTraj ${catkin_LIBRARIES})
 add_dependencies(subscribeTraj ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+################################################################################
+# Install
+################################################################################
+install(TARGETS add_layer
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(TARGETS subGridMap
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(TARGETS adaptiveControl
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(TARGETS objectLayer
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(TARGETS subscribeTraj
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+# install(DIRECTORY include/${PROJECT_NAME}/
+#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+# )
+
+# install(DIRECTORY bag config launch rviz
+#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+# )
+
+################################################################################
+# Test
+################################################################################

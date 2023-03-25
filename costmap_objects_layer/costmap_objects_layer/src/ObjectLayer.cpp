@@ -427,7 +427,14 @@ namespace object_layer
                 continue;
             if (my < min_j || my >= max_j)
                 continue;
-            master_grid.setCost(mx, my, cost);
+            if(classId == "zone")
+            {
+                ROS_INFO("ADD ZONE");
+                master_grid.setCost(mx, my, costmap_2d::INSCRIBED_INFLATED_OBSTACLE-50);
+            }
+            else{
+                master_grid.setCost(mx, my, cost);
+            }
         }
 
         // TODO: Check inflation_layer
