@@ -16,17 +16,16 @@
    - [x] ~~OctoMap support~~
    
    - [ ] Turning object database
-   	   - [x] Segment 3D bounding box
-   	    	- [ ] ~~Option 1: Segment point cloud by PointNet++ => get 3D bounding box of object (office enviroment) [[Ref](https://github.com/sc19aas/3D-object-detection)]~~
- 		- [x] Option 2: detect 3d cuboid [[Ref](https://github.com/aibo-kit/new_3dbbox_generation_method.git)] [[Ref](https://wym.netlify.app/2019-02-22-cubeslam/)]
-   	   	- [ ] ~~Darknet-ros-3d + ObjectDatabase test [[Link](https://github.com/IntelligentRoboticsLabs/gb_visual_detection_3d)]~~
+      - [x] Segment 3D bounding box
+   	    - ~~[ ] Option 1: Segment point cloud by PointNet++ => get 3D bounding box of object (office enviroment) [[Ref](https://github.com/sc19aas/3D-object-detection)]~~
+ 		    - [x] Option 2: detect 3d cuboid [[Ref](https://github.com/aibo-kit/new_3dbbox_generation_method.git)] [[Ref](https://wym.netlify.app/2019-02-22-cubeslam/)]
+   	    - ~~[ ] Darknet-ros-3d + ObjectDatabase test [[Link](https://github.com/IntelligentRoboticsLabs/gb_visual_detection_3d)]~~
    	   
-   	   - [x] Object filter (sometime crashed)
-   	   - [ ] <b> Improve Object tracker </b>
-   	   - [ ] <b> Improve Object filter </b>
-   	   - [ ] Add object pose optimize ?
-   	   - [ ] Object Map
-   	   
+   	 - [x] Object filter (sometime crashed)
+   	 - [ ] <b> Improve Object tracker </b>
+   	 - [ ] <b> Improve Object filter </b>
+   	 - [ ] Add object pose optimize ?
+   	 - [ ] Object Map
    - [x] Add ZED example
    - [x] Add D455 example 
 

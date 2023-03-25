@@ -234,6 +234,8 @@ bool YoloDetection::Detectv3(const cv::Mat &bgr_img, std::vector<BoxSE> &objects
 
     mModel->detectObject(img, res);
 
+    std::cout << "Object detected: " << res.size() << "\n";
+
     // TODO: convert to BoxSE
     for(int i = 0; i < res.size(); i++)
     {

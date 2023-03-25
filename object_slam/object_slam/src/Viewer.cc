@@ -470,12 +470,12 @@ void Viewer::Run()
             }
         }
 
-        if(mImageViewerScale != 1.f)
-        {
-            int width = toShow.cols * mImageViewerScale;
-            int height = toShow.rows * mImageViewerScale;
-            cv::resize(toShow, toShow, cv::Size(width, height));
-        }
+//        if(mImageViewerScale != 1.f)
+//        {
+//            int width = toShow.cols * mImageViewerScale;
+//            int height = toShow.rows * mImageViewerScale;
+//            cv::resize(toShow, toShow, cv::Size(width, height));
+//        }
 
         {
             std::unique_lock<std::mutex> lock(mMutexPAFinsh);

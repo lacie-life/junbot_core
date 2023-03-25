@@ -6,7 +6,7 @@
 #include "Converter.h"
 #include <exception>
 
-std::string WORK_SPACE_PATH = "/home/lacie/slam_ws/src/junbot_planner/object_slam/object_slam";
+std::string WORK_SPACE_PATH = "/home/lacie/slam_ws/src/junbot_planner/object_slam/";
 std::string yamlfile_object = "TUM2.yaml";
 bool MotionIou_flag = true;
 bool NoPara_flag = true;
@@ -16,6 +16,7 @@ bool iforest_flag = true;
 bool little_mass_flag = false;
 bool ProIou_only30_flag = true;
 
+// TODO: Improve cube merging
 namespace ORB_SLAM3
 {
 
@@ -1021,8 +1022,6 @@ void Object_2D::AddPotentialAssociatedObjects(vector<Object_Map*> obj3ds, int As
 
     map<int, int>::iterator sit;
 
-    std::cout << "[AddPotentialAssociatedObjects] Crash? 1\n";
-
     for(sit = obj3ds[AssoId]->mReObj.begin(); sit != obj3ds[AssoId]->mReObj.begin(); sit++)
     {
         int nObjId = sit->first;
@@ -1032,28 +1031,18 @@ void Object_2D::AddPotentialAssociatedObjects(vector<Object_Map*> obj3ds, int As
 
             if (sit != obj3ds[AssoId]->mReObj.end())
             {
-                std::cout << "[AddPotentialAssociatedObjects] Crash? 3\n";
-
                 int sit_sec = sit->second;
                 obj3ds[AssoId]->mReObj.erase(obj3ds[beAssoId]->mnId);
                 obj3ds[AssoId]->mReObj.insert(std::make_pair(obj3ds[beAssoId]->mnId, sit_sec + 1));
-
-                std::cout << "[AddPotentialAssociatedObjects] Crash? 4\n";
             }
             else
             {
-                std::cout << "[AddPotentialAssociatedObjects] Crash? 5\n";
-
                 // TODO: Crash here
 
                 obj3ds[AssoId]->mReObj.insert(std::make_pair(obj3ds[beAssoId]->mnId, 1));
-
-                std::cout << "[AddPotentialAssociatedObjects] Crash? 6\n";
             }
         }
     }
-
-    std::cout << "[AddPotentialAssociatedObjects] Crash? 7\n";
 }
 
 // ************************************
@@ -2437,10 +2426,10 @@ void Object_Map::DivideEquallyTwoObjs_fll(Object_Map *AnotherObj, float overlap_
 // ************************************
 
 Object_Map::Object_Map() {
-    cv::FileStorage fSettings( WORK_SPACE_PATH + "/config/RGB-D/" + yamlfile_object, cv::FileStorage::READ);
+    cv::FileStorage fSettings( WORK_SPACE_PATH + "config/RGB-D/" + yamlfile_object, cv::FileStorage::READ);
     if(!fSettings.isOpened())
 	{
-		cout << "Failed to open settings file at: " << WORK_SPACE_PATH + yamlfile_object << endl;
+		cout << "Failed to open settings file at: " << WORK_SPACE_PATH + "config/RGB-D/" + yamlfile_object << endl;
 	}
 //	else cout << "success to open file at: " << WORK_SPACE_PATH + "/config/RGB-D/" + yamlfile_object << endl;
 

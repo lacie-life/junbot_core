@@ -480,7 +480,7 @@ namespace ORB_SLAM3 {
 
         std::vector<Object_Map* > object_3d = mpMap->GetObjects();
 
-        std::cout << "[MapDrawer] Object Number: " << object_3d.size() << std::endl;
+        // std::cout << "[MapDrawer] Object Number: " << object_3d.size() << std::endl;
 
         for (size_t i = 0; i < object_3d.size(); i++)
         {
@@ -492,7 +492,7 @@ namespace ORB_SLAM3 {
             Cuboid3D cube = object_3d[i]->mCuboid3D;
 
             glBegin(GL_LINES);
-            glLineWidth(5);
+            glLineWidth(mGraphLineWidth * 4);
             glColor3f(230 /255.0, 0.0, 0.0);
 
             //     7------6

@@ -86,7 +86,6 @@ public:
                             Eigen::Matrix<double,7,7> &mAcumHessian, const bool bAllPoints=false);
 
     // For inertial systems
-
     void static LocalInertialBA(KeyFrame* pKF, bool *pbStopFlag, Map *pMap, int& num_fixedKF, int& num_OptKF, int& num_MPs, int& num_edges, bool bLarge = false, bool bRecInit = false);
     void static MergeInertialBA(KeyFrame* pCurrKF, KeyFrame* pMergeKF, bool *pbStopFlag, Map *pMap, LoopClosing::KeyFrameAndPose &corrPoses);
 
