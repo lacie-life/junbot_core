@@ -417,7 +417,7 @@ unsigned char BinaryDescriptor::binaryConversion( float* f1, float* f2 )
 
 /* requires line detection (only one image) */
 // NOTE 
-// 参数 image  keylines   mask
+// image  keylines   mask
 void BinaryDescriptor::detect( const Mat& image, CV_OUT std::vector<KeyLine>& keylines, const Mat& mask )
 {
   std::vector<std::vector<KeyLine>> keyline_octaves;
@@ -482,7 +482,7 @@ void BinaryDescriptor::detect( const std::vector<Mat>& images, std::vector<std::
   }
 }
 
-// 线检测功能实现函数.
+// Line detection function implementation function.
 void BinaryDescriptor::detectImpl( const Mat& imageSrc, std::vector<KeyLine>& keylines, std::vector<std::vector<KeyLine>>& keyline_octaves,
 				   const Mat& mask ) const
 {
@@ -554,7 +554,7 @@ if (params.save_octave_line)
     }
   } 
 
-  // 根据输入的掩膜，删除不需要的 KeyLines.
+  // According to the input mask, delete unnecessary KeyLines.
   /* delete undesired KeyLines, according to input mask */
   if( !mask.empty() )
   {

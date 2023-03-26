@@ -134,40 +134,47 @@ line_lbd_detect::line_lbd_detect(int numoctaves,float octaveratio): numoctaves_(
     line_length_thres=50;
 }
 
-void line_lbd_detect::detect_raw_lines(const cv::Mat& gray_img, std::vector< KeyLine>& keylines_out)
+void line_lbd_detect::detect_raw_lines(const cv::Mat& gray_img, std::vector<KeyLine>& keylines_out)
 {
     // TODO: Checking here
+    std::cout << "[detect_raw_lines] " << use_LSD << "\n";
+
     if (use_LSD)
     {
-        LSDDetector::LSDOptions opts;   // lsd parameters  see Stvo-PL  I actually didn't use it.
+        // lsd parameters  see Stvo-PL  I actually didn't use it.
+        LSDDetector::LSDOptions opts;
         opts.refine       = 0;      opts.scale        = 0;
         opts.sigma_scale  = 0;      opts.quant        = 0;
         opts.ang_th       = 0;      opts.log_eps      = 0;
         opts.density_th   = 0;      opts.n_bins       = 0;
-        opts.min_length   = 0;   
-            
-        lsd->detect( gray_img, keylines_out, octaveratio_, numoctaves_,opts);  // seems different from my LSD.  already removed boundary lines
-        // std::cout << "lsd edge size " << keylines_out.size() << std::endl;
+        opts.min_length   = 0;
+
+        // seems different from my LSD.  already removed boundary lines
+        lsd->detect( gray_img, keylines_out, octaveratio_, numoctaves_,opts);
+         std::cout << "[detect_raw_lines] lsd edge size " << keylines_out.size() << std::endl;
     }
     else 
     {
         cv::Mat mask1 = Mat::ones( gray_img.size(), CV_8UC1 );      // Mat::ones 
         lbd->detect( gray_img, keylines_out, mask1 );
     }
+
+    std::cout << "[detect_raw_lines] " << keylines_out.size() << std::endl;
 }
 
-
-void line_lbd_detect::detect_raw_lines(const cv::Mat& gray_img, std::vector<std::vector< KeyLine>>& keyline_octaves)
+void line_lbd_detect::detect_raw_lines(const cv::Mat& gray_img, std::vector<std::vector<KeyLine>>& keyline_octaves)
 {
    if (use_LSD){
-      LSDDetector::LSDOptions opts;   // lsd parameters  see Stvo-PL  I actually didn't use it.
-      opts.refine       = 0;      opts.scale        = 0;
-      opts.sigma_scale  = 0;      opts.quant        = 0;
-      opts.ang_th       = 0;      opts.log_eps      = 0;
-      opts.density_th   = 0;      opts.n_bins       = 0;
-      opts.min_length   = 0;      
-    
-      lsd->detect( gray_img, keyline_octaves, octaveratio_, numoctaves_,opts);  // seems different from my LSD.  already removed boundary lines
+       // lsd parameters  see Stvo-PL  I actually didn't use it.
+       LSDDetector::LSDOptions opts;
+       opts.refine       = 0;      opts.scale        = 0;
+       opts.sigma_scale  = 0;      opts.quant        = 0;
+       opts.ang_th       = 0;      opts.log_eps      = 0;
+       opts.density_th   = 0;      opts.n_bins       = 0;
+       opts.min_length   = 0;
+
+       // seems different from my LSD.  already removed boundary lines
+      lsd->detect( gray_img, keyline_octaves, octaveratio_, numoctaves_,opts);
 //       std::cout<<"lsd edge size "<<keylines_out.size()<<std::endl;
   }
   else 
