@@ -93,7 +93,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
 
         if(mpSystem->isYoloDetection)
         {
-            std::cout << "?????? \n";
+//            std::cout << "?????? \n";
 
             b_parse_cube = ParseCUBEParamFile(fSettings);
 

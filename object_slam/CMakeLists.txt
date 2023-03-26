@@ -208,3 +208,19 @@ target_link_libraries(D455_rgbd_node
         ${PROJECT_NAME}
         ${catkin_LIBRARIES}
         )
+
+## zed_pipeline ROS node
+add_executable(zed_pipeline
+        src/zed_pipeline.cpp)
+target_link_libraries(zed_pipeline
+        ${PROJECT_NAME}
+        ${catkin_LIBRARIES}
+        )
+
+## detector_test ROS node
+add_executable(detector_test
+        src/detector_test.cpp)
+target_link_libraries(detector_test
+        ${PROJECT_NAME}
+        ${catkin_LIBRARIES}
+        )

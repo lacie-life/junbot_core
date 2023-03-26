@@ -6,7 +6,9 @@
 
 
 	<!-- SLAM  -->
-	<node pkg="object_slam" name="zed_rgbd_node" type="zed_rgbd_node" output="screen">
+	<node pkg="object_slam" name="zed_rgbd_node" type="zed_rgbd_node"
+		  args="/home/lacie/slam_ws/src/junbot_planner/object_slam/object_slam/Vocabulary/ORBvoc.txt.bin
+	            /home/lacie/slam_ws/src/junbot_planner/object_slam/config/RGB-D/ZED2.yaml" output="screen">
 
 		<!-- Parameters for original ORB-SLAM3 -->
     	<param name="voc_file"      type="string" value="$(find object_slam)/object_slam/Vocabulary/ORBvoc.txt.bin"/>

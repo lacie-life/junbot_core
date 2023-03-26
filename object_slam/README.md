@@ -28,7 +28,7 @@ roslaunch zed_wrapper zed2.launch
 roslaunch object_slam slam_rgbd_zed.launch
 
 # D435i run
-roslaunch realsense2_camera rs_camera.launch
+roslaunch object_slam realsense_d435i.launch
 # Object SLAM run
 roslaunch object_slam d435i_rgbd_slam.launch
 ```
