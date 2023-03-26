@@ -1,0 +1,38 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/lacie/slam_ws/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/lacie/slam_ws/src/darknet_ros_3d/include/**",
+        "/home/lacie/slam_ws/src/junbot_planner/costmap_objects_layer/costmap_objects_layer/include/**",
+        "/home/lacie/slam_ws/src/vision_opencv/cv_bridge/include/**",
+        "/home/lacie/slam_ws/src/darknet_ros/darknet_ros/include/**",
+        "/home/lacie/slam_ws/src/vision_opencv/image_geometry/include/**",
+        "/home/lacie/slam_ws/src/junbot_planner/junbot_simulations/junbot_fake/include/**",
+        "/home/lacie/slam_ws/src/junbot_planner/junbot_simulations/junbot_gazebo/include/**",
+        "/home/lacie/slam_ws/src/junbot_planner/junbot_gui/include/**",
+        "/home/lacie/slam_ws/src/junbot_planner/junbot_planner/include/**",
+        "/home/lacie/slam_ws/src/junbot_planner/junbot_tools/junbot_relocalization/include/**",
+        "/home/lacie/slam_ws/src/junbot_planner/junbot/junbot_slam/include/**",
+        "/home/lacie/slam_ws/src/junbot_planner/junbot_tools/marvelmind_nav/include/**",
+        "/home/lacie/slam_ws/src/junbot_planner/object_slam/include/**",
+        "/home/lacie/slam_ws/src/octomap_rviz_plugins/include/**",
+        "/home/lacie/slam_ws/src/octomap_mapping/octomap_server/include/**",
+        "/home/lacie/slam_ws/src/realsense-ros/realsense2_camera/include/**",
+        "/home/lacie/slam_ws/src/zed-ros-wrapper/zed-ros-interfaces/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}
