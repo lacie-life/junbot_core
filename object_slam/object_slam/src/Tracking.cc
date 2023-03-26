@@ -55,7 +55,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     mnInitialFrameId(0), mbCreatedMap(false), mnFirstFrameId(0), mpCamera2(nullptr), mpLastKeyFrame(static_cast<KeyFrame*>(NULL)), mpMapPublisher(pMapPublisher)
 {
     // Load camera parameters from settings file
-    if(false){
+    if(settings){
         newParameterLoader(settings);
     }
     else{
