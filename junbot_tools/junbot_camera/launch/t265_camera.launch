@@ -61,16 +61,16 @@ https://github.com/IntelRealSense/librealsense/blob/master/third-party/libtm/lib
       <arg name="unite_imu_method"         value="$(arg unite_imu_method)"/>
       <arg name="reconnect_timeout"        value="$(arg reconnect_timeout)"/>
       <arg name="publish_odom_tf"          value="$(arg publish_odom_tf)"/>
-    </include>  
-    <rosparam>
+    </include>
+  </group>
+  <rosparam>
     /t265/tracking_module/enable_relocalization: false
     /t265/tracking_module/enable_pose_jumping: false
     /t265/tracking_module/enable_dynamic_calibration: false
     /t265/tracking_module/enable_auto_exposure: true
   </rosparam>
-  </group>
-  <node pkg="tf" type="static_transform_publisher" name="t265_tf_publisher" args="0.22 0 0.02 0 0 0 base_link t265_link 10"/>
-  <node pkg="tf" type="static_transform_publisher" name="odom_t265_odom" args="0.22 0 0.02 0 0 0 t265_pose_frame base_footprint 10" />
+  <node pkg="tf" type="static_transform_publisher" name="t265_tf_publisher" args="0.33 0 0.02 0 0 0 base_link t265_link 10"/>
+  <node pkg="tf" type="static_transform_publisher" name="odom_t265_odom" args="-0.33 0 0.02 0 0 0 t265_pose_frame base_footprint 10" />
   <!-- <node pkg="tf" type="static_transform_publisher" name="map_t265_odom" args="0 0 0 0 0 0 map t265_odom_frame 500" /> -->
 
 </launch>
