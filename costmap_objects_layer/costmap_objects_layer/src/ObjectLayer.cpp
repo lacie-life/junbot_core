@@ -429,9 +429,8 @@ namespace object_layer
                 continue;
             if(classId == "zone")
             {
-                // TODO: Improve cost
                 ROS_INFO("ADD ZONE");
-                master_grid.setCost(mx, my, costmap_2d::INSCRIBED_INFLATED_OBSTACLE - 20);
+                master_grid.setCost(mx, my, costmap_2d::INSCRIBED_INFLATED_OBSTACLE-50);
             }
             else{
                 master_grid.setCost(mx, my, cost);
