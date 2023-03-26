@@ -2,7 +2,7 @@
   <!-- Arguments -->
   <arg name="model" default="jun" doc="model type [burger, waffle, waffle_pi]"/>
   <!-- <arg name="map_file" default="$(find junbot_navigation)/maps/map702_2.yaml"/> -->
-  <arg name="map_file" default="/home/orin/702.yaml"/>
+  <arg name="map_file" default="/home/orin/702_ver2.yaml"/>
   <arg name="open_rviz" default="true"/>
   <arg name="move_forward_only" default="true"/>
 
