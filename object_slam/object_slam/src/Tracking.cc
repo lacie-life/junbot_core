@@ -55,7 +55,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     mnInitialFrameId(0), mbCreatedMap(false), mnFirstFrameId(0), mpCamera2(nullptr), mpLastKeyFrame(static_cast<KeyFrame*>(NULL)), mpMapPublisher(pMapPublisher)
 {
     // Load camera parameters from settings file
-    if(settings){
+    if(false){
         newParameterLoader(settings);
     }
     else{
@@ -655,6 +655,9 @@ Tracking::~Tracking()
 }
 
 void Tracking::newParameterLoader(Settings *settings) {
+
+    std::cout << "New Parameter Loader \n";
+
     mpCamera = settings->camera1();
     mpCamera = mpAtlas->AddCamera(mpCamera);
 
