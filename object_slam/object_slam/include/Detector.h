@@ -2,8 +2,8 @@
 // Created by lacie on 28/01/2023.
 //
 
-#ifndef ORB_SLAM3_ROS_DETECTOR_H
-#define ORB_SLAM3_ROS_DETECTOR_H
+#ifndef SEMANTIC_SLAM_ROS_DETECTOR_H
+#define SEMANTIC_SLAM_ROS_DETECTOR_H
 
 #include "System.h"
 #include "KeyFrame.h"
@@ -18,7 +18,7 @@ class YoloDetection;
 class Detector {
 
 public:
-    void insertKFColorImg(ORB_SLAM3::KeyFrame* kf, cv::Mat color);
+    void insertKFColorImg(semantic_slam::KeyFrame* kf, cv::Mat color);
     void Run(void);
     Detector(std::string modelPath);
     ~Detector();
@@ -30,7 +30,7 @@ protected:
 
     mutex               colorImgMutex;
     std::vector<cv::Mat>     colorImgs;
-    std::vector<ORB_SLAM3::KeyFrame*> mvKeyframes;
+    std::vector<semantic_slam::KeyFrame*> mvKeyframes;
     mutex mvKeyframesMutex;
 
     //std::vector<std::vector<Object>> mvvObjects;
@@ -40,4 +40,4 @@ protected:
     YoloDetection* mDetector;
 };
 
-#endif //ORB_SLAM3_ROS_DETECTOR_H
+#endif //SEMANTIC_SLAM_ROS_DETECTOR_H

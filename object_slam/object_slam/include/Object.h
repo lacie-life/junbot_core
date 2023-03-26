@@ -34,7 +34,7 @@ extern bool iforest_flag;
 extern bool little_mass_flag;
 extern bool ProIou_only30_flag;
 
-namespace ORB_SLAM3
+namespace semantic_slam
 {
 class Frame;
 class MapPoint;

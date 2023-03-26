@@ -2,8 +2,8 @@
 // Created by lacie on 12/02/2023.
 //
 
-#ifndef ORB_SLAM3_ROS_MAPPUBLISHER_H
-#define ORB_SLAM3_ROS_MAPPUBLISHER_H
+#ifndef SEMANTIC_SLAM_ROS_MAPPUBLISHER_H
+#define SEMANTIC_SLAM_ROS_MAPPUBLISHER_H
 
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
@@ -33,7 +33,7 @@
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/core/eigen.hpp>
 
-namespace ORB_SLAM3
+namespace semantic_slam
 {
     class Atlas;
     class Object_Map;
@@ -113,4 +113,4 @@ namespace ORB_SLAM3
     };
 }
 
-#endif //ORB_SLAM3_ROS_MAPPUBLISHER_H
+#endif //SEMANTIC_SLAM_ROS_MAPPUBLISHER_H

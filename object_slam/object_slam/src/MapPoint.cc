@@ -1,20 +1,3 @@
-/**
-* This file is part of ORB-SLAM3
-*
-* Copyright (C) 2017-2021 Carlos Campos, Richard Elvira, Juan J. Gómez Rodríguez, José M.M. Montiel and Juan D. Tardós, University of Zaragoza.
-* Copyright (C) 2014-2016 Raúl Mur-Artal, José M.M. Montiel and Juan D. Tardós, University of Zaragoza.
-*
-* ORB-SLAM3 is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
-* License as published by the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* ORB-SLAM3 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
-* the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License along with ORB-SLAM3.
-* If not, see <http://www.gnu.org/licenses/>.
-*/
 
 #include "MapPoint.h"
 #include "ORBmatcher.h"
@@ -26,7 +9,7 @@
 
 #include <mutex>
 
-namespace ORB_SLAM3 {
+namespace semantic_slam {
 
     long unsigned int MapPoint::nNextId = 0;
     mutex MapPoint::mGlobalMutex;
@@ -37,8 +20,8 @@ namespace ORB_SLAM3 {
             mnCorrectedReference(0), mnBAGlobalForKF(0), mpRefKF(static_cast<KeyFrame *>(NULL)), mnVisible(1),
             mnFound(1), mbBad(false),
             mpReplaced(static_cast<MapPoint *>(NULL)), mfMinDistance(0), mfMaxDistance(0), mpMap(pMap) {
-        Pos.copyTo(ORB_SLAM3::Converter::toCvMat(mWorldPos));
-        mNormalVector = ORB_SLAM3::Converter::toVector3f(cv::Mat::zeros(3, 1, CV_32F));
+        Pos.copyTo(semantic_slam::Converter::toCvMat(mWorldPos));
+        mNormalVector = semantic_slam::Converter::toVector3f(cv::Mat::zeros(3, 1, CV_32F));
 
         // MapPoints can be created from Tracking and Local Mapping. This mutex avoid conflicts with id.
         unique_lock<mutex> lock(mpMap->mMutexPointCreation);
@@ -739,4 +722,4 @@ namespace ORB_SLAM3 {
         return best_object;
     }
 
-} //namespace ORB_SLAM
+} //namespace semantic_slam

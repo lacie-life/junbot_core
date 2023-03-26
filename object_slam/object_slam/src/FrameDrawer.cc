@@ -1,20 +1,3 @@
-/**
-* This file is part of ORB-SLAM3
-*
-* Copyright (C) 2017-2021 Carlos Campos, Richard Elvira, Juan J. Gómez Rodríguez, José M.M. Montiel and Juan D. Tardós, University of Zaragoza.
-* Copyright (C) 2014-2016 Raúl Mur-Artal, José M.M. Montiel and Juan D. Tardós, University of Zaragoza.
-*
-* ORB-SLAM3 is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
-* License as published by the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* ORB-SLAM3 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
-* the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License along with ORB-SLAM3.
-* If not, see <http://www.gnu.org/licenses/>.
-*/
 
 #include "FrameDrawer.h"
 #include "Tracking.h"
@@ -24,7 +7,7 @@
 
 #include <mutex>
 
-namespace ORB_SLAM3
+namespace semantic_slam
 {
 
 FrameDrawer::FrameDrawer(Atlas* pAtlas):both(false),mpAtlas(pAtlas)
@@ -416,7 +399,7 @@ void FrameDrawer::generatePC(void)
     vg.setLeafSize(0.01,0.01, 0.01);
     vg.filter(*cloud);
 
-    Eigen::Isometry3d T = ORB_SLAM3::Converter::toSE3Quat(Tcw);
+    Eigen::Isometry3d T = semantic_slam::Converter::toSE3Quat(Tcw);
 
 //    std::cout << "Trans Cam to World: " << Tcw << endl;
 
@@ -477,7 +460,7 @@ void FrameDrawer::Update(Tracking *pTracker)
     pTracker->mImDepth.copyTo(mImDep);
     pTracker->mImRGB.copyTo(mImRGB);
 
-    cv::Mat _Tcw = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(pTracker->mCurrentFrame.GetPose()));
+    cv::Mat _Tcw = semantic_slam::Converter::toCvMat(semantic_slam::Converter::toSE3Quat(pTracker->mCurrentFrame.GetPose()));
     _Tcw.copyTo(mTcw);
 
     if(both){
@@ -754,4 +737,4 @@ cv::Mat FrameDrawer::DrawYoloInfo(cv::Mat &im, bool bText)
     return im;
 }
 
-} //namespace ORB_SLAM
+} //namespace semantic_slam

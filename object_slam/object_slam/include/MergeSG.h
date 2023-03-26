@@ -2,8 +2,8 @@
 // Created by lacie on 28/01/2023.
 //
 
-#ifndef ORB_SLAM3_ROS_MERGESG_H
-#define ORB_SLAM3_ROS_MERGESG_H
+#ifndef SEMANTIC_SLAM_ROS_MERGESG_H
+#define SEMANTIC_SLAM_ROS_MERGESG_H
 
 #include <pcl/features/impl/integral_image_normal.hpp>
 #include <pcl/features/impl/normal_3d.hpp>
@@ -159,4 +159,4 @@ private:
     int mObject_minimum_points;//50 100 200 500
 };
 
-#endif //ORB_SLAM3_ROS_MERGESG_H
+#endif //SEMANTIC_SLAM_ROS_MERGESG_H

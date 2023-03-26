@@ -1,22 +1,3 @@
-/**
-* This file is part of ORB-SLAM3
-*
-* Copyright (C) 2017-2021 Carlos Campos, Richard Elvira, Juan J. Gómez Rodríguez, José M.M. Montiel and Juan D. Tardós, University of Zaragoza.
-* Copyright (C) 2014-2016 Raúl Mur-Artal, José M.M. Montiel and Juan D. Tardós, University of Zaragoza.
-*
-* ORB-SLAM3 is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
-* License as published by the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* ORB-SLAM3 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
-* the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License along with ORB-SLAM3.
-* If not, see <http://www.gnu.org/licenses/>.
-*/
-
-
 #include "Tracking.h"
 
 #include "ORBmatcher.h"
@@ -42,7 +23,7 @@
 
 using namespace std;
 
-namespace ORB_SLAM3
+namespace semantic_slam
 {
 
 Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer,
@@ -1801,7 +1782,7 @@ Sophus::SE3f Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, co
         mpDetector->mvDynamicArea.clear();
     }
 
-    cv::Mat CurrFrameTcw = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(mCurrentFrame.GetPose()));
+    cv::Mat CurrFrameTcw = semantic_slam::Converter::toCvMat(semantic_slam::Converter::toSE3Quat(mCurrentFrame.GetPose()));
 //    if(!CurrFrameTcw.empty())
 //    {
 //        mGeometry.GeometricModelCorrection(mCurrentFrame, mImDepth, mImMask);
@@ -4267,7 +4248,7 @@ void Tracking::CreateNewKeyFrame(bool CreateByObjs)
 
                                     for (size_t ind = first_keyframe->mnFrameId - initializer_starting_frame_id; ind < mlpReferences.size(); ind++)
                                     {
-                                        list<ORB_SLAM3::KeyFrame*>::iterator lRit = mlpReferences.begin();
+                                        list<semantic_slam::KeyFrame*>::iterator lRit = mlpReferences.begin();
                                         list<Sophus::SE3f>::iterator it = mlRelativeFramePoses.begin();
                                         for(int i = 0; i< ind; i++){
                                             ++lRit;
@@ -5041,7 +5022,7 @@ bool Tracking::Relocalization()
                     if(!mbVO) // There are more points tracked in the previous frame
                     {
                         // In last frame we tracked enough MapPoints in the map
-                        cv::Mat mVec = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(mVelocity));
+                        cv::Mat mVec = semantic_slam::Converter::toCvMat(semantic_slam::Converter::toSE3Quat(mVelocity));
                         if(!mVec.empty() && useMotionModel)
                         {
                             bool _bOK = false;
@@ -5070,7 +5051,7 @@ bool Tracking::Relocalization()
                         bool bVO = false;
                         // Use motion tracking and relocalization mode to calculate two poses,
                         // if relocalization is successful, use the pose obtained by relocalization
-                        cv::Mat mVec = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(mVelocity));
+                        cv::Mat mVec = semantic_slam::Converter::toCvMat(semantic_slam::Converter::toSE3Quat(mVelocity));
                         if(!mVec.empty() && useMotionModel)
                         {
                             lightTracking = true;
@@ -5137,7 +5118,7 @@ bool Tracking::Relocalization()
             cout << "Light Tracking homo not working because Tracking is not initialized..." << endl;
             return false;
         }
-        cv::Mat mVec = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(mVelocity));
+        cv::Mat mVec = semantic_slam::Converter::toCvMat(semantic_slam::Converter::toSE3Quat(mVelocity));
         if(mState==OK && !mVec.empty())// Status ok not lost and speed model
         {
             Frame lastFrameBU = mLastFrame; // Back up last frame
@@ -5402,7 +5383,7 @@ void Tracking::UpdateFrameIMU(const float s, const IMU::Bias &b, KeyFrame* pCurr
 {
     Map * pMap = pCurrentKeyFrame->GetMap();
     unsigned int index = mnFirstFrameId;
-    list<ORB_SLAM3::KeyFrame*>::iterator lRit = mlpReferences.begin();
+    list<semantic_slam::KeyFrame*>::iterator lRit = mlpReferences.begin();
     list<bool>::iterator lbL = mlbLost.begin();
     for(auto lit=mlRelativeFramePoses.begin(),lend=mlRelativeFramePoses.end();lit!=lend;lit++, lRit++, lbL++)
     {
@@ -6975,4 +6956,4 @@ void Tracking::Release()
 
 #endif
 
-} //namespace ORB_SLAM
+} //namespace semantic_slam

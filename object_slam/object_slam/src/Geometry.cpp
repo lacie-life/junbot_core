@@ -7,7 +7,7 @@
 #include "Frame.h"
 #include "Tracking.h"
 
-namespace ORB_SLAM3
+namespace semantic_slam
 {
 
     Geometry::Geometry()
@@ -25,7 +25,7 @@ namespace ORB_SLAM3
 
     /*
     void Geometry::GeometricModelCorrection(
-                                        const ORB_SLAM3::Frame &currentFrame,
+                                        const semantic_slam::Frame &currentFrame,
                                         cv::Mat &imDepth,
                                         cv::Mat &mask)
     {
@@ -34,7 +34,7 @@ namespace ORB_SLAM3
         }
         else if (mDB.mNumElem >= ELEM_INITIAL_MAP)// >5
         {
-            vector<ORB_SLAM3::Frame> vRefFrames = GetRefFrames(currentFrame);
+            vector<semantic_slam::Frame> vRefFrames = GetRefFrames(currentFrame);
             vector<DynKeyPoint> vDynPoints = ExtractDynPoints(vRefFrames,currentFrame);
             mask = DepthRegionGrowing(vDynPoints,imDepth);
             CombineMasks(currentFrame,mask);
@@ -43,18 +43,18 @@ namespace ORB_SLAM3
     */
 
     void Geometry::GeometricModelCorrection(
-            const ORB_SLAM3::Frame &currentFrame,
+            const semantic_slam::Frame &currentFrame,
             cv::Mat &imDepth,
             cv::Mat &mask)
     {
-        cv::Mat _Tcw = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(currentFrame.GetPose()));
+        cv::Mat _Tcw = semantic_slam::Converter::toCvMat(semantic_slam::Converter::toSE3Quat(currentFrame.GetPose()));
         if(_Tcw.empty()){
             std::cout << "Geometry not working." << std::endl;
         }
         else if (mDB.mNumElem >= ELEM_INITIAL_MAP)// >5
         {
             std::cout << "Geometry DB size ." << mDB.mNumElem << std::endl;
-            vector<ORB_SLAM3::Frame> vRefFrames = GetRefFrames(currentFrame);
+            vector<semantic_slam::Frame> vRefFrames = GetRefFrames(currentFrame);
 
             vector<DynKeyPoint> vDynPoints = ExtractDynPoints(vRefFrames,currentFrame);
             mask = DepthRegionGrowing(vDynPoints,imDepth);
@@ -63,7 +63,7 @@ namespace ORB_SLAM3
         }
     }
 
-    void Geometry::GeometricModelUpdateDB(const ORB_SLAM3::Frame &currentFrame)
+    void Geometry::GeometricModelUpdateDB(const semantic_slam::Frame &currentFrame)
     {
         if (currentFrame.mIsKeyFrame)
         {
@@ -71,9 +71,9 @@ namespace ORB_SLAM3
         }
     }
 
-    vector<ORB_SLAM3::Frame> Geometry::GetRefFrames(const ORB_SLAM3::Frame &currentFrame)
+    vector<semantic_slam::Frame> Geometry::GetRefFrames(const semantic_slam::Frame &currentFrame)
     {
-        cv::Mat _Tcw = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(currentFrame.GetPose()));
+        cv::Mat _Tcw = semantic_slam::Converter::toCvMat(semantic_slam::Converter::toSE3Quat(currentFrame.GetPose()));
 
         cv::Mat rot1      = _Tcw.rowRange(0,3).colRange(0,3);
         cv::Mat eul1      = rotm2euler(rot1);
@@ -83,7 +83,7 @@ namespace ORB_SLAM3
 
         for (int i(0); i < mDB.mNumElem; i++)
         {
-            cv::Mat _Tcw = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(mDB.mvDataBase[i].GetPose()));
+            cv::Mat _Tcw = semantic_slam::Converter::toCvMat(semantic_slam::Converter::toSE3Quat(mDB.mvDataBase[i].GetPose()));
 
             cv::Mat rot2 = _Tcw.rowRange(0,3).colRange(0,3);
             cv::Mat eul2 = rotm2euler(rot2);
@@ -109,7 +109,7 @@ namespace ORB_SLAM3
 
         mnRefFrames = std::min(MAX_REF_FRAMES,vDist.rows);
 
-        vector<ORB_SLAM3::Frame> vRefFrames;
+        vector<semantic_slam::Frame> vRefFrames;
 
         for (int i(0); i < mnRefFrames; i++)
         {
@@ -127,8 +127,8 @@ namespace ORB_SLAM3
     // 5. According to the depth value of the projection point and the depth value of the current frame of the surrounding 20×20 domain points, filter out the depth value of the domain point with a smaller depth difference to update the depth value of the current frame
     // 6. The difference between the projected depth value of the point and the depth under the current frame of the feature point is too large, and the depth variance around the point is small, so it is determined that the point is a moving point
     vector<Geometry::DynKeyPoint> Geometry::ExtractDynPoints(
-            const vector<ORB_SLAM3::Frame> &vRefFrames,
-            const ORB_SLAM3::Frame &currentFrame)
+            const vector<semantic_slam::Frame> &vRefFrames,
+            const semantic_slam::Frame &currentFrame)
     {
 
         cv::Mat K = cv::Mat::eye(3,3,CV_32F);
@@ -145,7 +145,7 @@ namespace ORB_SLAM3
 
         for (int i(0); i < mnRefFrames; i++)
         {
-            ORB_SLAM3::Frame refFrame = vRefFrames[i];
+            semantic_slam::Frame refFrame = vRefFrames[i];
 
             // Fill matrix with points
             cv::Mat matRefFrame(refFrame.N,3,CV_32F);
@@ -190,8 +190,8 @@ namespace ORB_SLAM3
             // vconcat（B,C，A）;
             cv::vconcat(vMPRefFrame,matInvDepthRefFrame.t(),vMPRefFrame);
 
-            cv::Mat _RefTcw = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(refFrame.GetPose()));
-            cv::Mat _CurTcw = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(currentFrame.GetPose()));
+            cv::Mat _RefTcw = semantic_slam::Converter::toCvMat(semantic_slam::Converter::toSE3Quat(refFrame.GetPose()));
+            cv::Mat _CurTcw = semantic_slam::Converter::toCvMat(semantic_slam::Converter::toSE3Quat(currentFrame.GetPose()));
 
             cv::Mat vMPw = _RefTcw.inv() * vMPRefFrame;
 
@@ -262,7 +262,7 @@ namespace ORB_SLAM3
 
         if (!vAllMPw.empty())
         {
-            cv::Mat temp = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(currentFrame.GetPose()));
+            cv::Mat temp = semantic_slam::Converter::toCvMat(semantic_slam::Converter::toSE3Quat(currentFrame.GetPose()));
             cv::Mat vMPCurrentFrame = temp * vAllMPw;
 
             // Divide by last column   (X/Z，Y/Z，1，1/Z) ----> (X,Y,Z,1)
@@ -507,7 +507,7 @@ namespace ORB_SLAM3
         return (xc2-xc1)*(yc2-yc1);
     }
 
-    void Geometry::DataBase::InsertFrame2DB(const ORB_SLAM3::Frame &currentFrame)
+    void Geometry::DataBase::InsertFrame2DB(const semantic_slam::Frame &currentFrame)
     {
 
         if (!IsFull())
@@ -560,7 +560,7 @@ namespace ORB_SLAM3
 
     bool Geometry::IsInFrame(
             const float &x, const float &y,
-            const ORB_SLAM3::Frame &Frame)
+            const semantic_slam::Frame &Frame)
     {
         mDmax = 20;
         return (x > (mDmax + 1) && x < (Frame.mImDepth.cols - mDmax - 1) && y > (mDmax + 1) && y < (Frame.mImDepth.rows - mDmax - 1));
@@ -671,5 +671,4 @@ namespace ORB_SLAM3
         J = cv::abs(J);
         return(J);
     }
-
 }

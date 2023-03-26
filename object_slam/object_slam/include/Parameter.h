@@ -2,12 +2,12 @@
 // Created by lacie on 18/02/2023.
 //
 
-#ifndef ORB_SLAM3_ROS_PARAMETER_H
-#define ORB_SLAM3_ROS_PARAMETER_H
+#ifndef PARAMETER_H
+#define PARAMETER_H
 
 #include <string>
 
-namespace ORB_SLAM3
+namespace semantic_slam
 {
     extern bool enable_viewer;
     extern bool enable_viewmap;
@@ -54,4 +54,4 @@ namespace ORB_SLAM3
 
 }
 
-#endif //ORB_SLAM3_ROS_PARAMETER_H
+#endif //PARAMETER_H

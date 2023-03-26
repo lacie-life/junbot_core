@@ -7,8 +7,8 @@
 #include "common.h"
 
 // Variables for ORB-SLAM3
-ORB_SLAM3::System* pSLAM;
-ORB_SLAM3::System::eSensor sensor_type = ORB_SLAM3::System::NOT_SET;
+semantic_slam::System* pSLAM;
+semantic_slam::System::eSensor sensor_type = semantic_slam::System::NOT_SET;
 
 // Variables for ROS
 std::string world_frame_id, cam_frame_id, imu_frame_id;
@@ -20,7 +20,7 @@ image_transport::Publisher tracking_img_pub;
 // Main functions
 //////////////////////////////////////////////////
 
-//bool save_map_srv(orb_slam3_ros::SaveMap::Request &req, orb_slam3_ros::SaveMap::Response &res)
+//bool save_map_srv(semantic_slam_ros::SaveMap::Request &req, semantic_slam_ros::SaveMap::Response &res)
 //{
 //    res.success = pSLAM->SaveMap(req.name);
 //
@@ -32,7 +32,7 @@ image_transport::Publisher tracking_img_pub;
 //    return res.success;
 //}
 
-//bool save_traj_srv(orb_slam3_ros::SaveMap::Request &req, orb_slam3_ros::SaveMap::Response &res)
+//bool save_traj_srv(semantic_slam_ros::SaveMap::Request &req, semantic_slam_ros::SaveMap::Response &res)
 //{
 //    const string cam_traj_file = req.name + "_cam_traj.txt";
 //    const string kf_traj_file = req.name + "_kf_traj.txt";
@@ -73,7 +73,7 @@ void setup_publishers(ros::NodeHandle &node_handler, image_transport::ImageTrans
 
     kf_markers_pub = node_handler.advertise<visualization_msgs::Marker>(node_name + "/kf_markers", 1000);
 
-    if (sensor_type == ORB_SLAM3::System::IMU_MONOCULAR || sensor_type == ORB_SLAM3::System::IMU_STEREO || sensor_type == ORB_SLAM3::System::IMU_RGBD)
+    if (sensor_type == semantic_slam::System::IMU_MONOCULAR || sensor_type == semantic_slam::System::IMU_STEREO || sensor_type == semantic_slam::System::IMU_RGBD)
     {
         odom_pub = node_handler.advertise<nav_msgs::Odometry>(node_name + "/body_odom", 1);
     }
@@ -96,7 +96,7 @@ void publish_topics(ros::Time msg_time, Eigen::Vector3f Wbb)
     publish_kf_markers(pSLAM->GetAllKeyframePoses(), msg_time);
 
     // IMU-specific topics
-    if (sensor_type == ORB_SLAM3::System::IMU_MONOCULAR || sensor_type == ORB_SLAM3::System::IMU_STEREO || sensor_type == ORB_SLAM3::System::IMU_RGBD)
+    if (sensor_type == semantic_slam::System::IMU_MONOCULAR || sensor_type == semantic_slam::System::IMU_STEREO || sensor_type == semantic_slam::System::IMU_RGBD)
     {
         // Body pose and translational velocity can be obtained from ORB-SLAM3
         Sophus::SE3f Twb = pSLAM->GetImuTwb();
@@ -178,14 +178,14 @@ void publish_tracking_img(cv::Mat image, ros::Time msg_time)
     tracking_img_pub.publish(rendered_image_msg);
 }
 
-void publish_tracked_points(std::vector<ORB_SLAM3::MapPoint*> tracked_points, ros::Time msg_time)
+void publish_tracked_points(std::vector<semantic_slam::MapPoint*> tracked_points, ros::Time msg_time)
 {
     sensor_msgs::PointCloud2 cloud = mappoint_to_pointcloud(tracked_points, msg_time);
     
     tracked_mappoints_pub.publish(cloud);
 }
 
-void publish_all_points(std::vector<ORB_SLAM3::MapPoint*> map_points, ros::Time msg_time)
+void publish_all_points(std::vector<semantic_slam::MapPoint*> map_points, ros::Time msg_time)
 {
     sensor_msgs::PointCloud2 cloud = mappoint_to_pointcloud(map_points, msg_time);
     
@@ -230,7 +230,7 @@ void publish_kf_markers(std::vector<Sophus::SE3f> vKFposes, ros::Time msg_time)
 // Miscellaneous functions
 //////////////////////////////////////////////////
 
-sensor_msgs::PointCloud2 mappoint_to_pointcloud(std::vector<ORB_SLAM3::MapPoint*> map_points, ros::Time msg_time)
+sensor_msgs::PointCloud2 mappoint_to_pointcloud(std::vector<semantic_slam::MapPoint*> map_points, ros::Time msg_time)
 {
     const int num_channels = 3; // x y z
 

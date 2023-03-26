@@ -2,8 +2,8 @@
 // Created by lacie on 28/01/2023.
 //
 
-#ifndef ORB_SLAM3_ROS_FLOW_H
-#define ORB_SLAM3_ROS_FLOW_H
+#ifndef SEMANTIC_SLAM_ROS_FLOW_H
+#define SEMANTIC_SLAM_ROS_FLOW_H
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
@@ -12,7 +12,7 @@
 
 using namespace std;
 
-namespace ORB_SLAM3
+namespace semantic_slam
 {
     class Flow {
     private:
@@ -32,4 +32,4 @@ namespace ORB_SLAM3
     };
 }
 
-#endif //ORB_SLAM3_ROS_FLOW_H
+#endif //SEMANTIC_SLAM_ROS_FLOW_H

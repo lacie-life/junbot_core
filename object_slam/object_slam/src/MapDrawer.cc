@@ -1,20 +1,3 @@
-/**
-* This file is part of ORB-SLAM3
-*
-* Copyright (C) 2017-2021 Carlos Campos, Richard Elvira, Juan J. Gómez Rodríguez, José M.M. Montiel and Juan D. Tardós, University of Zaragoza.
-* Copyright (C) 2014-2016 Raúl Mur-Artal, José M.M. Montiel and Juan D. Tardós, University of Zaragoza.
-*
-* ORB-SLAM3 is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
-* License as published by the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* ORB-SLAM3 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
-* the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License along with ORB-SLAM3.
-* If not, see <http://www.gnu.org/licenses/>.
-*/
 
 #include "MapDrawer.h"
 #include "MapPoint.h"
@@ -24,7 +7,7 @@
 #include <pangolin/pangolin.h>
 #include <mutex>
 
-namespace ORB_SLAM3 {
+namespace semantic_slam {
 
     MapDrawer::MapDrawer(Atlas *pAtlas, const string &strSettingPath, Settings *settings) :
             mpAtlas(pAtlas),
@@ -621,7 +604,7 @@ namespace ORB_SLAM3 {
 
     bool MapDrawer::GetCurrentCameraPos(cv::Mat &Rcw, cv::Mat &Ow) {
         bool flag = false;
-        cv::Mat camPose = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(mCameraPose));
+        cv::Mat camPose = semantic_slam::Converter::toCvMat(semantic_slam::Converter::toSE3Quat(mCameraPose));
 
         if (!camPose.empty()) {
             unique_lock<mutex> lock(mMutexCamera);
@@ -906,7 +889,7 @@ namespace ORB_SLAM3 {
             {
                 std::cout<< " keyFrame: "<< i << std::endl;
 
-                Eigen::Isometry3d pose = ORB_SLAM3::Converter::toSE3Quat( vKFs[i]->GetPose());
+                Eigen::Isometry3d pose = semantic_slam::Converter::toSE3Quat( vKFs[i]->GetPose());
 
                 pcl::PointCloud<pcl::PointXYZRGB>  ground;
                 pcl::PointCloud<pcl::PointXYZRGB>  nonground;
@@ -958,7 +941,7 @@ namespace ORB_SLAM3 {
         vg.setLeafSize(0.01,0.01, 0.01);
         vg.filter(*cloud);
 
-        Eigen::Isometry3d T = ORB_SLAM3::Converter::toSE3Quat(kf->GetPose());
+        Eigen::Isometry3d T = semantic_slam::Converter::toSE3Quat(kf->GetPose());
         pcl::PointCloud<pcl::PointXYZRGB> temp;
         pcl::transformPointCloud( *cloud, temp, T.inverse().matrix());
 
@@ -1093,7 +1076,7 @@ namespace ORB_SLAM3 {
             }
         }
 
-        Eigen::Isometry3d T = ORB_SLAM3::Converter::toSE3Quat(kf->GetPose());
+        Eigen::Isometry3d T = semantic_slam::Converter::toSE3Quat(kf->GetPose());
         //pcl::PointCloud<pcl::PointXYZRGB> temp;
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr temp (new pcl::PointCloud<pcl::PointXYZRGB>);
         pcl::transformPointCloud( *cloud, *temp, T.inverse().matrix());
@@ -1389,4 +1372,4 @@ namespace ORB_SLAM3 {
     }
 
 
-} //namespace ORB_SLAM
+} //namespace semantic_slam

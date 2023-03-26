@@ -162,7 +162,7 @@ void ObjectDatabase::addObject(Cluster& cluster)
     return;
 }
 
-void ObjectDatabase::addObject(ORB_SLAM3::Object_Map* object)
+void ObjectDatabase::addObject(semantic_slam::Object_Map* object)
 {
     // 1. Check the total quantity, if the database is empty, join directly
     if(!mObjects.size())
@@ -177,7 +177,7 @@ void ObjectDatabase::addObject(ORB_SLAM3::Object_Map* object)
         // 2. The object already exists in the database, find out whether the new object already exists in the database
 
         // Find out object with same name with new object
-        std::vector<ORB_SLAM3::Object_Map*> likely_obj;
+        std::vector<semantic_slam::Object_Map*> likely_obj;
         for (int i = 0; i < mObjects.size(); i++)
         {
             if(mObjects[i]->mnClass == object->mnClass)
@@ -187,7 +187,7 @@ void ObjectDatabase::addObject(ORB_SLAM3::Object_Map* object)
         }
 
         // 3. If not found, add it directly to the database
-        ORB_SLAM3::Object_Map* best_close;// most recent index
+        semantic_slam::Object_Map* best_close;// most recent index
 
         float center_distance = 100;// Corresponding distance
 
@@ -203,7 +203,7 @@ void ObjectDatabase::addObject(ORB_SLAM3::Object_Map* object)
             // 4. Go through each object with the same name and find the one closest to the center point
             for(unsigned int j = 0; j < likely_obj.size(); j++)
             {
-                ORB_SLAM3::Object_Map* temp_obj = likely_obj[j];
+                semantic_slam::Object_Map* temp_obj = likely_obj[j];
 
                 Eigen::Vector3d dis_vec = object->mCuboid3D.cuboidCenter - temp_obj->mCuboid3D.cuboidCenter;// center point connection vector
 
@@ -256,9 +256,9 @@ void ObjectDatabase::addObject(ORB_SLAM3::Object_Map* object)
     return;
 }
 
-std::vector<ORB_SLAM3::Object_Map*> ObjectDatabase::getObjectMapByName(int objectName)
+std::vector<semantic_slam::Object_Map*> ObjectDatabase::getObjectMapByName(int objectName)
 {
-    std::vector<ORB_SLAM3::Object_Map*> likely_obj;
+    std::vector<semantic_slam::Object_Map*> likely_obj;
     for (int i = 0; i < mObjects.size(); i++)
     {
         if(mObjects[i]->mnClass == objectName)
@@ -269,9 +269,9 @@ std::vector<ORB_SLAM3::Object_Map*> ObjectDatabase::getObjectMapByName(int objec
     return likely_obj;
 }
 
-std::vector<ORB_SLAM3::Object_Map*> ObjectDatabase::getAllObject()
+std::vector<semantic_slam::Object_Map*> ObjectDatabase::getAllObject()
 {
-    return std::vector<ORB_SLAM3::Object_Map*>(mObjects.begin(), mObjects.end());
+    return std::vector<semantic_slam::Object_Map*>(mObjects.begin(), mObjects.end());
 }
 
 

@@ -9,7 +9,7 @@
 #include "Converter.h"
 #include <mutex>
 
-namespace ORB_SLAM3
+namespace semantic_slam
 {
     using namespace std;
     long int MapCuboidObject::nNextId = 0;

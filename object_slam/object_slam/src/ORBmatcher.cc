@@ -1,35 +1,12 @@
-/**
-* This file is part of ORB-SLAM3
-*
-* Copyright (C) 2017-2021 Carlos Campos, Richard Elvira, Juan J. Gómez Rodríguez, José M.M. Montiel and Juan D. Tardós, University of Zaragoza.
-* Copyright (C) 2014-2016 Raúl Mur-Artal, José M.M. Montiel and Juan D. Tardós, University of Zaragoza.
-*
-* ORB-SLAM3 is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
-* License as published by the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* ORB-SLAM3 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
-* the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License along with ORB-SLAM3.
-* If not, see <http://www.gnu.org/licenses/>.
-*/
-
-
 #include "ORBmatcher.h"
-
 #include <limits.h>
-
 #include <opencv2/core/core.hpp>
-
 #include "Thirdparty/DBoW2/DBoW2/FeatureVector.h"
-
 #include <stdint-gcc.h>
 
 using namespace std;
 
-namespace ORB_SLAM3
+namespace semantic_slam
 {
 
     const int ORBmatcher::TH_HIGH = 100;
@@ -2023,8 +2000,8 @@ namespace ORB_SLAM3
             rotHist[i].reserve(500);
         const float factor = 1.0f/HISTO_LENGTH;
 
-        cv::Mat _CTcw = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(CurrentFrame.GetPose()));
-        cv::Mat _LTcw = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(LastFrame.GetPose()));
+        cv::Mat _CTcw = semantic_slam::Converter::toCvMat(semantic_slam::Converter::toSE3Quat(CurrentFrame.GetPose()));
+        cv::Mat _LTcw = semantic_slam::Converter::toCvMat(semantic_slam::Converter::toSE3Quat(LastFrame.GetPose()));
         // current frame rotation translation matrix
         const cv::Mat Rcw = _CTcw.rowRange(0,3).colRange(0,3);
         const cv::Mat tcw = _CTcw.rowRange(0,3).col(3);
@@ -2054,7 +2031,7 @@ namespace ORB_SLAM3
                 {
                     // Project
                     // Step 3: Project the previous frame map point onto the current frame pixel plane -
-                    cv::Mat x3Dw = ORB_SLAM3::Converter::toCvMat(pMP->GetWorldPos());
+                    cv::Mat x3Dw = semantic_slam::Converter::toCvMat(pMP->GetWorldPos());
                     cv::Mat x3Dc = Rcw*x3Dw+tcw;
                     const float xc = x3Dc.at<float>(0);
                     const float yc = x3Dc.at<float>(1);
@@ -2233,4 +2210,4 @@ namespace ORB_SLAM3
         return dist;
     }
 
-} //namespace ORB_SLAM
+} //namespace semantic_slam

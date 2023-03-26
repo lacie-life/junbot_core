@@ -4,7 +4,7 @@
 
 #include <opencv2/core/cuda.hpp>
 
-namespace ORB_SLAM3 { namespace cuda {
+namespace semantic_slam { namespace cuda {
   extern cv::cuda::GpuMat::Allocator * gpu_mat_allocator;
 
   class Allocator : public cv::cuda::GpuMat::Allocator

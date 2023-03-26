@@ -12,7 +12,7 @@
 #include <vision_msgs/Detection3D.h>
 #include <vision_msgs/Detection3DArray.h>
 
-namespace ORB_SLAM3
+namespace semantic_slam
 {
 
     MapPublisher::MapPublisher(Atlas *mAtlas, const string &strSettingPath)

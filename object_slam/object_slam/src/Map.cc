@@ -1,29 +1,10 @@
-/**
-* This file is part of ORB-SLAM3
-*
-* Copyright (C) 2017-2021 Carlos Campos, Richard Elvira, Juan J. Gómez Rodríguez, José M.M. Montiel and Juan D. Tardós, University of Zaragoza.
-* Copyright (C) 2014-2016 Raúl Mur-Artal, José M.M. Montiel and Juan D. Tardós, University of Zaragoza.
-*
-* ORB-SLAM3 is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
-* License as published by the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* ORB-SLAM3 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
-* the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License along with ORB-SLAM3.
-* If not, see <http://www.gnu.org/licenses/>.
-*/
-
-
 #include "Map.h"
 #include "ObjectDatabase.h"
 #include "Object.h"
 
 #include <mutex>
 
-namespace ORB_SLAM3 {
+namespace semantic_slam {
 
     long unsigned int Map::nNextId = 0;
 
@@ -584,7 +565,7 @@ namespace ORB_SLAM3 {
 //        int nFeatures = 2000;
 //        float scaleFactor = 1.2;
 //        int nLevels = 8, fIniThFAST = 20, fMinThFAST = 7;
-//        ORB_SLAM3::ORBextractor orb_ext = ORB_SLAM3::ORBextractor(nFeatures, scaleFactor, nLevels, fIniThFAST,
+//        semantic_slam::ORBextractor orb_ext = semantic_slam::ORBextractor(nFeatures, scaleFactor, nLevels, fIniThFAST,
 //                                                                  fMinThFAST);
 //
 //        cerr << "Map: reading from " << filename << endl;
@@ -596,11 +577,11 @@ namespace ORB_SLAM3 {
 //        f.read((char *) &nb_mappoints, sizeof(nb_mappoints));
 //        cerr << "reading " << nb_mappoints << " mappoints" << endl;
 //        for (unsigned int i = 0; i < nb_mappoints; i++) {
-//            ORB_SLAM3::MapPoint *mp = _ReadMapPoint(f);
+//            semantic_slam::MapPoint *mp = _ReadMapPoint(f);
 //            if (mp->mnId >= max_id) max_id = mp->mnId;
 //            AddMapPoint(mp);
 //        }
-//        ORB_SLAM3::MapPoint::nNextId = max_id + 1; // that is probably wrong if last mappoint is not here :(
+//        semantic_slam::MapPoint::nNextId = max_id + 1; // that is probably wrong if last mappoint is not here :(
 //
 //        std::vector<MapPoint *> amp = GetAllMapPoints();
 //
@@ -660,7 +641,7 @@ namespace ORB_SLAM3 {
 //
 //    void Map::_WriteMapPoint(ofstream &f, MapPoint *mp) {
 //        f.write((char *) &mp->mnId, sizeof(mp->mnId));               // id: long unsigned int
-//        cv::Mat wp = ORB_SLAM3::Converter::toCvMat(mp->GetWorldPos());// x,y,z
+//        cv::Mat wp = semantic_slam::Converter::toCvMat(mp->GetWorldPos());// x,y,z
 //        f.write((char *) &wp.at<float>(0), sizeof(float));           // pos x: float
 //        f.write((char *) &wp.at<float>(1), sizeof(float));           // pos y: float
 //        f.write((char *) &wp.at<float>(2), sizeof(float));           // pos z: float
@@ -683,7 +664,7 @@ namespace ORB_SLAM3 {
 //        cerr << endl;
 //#endif
 //
-//        cv::Mat Tcw = ORB_SLAM3::Converter::toCvMat(ORB_SLAM3::Converter::toSE3Quat(kf->GetPose()));
+//        cv::Mat Tcw = semantic_slam::Converter::toCvMat(semantic_slam::Converter::toSE3Quat(kf->GetPose()));
 //        f.write((char *) &Tcw.at<float>(0, 3), sizeof(float));          // px: float
 //        f.write((char *) &Tcw.at<float>(1, 3), sizeof(float));          // py: float
 //        f.write((char *) &Tcw.at<float>(2, 3), sizeof(float));          // pz: float
@@ -771,4 +752,4 @@ namespace ORB_SLAM3 {
 //        return true;
 //    }
 
-} //namespace ORB_SLAM3
+} //namespace semantic_slam

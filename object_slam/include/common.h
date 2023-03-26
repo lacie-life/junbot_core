@@ -27,14 +27,13 @@
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 
-//#include <orb_slam3_ros/SaveMap.h> // This file is created automatically, see here http://wiki.ros.org/ROS/Tutorials/CreatingMsgAndSrv#Creating_a_srv
+//#include <object_slam_ros/SaveMap.h> // This file is created automatically, see here http://wiki.ros.org/ROS/Tutorials/CreatingMsgAndSrv#Creating_a_srv
 
-// ORB-SLAM3-specific libraries
 #include "System.h"
 #include "ImuTypes.h"
 
-extern ORB_SLAM3::System* pSLAM;
-extern ORB_SLAM3::System::eSensor sensor_type;
+extern semantic_slam::System* pSLAM;
+extern semantic_slam::System::eSensor sensor_type;
 
 extern std::string world_frame_id, cam_frame_id, imu_frame_id;
 
@@ -48,15 +47,15 @@ void publish_topics(ros::Time, Eigen::Vector3f = Eigen::Vector3f::Zero());
 
 void publish_camera_pose(Sophus::SE3f, ros::Time);
 void publish_tracking_img(cv::Mat, ros::Time);
-void publish_tracked_points(std::vector<ORB_SLAM3::MapPoint*>, ros::Time);
-void publish_all_points(std::vector<ORB_SLAM3::MapPoint*>, ros::Time);
+void publish_tracked_points(std::vector<semantic_slam::MapPoint*>, ros::Time);
+void publish_all_points(std::vector<semantic_slam::MapPoint*>, ros::Time);
 void publish_tf_transform(Sophus::SE3f, string, string, ros::Time);
 void publish_body_odom(Sophus::SE3f, Eigen::Vector3f, Eigen::Vector3f, ros::Time);
 void publish_kf_markers(std::vector<Sophus::SE3f>, ros::Time);
 
-//bool save_map_srv(orb_slam3_ros::SaveMap::Request&, orb_slam3_ros::SaveMap::Response&);
-//bool save_traj_srv(orb_slam3_ros::SaveMap::Request&, orb_slam3_ros::SaveMap::Response&);
+//bool save_map_srv(semantic_slam_ros::SaveMap::Request&, semantic_slam_ros::SaveMap::Response&);
+//bool save_traj_srv(semantic_slam_ros::SaveMap::Request&, semantic_slam_ros::SaveMap::Response&);
 
 cv::Mat SE3f_to_cvMat(Sophus::SE3f);
 tf::Transform SE3f_to_tfTransform(Sophus::SE3f);
-sensor_msgs::PointCloud2 mappoint_to_pointcloud(std::vector<ORB_SLAM3::MapPoint*>, ros::Time);
+sensor_msgs::PointCloud2 mappoint_to_pointcloud(std::vector<semantic_slam::MapPoint*>, ros::Time);

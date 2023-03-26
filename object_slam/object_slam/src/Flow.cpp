@@ -4,7 +4,7 @@
 
 #include "Flow.h"
 
-namespace ORB_SLAM3
+namespace semantic_slam
 {
     Flow::Flow()
     {

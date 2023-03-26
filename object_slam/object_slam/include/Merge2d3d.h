@@ -2,8 +2,8 @@
 // Created by lacie on 28/01/2023.
 //
 
-#ifndef ORB_SLAM3_ROS_MERGE2D3D_H
-#define ORB_SLAM3_ROS_MERGE2D3D_H
+#ifndef SEMANTIC_SLAM_ROS_MERGE2D3D_H
+#define SEMANTIC_SLAM_ROS_MERGE2D3D_H
 
 #include <pcl/common/common.h>
 #include <pcl/point_types.h>
@@ -46,4 +46,4 @@ protected:
     // ObjectDatabase* mpOD;
 };
 
-#endif //ORB_SLAM3_ROS_MERGE2D3D_H
+#endif //SEMANTIC_SLAM_ROS_MERGE2D3D_H

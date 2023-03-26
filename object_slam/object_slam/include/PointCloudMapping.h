@@ -55,7 +55,7 @@
 #include <pcl_ros/transforms.h>
 #include <pcl_conversions/pcl_conversions.h>
 
-using namespace ORB_SLAM3;
+using namespace semantic_slam;
 
 class PointCloudMapping
 {

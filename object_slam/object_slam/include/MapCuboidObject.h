@@ -2,8 +2,8 @@
 // Created by lacie on 18/02/2023.
 //
 
-#ifndef ORB_SLAM3_ROS_MAPCUBOIDOBJECT_H
-#define ORB_SLAM3_ROS_MAPCUBOIDOBJECT_H
+#ifndef SEMANTIC_SLAM_ROS_MAPCUBOIDOBJECT_H
+#define SEMANTIC_SLAM_ROS_MAPCUBOIDOBJECT_H
 
 #include <vector>
 
@@ -17,7 +17,7 @@
 #include "g2o_Object.h"
 #include "KeyFrame.h"
 
-namespace ORB_SLAM3
+namespace semantic_slam
 {
 //    class KeyFrame;
     class MapPoint;
@@ -147,4 +147,4 @@ namespace ORB_SLAM3
     };
 }
 
-#endif //ORB_SLAM3_ROS_MAPCUBOIDOBJECT_H
+#endif //SEMANTIC_SLAM_ROS_MAPCUBOIDOBJECT_H

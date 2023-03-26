@@ -6,7 +6,7 @@
 
 // TODO: Add to Settings.h
 
-namespace ORB_SLAM3
+namespace semantic_slam
 {
     bool parallel_mapping = true;
 

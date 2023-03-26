@@ -17,7 +17,7 @@ bool little_mass_flag = false;
 bool ProIou_only30_flag = true;
 
 // TODO: Improve cube merging
-namespace ORB_SLAM3
+namespace semantic_slam
 {
 
 mutex Object_2D::mGlobalMutex;  //crash bug
@@ -1007,7 +1007,7 @@ int Object_2D::NoParaDataAssociation(Object_Map *Object3D)
         return 2;       // failure.
 } // Object_2D::NoParaDataAssociation()
 
-void Object_2D::AddObjectPoint(ORB_SLAM3::MapPoint *pMP) {
+void Object_2D::AddObjectPoint(semantic_slam::MapPoint *pMP) {
     unique_lock<mutex> lock2(mGlobalMutex);
     unique_lock<mutex> lock(mMutexPos);
     mvMapPonits.push_back(pMP);
@@ -1893,7 +1893,7 @@ void Object_Map::SearchAndMergeMapObjs_fll(Map *mpMap)
     }
 }
 
-bool Object_Map::DoubleSampleTtest_fll(ORB_SLAM3::Object_Map *RepeatObj) {
+bool Object_Map::DoubleSampleTtest_fll(semantic_slam::Object_Map *RepeatObj) {
     // Read t-distribution boundary value.
     float tTestData[122][9] = {0};
     ifstream infile;
@@ -2164,7 +2164,7 @@ void Object_Map::MergeTwoMapObjs_fll(Object_Map *RepeatObj)
 
 
 // Fusion of two overlapping objects. To go through iou, volume, AppearSametime, yolo class, four tests
-void Object_Map::DealTwoOverlapObjs_fll(ORB_SLAM3::Object_Map *OverlapObj, float overlap_x, float overlap_y, float overlap_z) {
+void Object_Map::DealTwoOverlapObjs_fll(semantic_slam::Object_Map *OverlapObj, float overlap_x, float overlap_y, float overlap_z) {
     bool bIou = false;       // false: Iou is large.
     bool bVolume = false;    // false: small volume difference.
     bool bSame_time = false; // false: doesn't simultaneous appearance.
@@ -2500,7 +2500,7 @@ cv::Mat Object_Map::compute_pointnum_eachgrid(){
     double center_z = cuboidCenter2;
 
     cv::Mat T_w2o_mat = mCuboid3D.pose_mat;
-    Eigen::Isometry3d T_w2o = ORB_SLAM3::Converter::toSE3Quat(T_w2o_mat);
+    Eigen::Isometry3d T_w2o = semantic_slam::Converter::toSE3Quat(T_w2o_mat);
 
     Eigen::Vector3d zero_vec( 1,0,0);
     zero_vec = T_w2o* zero_vec;
