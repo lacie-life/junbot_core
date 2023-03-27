@@ -19,6 +19,9 @@ const char* INPUT_BLOB_NAME = "data";
 const char* OUTPUT_BLOB_NAME = "prob";
 static Logger gLogger;
 
+static float data[BATCH_SIZE * 3 * INPUT_H * INPUT_W];
+static float prob[BATCH_SIZE * OUTPUT_SIZE];
+
 static int get_width(int x, float gw, int divisor = 8) {
     return int(ceil((x * gw) / divisor)) * divisor;
 }
@@ -32,7 +35,69 @@ static int get_depth(int x, float gd) {
     return std::max<int>(r, 1);
 }
 
-ICudaEngine* Detector::build_engine(unsigned int maxBatchSize, IBuilder* builder, IBuilderConfig* config, DataType dt, float& gd, float& gw, std::string& wts_name) {
+Detector::Detector(const std::string _model_path)
+{
+    // deserialize the .engine and run inference
+    std::ifstream file(_model_path, std::ios::binary);
+    if (!file.good()) {
+        std::cerr << "read " << _model_path << " error!" << std::endl;
+        exit(0);
+    }
+    char *trtModelStream = nullptr;
+    size_t size = 0;
+    file.seekg(0, file.end);
+    size = file.tellg();
+    file.seekg(0, file.beg);
+    trtModelStream = new char[size];
+    assert(trtModelStream);
+    file.read(trtModelStream, size);
+    file.close();
+
+    runtime = createInferRuntime(gLogger);
+    assert(runtime != nullptr);
+
+    engine = runtime->deserializeCudaEngine(trtModelStream, size);
+    assert(engine != nullptr);
+
+    context = engine->createExecutionContext();
+    assert(context != nullptr);
+
+    delete[] trtModelStream;
+
+    assert(engine->getNbBindings() == 2);
+
+    // In order to bind the buffers, we need to know the names of the input and output tensors.
+    // Note that indices are guaranteed to be less than IEngine::getNbBindings()
+    const int inputIndex = engine->getBindingIndex(INPUT_BLOB_NAME);
+    const int outputIndex = engine->getBindingIndex(OUTPUT_BLOB_NAME);
+    assert(inputIndex == 0);
+    assert(outputIndex == 1);
+
+    // Create GPU buffers on device
+    CUDA_CHECK(cudaMalloc(&buffers[inputIndex], BATCH_SIZE * 3 * INPUT_H * INPUT_W * sizeof (float)));
+    CUDA_CHECK(cudaMalloc(&buffers[outputIndex], BATCH_SIZE * OUTPUT_SIZE * sizeof (float)));
+
+    // Create stream
+    CUDA_CHECK(cudaStreamCreate(&stream));
+
+    assert(BATCH_SIZE == 1); // This sample only support batch 1 for now
+}
+
+Detector::~Detector()
+{
+    // Release stream and buffers
+    cudaStreamDestroy(stream);
+    CUDA_CHECK(cudaFree(buffers[engine->getBindingIndex(INPUT_BLOB_NAME)]));
+    CUDA_CHECK(cudaFree(buffers[engine->getBindingIndex(OUTPUT_BLOB_NAME)]));
+
+    // Destroy the engine
+    context->destroy();
+    engine->destroy();
+    runtime->destroy();
+}
+
+ICudaEngine* Detector::build_engine(unsigned int maxBatchSize, IBuilder* builder, IBuilderConfig* config, DataType dt, float& gd, float& gw, std::string& wts_name)
+{
     INetworkDefinition* network = builder->createNetworkV2(0U);
 
     // Create input tensor of shape {3, INPUT_H, INPUT_W} with name INPUT_BLOB_NAME
@@ -125,8 +190,8 @@ ICudaEngine* Detector::build_engine(unsigned int maxBatchSize, IBuilder* builder
     return engine;
 }
 
-//v6.0
-ICudaEngine* build_engine_p6(unsigned int maxBatchSize, IBuilder* builder, IBuilderConfig* config, DataType dt, float& gd, float& gw, std::string& wts_name) {
+ICudaEngine* Detector::build_engine_p6(unsigned int maxBatchSize, IBuilder* builder, IBuilderConfig* config, DataType dt, float& gd, float& gw, std::string& wts_name)
+{
     INetworkDefinition* network = builder->createNetworkV2(0U);
 
     // Create input tensor of shape {3, INPUT_H, INPUT_W} with name INPUT_BLOB_NAME
@@ -234,7 +299,7 @@ ICudaEngine* build_engine_p6(unsigned int maxBatchSize, IBuilder* builder, IBuil
     return engine;
 }
 
-void APIToModel(unsigned int maxBatchSize, IHostMemory** modelStream, bool& is_p6, float& gd, float& gw, std::string& wts_name) {
+void Detector::APIToModel(unsigned int maxBatchSize, IHostMemory** modelStream, bool& is_p6, float& gd, float& gw, std::string& wts_name){
     // Create builder
     IBuilder* builder = createInferBuilder(gLogger);
     IBuilderConfig* config = builder->createBuilderConfig();
@@ -257,10 +322,40 @@ void APIToModel(unsigned int maxBatchSize, IHostMemory** modelStream, bool& is_p
     config->destroy();
 }
 
-void doInference(IExecutionContext& context, cudaStream_t& stream, void **buffers, float* input, float* output, int batchSize) {
+void Detector::doInference(IExecutionContext& context, cudaStream_t& stream, void **buffers, float* input, float* output, int batchSize)
+{
     // DMA input batch data to device, infer on the batch asynchronously, and DMA output back to host
     CUDA_CHECK(cudaMemcpyAsync(buffers[0], input, batchSize * 3 * INPUT_H * INPUT_W * sizeof (float), cudaMemcpyHostToDevice, stream));
     context.enqueue(batchSize, buffers, stream, nullptr);
     CUDA_CHECK(cudaMemcpyAsync(output, buffers[1], batchSize * OUTPUT_SIZE * sizeof (float), cudaMemcpyDeviceToHost, stream));
     cudaStreamSynchronize(stream);
 }
+
+std::vector<Yolo::Detection> Detector::detectObject(const cv::Mat &_frame, std::vector<Yolo::Detection> &objects)
+{
+    cv::Mat img = _frame.clone();
+
+    cv::Mat pr_img = preprocess_img(img, INPUT_W, INPUT_H);
+
+    int i = 0;
+    int batch = 0;
+    for (int row = 0; row < INPUT_H; ++row) {
+        uchar* uc_pixel = pr_img.data + row * pr_img.step;
+        for (int col = 0; col < INPUT_W; ++col) {
+            data[batch * 3 * INPUT_H * INPUT_W + i] = (float) uc_pixel[2] / 255.0;
+            data[batch * 3 * INPUT_H * INPUT_W + i + INPUT_H * INPUT_W] = (float) uc_pixel[1] / 255.0;
+            data[batch * 3 * INPUT_H * INPUT_W + i + 2 * INPUT_H * INPUT_W] = (float) uc_pixel[0] / 255.0;
+            uc_pixel += 3;
+            ++i;
+        }
+    }
+
+    // Running inference
+    doInference(*context, stream, buffers, data, prob, BATCH_SIZE);
+    std::vector<std::vector < Yolo::Detection >> batch_res(BATCH_SIZE);
+    auto& res = batch_res[batch];
+    nms(res, &prob[batch * OUTPUT_SIZE], CONF_THRESH, NMS_THRESH);
+}
+
+
+
