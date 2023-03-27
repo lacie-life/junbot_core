@@ -25,6 +25,8 @@ find_package(GLEW REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(CUDA REQUIRED)
 
+find_package(Eigen3 3.1.0 REQUIRED)
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -49,11 +51,15 @@ IF(NOT WIN32)
     add_definitions(-Wno-write-strings)
 ENDIF()
 
-include_directories(${OpenCV_INCLUDE_DIRS})
-include_directories(${ZED_INCLUDE_DIRS})
-include_directories(${GLEW_INCLUDE_DIRS})
-include_directories(${GLUT_INCLUDE_DIR})
-include_directories(${CUDA_INCLUDE_DIRS})
+include_directories(
+        ${OpenCV_INCLUDE_DIRS}
+        ${EIGEN3_INCLUDE_DIR}
+        ${ZED_INCLUDE_DIRS}
+        ${GLEW_INCLUDE_DIRS}
+        ${GLUT_INCLUDE_DIR}
+        ${CUDA_INCLUDE_DIRS}
+)
+
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 link_directories(${ZED_LIBRARY_DIR})

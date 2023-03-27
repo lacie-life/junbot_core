@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
 
             std::vector<Yolo::Detection> objs = detector->detectObject(left_cv_rgb);
 
-            std::cout << "Number object in frame " << frameCount << "th: " << objs.size();
+            std::cout << "Number object in frame " << frameCount << "th: " << objs.size() << "\n";
 
             // Preparing for ZED SDK ingesting
             std::vector<sl::CustomBoxObjectData> objects_in;
