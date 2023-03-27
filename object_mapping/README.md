@@ -27,3 +27,9 @@ python gen_wts.py -w yolov5s.pt
 # With an SVO file
 ./object_mapping -d yolov5.engine ./foo.svo
 ```
+
+# TODO
+
+- [ ] Add ObjectDatabase
+- [ ] Convert Object to Map
+- [ ] Publish Polygon
