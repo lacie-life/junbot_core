@@ -429,7 +429,6 @@ namespace object_layer
                 continue;
             if(classId == "zone")
             {
-                ROS_INFO("ADD ZONE");
                 master_grid.setCost(mx, my, costmap_2d::INSCRIBED_INFLATED_OBSTACLE-50);
             }
             else{
