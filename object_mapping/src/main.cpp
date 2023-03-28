@@ -47,6 +47,7 @@ int main(int argc, char** argv) {
     auto camera_config = zed.getCameraInformation().camera_configuration;
     sl::Resolution pc_resolution(std::min((int) camera_config.resolution.width, 720), std::min((int) camera_config.resolution.height, 404));
     auto camera_info = zed.getCameraInformation(pc_resolution).camera_configuration;
+
     // Create OpenGL Viewer
     GLViewer viewer;
     viewer.init(argc, argv, camera_info.calibration_parameters.left_cam, true);
@@ -122,7 +123,9 @@ int main(int argc, char** argv) {
         }
     }
 
-    viewer.exit();
+    zed.disableObjectDetection();
+    zed.disablePositionalTracking();
+    zed.close();
 
     return 0;
 }
