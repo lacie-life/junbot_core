@@ -111,13 +111,13 @@ int main(int argc, char** argv) {
 
             // Retrieve the tracked objects, with 2D and 3D attributes
             zed.retrieveObjects(objects, objectTracker_parameters_rt);
-            // GL Viewer
-            zed.retrieveMeasure(point_cloud, sl::MEASURE::XYZRGBA, sl::MEM::GPU, pc_resolution);
-            zed.getPosition(cam_w_pose, sl::REFERENCE_FRAME::WORLD);
 
             // Update object in object database
+            zed.getPosition(cam_w_pose, sl::REFERENCE_FRAME::WORLD);
             oDB->updateObjectDatabase(objects, cam_w_pose);
 
+            // GL Viewer
+            zed.retrieveMeasure(point_cloud, sl::MEASURE::XYZRGBA, sl::MEM::GPU, pc_resolution);
             viewer.updateData(point_cloud, objects.object_list, cam_w_pose.pose_data);
         }
     }

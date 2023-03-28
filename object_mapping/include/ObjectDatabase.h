@@ -20,6 +20,7 @@ typedef struct ObjectMap
     std::string object_name; // object class name
     int class_id;            // Corresponding category ID
     int object_id;           // object number
+    sl::String zed_unique_object_id;
     bool operator ==(const std::string &x);
 } ObjectMap;
 

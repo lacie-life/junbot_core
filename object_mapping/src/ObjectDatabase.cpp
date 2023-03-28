@@ -172,10 +172,18 @@ void ObjectDatabase::addObject(sl::Objects &objects)
 {
     // TODO: Create object map from Zed tracked objects
 
+
 }
 
 void ObjectDatabase::updateObjectDatabase(sl::Objects &objects, sl::Pose &cam_w_pose)
 {
     // TODO: something here
+    for(int i = 0; i < objects.object_list.size(); i++)
+    {
+        std::cout << objects.object_list.at(i).id << "\n";
+        std::cout << objects.object_list.at(i).unique_object_id << "\n";
+    }
+
+    addObject(objects);
 }
 
