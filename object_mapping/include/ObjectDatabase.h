@@ -14,8 +14,9 @@
 
 typedef struct ObjectMap
 {
-    Eigen::Vector3f size;    // 3D frame size
-    Eigen::Vector3f centroid;// point cloud center point
+    std::vector<sl::float3> bounding_box;   // 3D cuboid
+    sl::float3 size;
+    Eigen::Vector3f centroid;// object centroid
     float prob;              // Confidence
     std::string object_name; // object class name
     int class_id;            // Corresponding category ID
@@ -33,14 +34,16 @@ public:
 
     void updateObjectDatabase(sl::Objects& objects, sl::Pose &cam_w_pose);
 
-    void addObject(ObjectMap& object);
-    void addObject(sl::Objects& object);
+    void addObject(sl::ObjectData& object);
     cv::Scalar  getObjectColor(int class_id); // defined object color
     cv::Scalar  getObjectColor(std::string class_name); // defined object color
     float getObjectSize(int class_id);        // defined object size
 
     // Return the object data with the same name in the database
     std::vector<ObjectMap>  getObjectByName(std::string objectName);
+
+    // Publish to ROS
+    void updateROSMap();
 
     // Get all objects
     std::vector<ObjectMap> getAllObject();
