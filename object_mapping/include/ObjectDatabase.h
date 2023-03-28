@@ -29,7 +29,11 @@ public:
 
     ObjectDatabase();
     ~ObjectDatabase();
+
+    void updateObjectDatabase(sl::Objects& objects, sl::Pose &cam_w_pose);
+
     void addObject(ObjectMap& object);
+    void addObject(sl::Objects& object);
     cv::Scalar  getObjectColor(int class_id); // defined object color
     cv::Scalar  getObjectColor(std::string class_name); // defined object color
     float getObjectSize(int class_id);        // defined object size

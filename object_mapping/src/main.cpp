@@ -6,6 +6,7 @@
 
 #include "GLViewer.hpp"
 #include "Detector.h"
+#include "ObjectDatabase.h"
 #include "yololayer.h"
 
 int main(int argc, char** argv) {
@@ -51,6 +52,7 @@ int main(int argc, char** argv) {
     viewer.init(argc, argv, camera_info.calibration_parameters.left_cam, true);
 
     Detector* detector = new Detector(argv[1]);
+    ObjectDatabase* oDB = new ObjectDatabase();
 
     sl::Mat left_sl, point_cloud;
     cv::Mat left_cv_rgb;
@@ -112,6 +114,10 @@ int main(int argc, char** argv) {
             // GL Viewer
             zed.retrieveMeasure(point_cloud, sl::MEASURE::XYZRGBA, sl::MEM::GPU, pc_resolution);
             zed.getPosition(cam_w_pose, sl::REFERENCE_FRAME::WORLD);
+
+            // Update object in object database
+            oDB->updateObjectDatabase(objects, cam_w_pose);
+
             viewer.updateData(point_cloud, objects.object_list, cam_w_pose.pose_data);
         }
     }
