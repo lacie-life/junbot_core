@@ -331,7 +331,7 @@ void Detector::doInference(IExecutionContext& context, cudaStream_t& stream, voi
     cudaStreamSynchronize(stream);
 }
 
-std::vector<Yolo::Detection> Detector::detectObject(const cv::Mat &_frame, std::vector<Yolo::Detection> &objects)
+std::vector<Yolo::Detection> Detector::detectObject(const cv::Mat &_frame)
 {
     cv::Mat img = _frame.clone();
 
@@ -355,6 +355,8 @@ std::vector<Yolo::Detection> Detector::detectObject(const cv::Mat &_frame, std::
     std::vector<std::vector < Yolo::Detection >> batch_res(BATCH_SIZE);
     auto& res = batch_res[batch];
     nms(res, &prob[batch * OUTPUT_SIZE], CONF_THRESH, NMS_THRESH);
+
+    return res;
 }
 
 
