@@ -109,7 +109,7 @@ int main(int argc, char **argv)
 
     // Publisher is chatter_pub publishing to topic /object_costmap_layer/obsctacles with queue_size 1000
     ros::Publisher chatter_pub = nh.advertise<custom_msgs::Obstacles>("/object_costmap_layer/obsctacles", 1000);
-    ros::Subscriber sub = nh.subscribe("detect_array", 1000, ObjDBCallBack);
+    ros::Subscriber sub = nh.subscribe("object_list", 1000, ObjDBCallBack);
 
     obstaclePub = nh.advertise<custom_msgs::Obstacles>("/object_costmap_layer/obstacles", 1000);
 
