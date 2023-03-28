@@ -61,6 +61,10 @@ int main(int argc, char **argv) {
     ros::Subscriber subPlan = n.subscribe("/move_base/DWAPlannerROS/global_plan", 10000, globalPlanCallback);
     ros::Subscriber subObj = n.subscribe("/object_costmap_layer/obsctacles_temp", 10000, objectCallback);
     ros::Publisher pubObj = n.advertise<custom_msgs::Obstacles>("/object_costmap_layer/obsctacles", 1000);
+    float coner[3][3] = {{-1.77,-0.77,0},
+                            {1.03,-0.77,0},
+                            {-2,1.55}};
+                            // {-6.3, 0.85, 0}
     ros::Rate rate(100);
     while (ros::ok())
     {
@@ -73,7 +77,7 @@ int main(int argc, char **argv) {
                 custom_msgs::Form temp;
                 for (int k = 0; k < path.poses.size(); ++k) {
                     distance = calculateDistance(object.list[i].form[j].x, object.list[i].form[j].y,path.poses[k].pose.position.x, path.poses[k].pose.position.y);
-                    if (distance <= 0.4) {
+                    if (distance <= 0.3) {
                         geometry_msgs::Point p;
                         p.x = path.poses[k].pose.position.x;
                         p.y = path.poses[k].pose.position.y;
@@ -84,25 +88,42 @@ int main(int argc, char **argv) {
                 if (waypointError.size()>1)
                 {
                     geometry_msgs::Point _begin = waypointError.at(0);
-                    geometry_msgs::Point _mid = waypointError.at(waypointError.size()/2);
                     geometry_msgs::Point _end = waypointError.at(waypointError.size() - 1);
-
                     temp.form.push_back(_begin);
-                    temp.form.push_back(_mid);
                     temp.form.push_back(_end);
                     temp.form.push_back(object.list[i].form[j]);
                     temp.id = "zone";
-
-                    ROS_INFO("Layer Publish");
-                    std::cout <<  temp.form[0].x << "   " << temp.form[0].y << '\n';
-                    std::cout <<  temp.form[1].x << "   " << temp.form[1].y << '\n';
-                    std::cout <<  object.list[i].form[j].x << "   " << object.list[i].form[j].y << '\n' << '\n';
-
                     objectNew.list.push_back(temp);
                 }
             }
         }
-
+        for (int j = 0; j < 3; ++j) {
+            std::vector<geometry_msgs::Point> waypointError;
+            custom_msgs::Form temp;
+            for (int k = 0; k < path.poses.size(); ++k) {
+                distance = calculateDistance(coner[j][0],coner[j][1],path.poses[k].pose.position.x, path.poses[k].pose.position.y);                    if (distance <= 0.3) {
+                geometry_msgs::Point p;
+                p.x = path.poses[k].pose.position.x;
+                p.y = path.poses[k].pose.position.y;
+                p.z = path.poses[k].pose.position.z;
+                waypointError.push_back(p);
+                }
+            }
+            if (waypointError.size()>1)
+            {
+                geometry_msgs::Point _begin = waypointError.at(0);
+                geometry_msgs::Point _end = waypointError.at(waypointError.size() - 1);
+                geometry_msgs::Point coner_;
+                coner_.x = coner[j][0];
+                coner_.y = coner[j][1];
+                coner_.z = coner[j][2];
+                temp.form.push_back(_begin);
+                temp.form.push_back(_end);
+                temp.form.push_back(coner_);
+                temp.id = "zone";
+                objectNew.list.push_back(temp);
+            }
+        }
         pubObj.publish(objectNew);
         m.unlock();
         ros::spinOnce();
