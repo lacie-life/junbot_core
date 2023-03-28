@@ -52,6 +52,7 @@ IF(NOT WIN32)
 ENDIF()
 
 include_directories(
+        ${catkin_INCLUDE_DIRS}
         ${OpenCV_INCLUDE_DIRS}
         ${EIGEN3_INCLUDE_DIR}
         ${ZED_INCLUDE_DIRS}
@@ -107,3 +108,4 @@ if(INSTALL_SAMPLES)
     LIST(APPEND SAMPLE_LIST ${PROJECT_NAME})
     SET(SAMPLE_LIST "${SAMPLE_LIST}" PARENT_SCOPE)
 endif()
+

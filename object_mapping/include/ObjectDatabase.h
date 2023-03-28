@@ -11,6 +11,10 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 #include <sl/Camera.hpp>
+#include <ros/ros.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <tf/transform_broadcaster.h>
+#include <nav_msgs/Odometry.h>
 
 typedef struct ObjectMap
 {

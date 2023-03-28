@@ -113,80 +113,92 @@ void ObjectDatabase::addObject(sl::ObjectData &object)
 
         return;
     }
-    else
+
+    // 3. Check by unique_object_id
+    for(int i = 0; i < mObjects.size(); i++)
     {
-        // 3. The object already exists in the database
-        // find out whether the new object already exists in the database
-        std::vector<ObjectMap>::iterator iter   = mObjects.begin()-1;
-        std::vector<ObjectMap>::iterator it_end = mObjects.end();
-        std::vector<std::vector<ObjectMap>::iterator> likely_obj;// iterator over objects with the same name
-        while(true)
+        if(temp.zed_unique_object_id == mObjects.at(i).zed_unique_object_id)
         {
-            iter = find(++iter, it_end, temp.object_name);// search by name
-            if (iter != it_end )// find one, store it
-                likely_obj.push_back(iter);
-            else // can't find it
-                break;
-        }
-
-        std::vector<ObjectMap>::iterator best_close;// most recent index
-        float center_distance=100;// Corresponding distance
-
-        // 4. If not found, add it directly to the database
-        if(!likely_obj.size())
-        {
-            DataBaseSize++;
-            temp.object_id = DataBaseSize;
-            mObjects.push_back(temp);
+            // Update position
+            mObjects.at(i).centroid = temp.centroid;
+            mObjects.at(i).bounding_box = temp.bounding_box;
+            mObjects.at(i).size = temp.size;
 
             // Update to object map layer
             updateROSMap();
 
             return;
         }
-        else // Find multiple objects with the same name in the database
+    }
+
+    // 4. The object already exists in the database
+    // find out whether the new object already exists in the database
+    std::vector<ObjectMap>::iterator iter   = mObjects.begin()-1;
+    std::vector<ObjectMap>::iterator it_end = mObjects.end();
+    std::vector<std::vector<ObjectMap>::iterator> likely_obj;// iterator over objects with the same name
+    while(true)
+    {
+        iter = find(++iter, it_end, temp.object_name);// search by name
+        if (iter != it_end )// find one, store it
+            likely_obj.push_back(iter);
+        else // can't find it
+            break;
+    }
+
+    std::vector<ObjectMap>::iterator best_close;// most recent index
+    float center_distance=100;// Corresponding distance
+
+    // 5. If not found, add it directly to the database
+    if(!likely_obj.size())
+    {
+        DataBaseSize++;
+        temp.object_id = DataBaseSize;
+        mObjects.push_back(temp);
+
+        // Update to object map layer
+        updateROSMap();
+
+        return;
+    }
+    else // Find multiple objects with the same name in the database
+    {
+        // TODO: Add check moving object
+
+        // 6. Go through each object with the same name and find the one closest to the center point
+        for(unsigned int j = 0; j < likely_obj.size(); j++)
         {
-            // TODO: Add check by unique_object_id and moving object
+            std::vector<ObjectMap>::iterator& temp_iter = likely_obj[j];
+            ObjectMap & temp_cluster = *temp_iter;
 
-            // 5. Go through each object with the same name and find the one closest to the center point
-            for(unsigned int j = 0; j < likely_obj.size(); j++)
+            Eigen::Vector3f dis_vec = temp.centroid - temp_cluster.centroid;// center point connection vector
+            float dist = dis_vec.norm();
+            if(dist < center_distance)
             {
-                std::vector<ObjectMap>::iterator& temp_iter = likely_obj[j];
-                ObjectMap & temp_cluster = *temp_iter;
-
-                Eigen::Vector3f dis_vec = temp.centroid - temp_cluster.centroid;// center point connection vector
-                float dist = dis_vec.norm();
-                if(dist < center_distance)
-                {
-                    center_distance = dist; // shortest distance
-                    best_close      = temp_iter;// corresponding index
-                }
+                center_distance = dist; // shortest distance
+                best_close      = temp_iter;// corresponding index
             }
-            // 6. If the distance is smaller than the object size,
-            // it is considered to be the same object in the same space,
-            // and the information of the object in the database is updated
-            for (int i = 0; i < mvInterestNames.size(); i++)
+        }
+        // 7. If the distance is smaller than the object size,
+        // it is considered to be the same object in the same space,
+        // and the information of the object in the database is updated
+        for (int i = 0; i < mvInterestNames.size(); i++)
+        {
+            if(temp.object_name == std::to_string(mvInterestNames[i]))
             {
-                if(temp.object_name == std::to_string(mvInterestNames[i]))
+                if(center_distance < mvSizes[i])
                 {
-                    if(center_distance < mvSizes[i])
-                    {
-                        best_close->prob    = (best_close->prob + temp.prob)/2.0; // Comprehensive confidence
-                        best_close->centroid = (best_close->centroid + temp.centroid)/2.0; // center mean
-                        best_close->size     = (best_close->size + temp.size)/2.0; // center size
-                    }
-                    else
-                    {
-                        // 7. If the distance exceeds the size of the object,
-                        // it is considered to be the same object in a different position,
-                        // and it is directly put into the database
-                        DataBaseSize++;
-                        temp.object_id = DataBaseSize;
-                        mObjects.push_back(temp);
-
-                        // Update to object map layer
-                        updateROSMap();
-                    }
+                    best_close->prob    = (best_close->prob + temp.prob)/2.0; // Comprehensive confidence
+                    best_close->centroid = (best_close->centroid + temp.centroid)/2.0; // center mean
+                    best_close->size     = (best_close->size + temp.size)/2.0; // center size
+                }
+                else
+                {
+                    // 8. If the distance exceeds the size of the object,
+                    // it is considered to be the same object in a different position,
+                    // and it is directly put into the database
+                    DataBaseSize++;
+                    temp.object_id = DataBaseSize;
+                    mObjects.push_back(temp);
                 }
             }
         }
