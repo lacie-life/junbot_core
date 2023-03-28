@@ -4,6 +4,10 @@
 
 #include "ObjectDatabase.h"
 
+#include <vision_msgs/ObjectHypothesisWithPose.h>
+#include <vision_msgs/Detection3D.h>
+#include <vision_msgs/Detection3DArray.h>
+
 bool ObjectMap::operator ==(const std::string &x){
     return(this->object_name == x);
 }
@@ -33,6 +37,10 @@ ObjectDatabase::ObjectDatabase()
     mvSizes[5] = 0.06;   // Bottles within 0.06 meters are considered to be the same object
     mvSizes[10] = 0.5;    // Chair
     mvSizes[2] = 0.25;  // monitor
+
+    // ROS Publisher
+    publisher_object2map = nh.advertise<vision_msgs::Detection3DArray>("object_list", 1000);
+
 }
 
 ObjectDatabase::~ObjectDatabase()
@@ -84,10 +92,9 @@ std::vector<ObjectMap> ObjectDatabase::getAllObject()
     return std::vector<ObjectMap>(mObjects.begin(), mObjects.end());
 }
 
+// Create object map from Zed tracked objects
 void ObjectDatabase::addObject(sl::ObjectData &object)
 {
-    // TODO: Create object map from Zed tracked objects
-
     // 1. Convert sl::ObjectData to ObjectMap
     ObjectMap temp;
 
@@ -212,7 +219,8 @@ void ObjectDatabase::addObject(sl::ObjectData &object)
 
 void ObjectDatabase::updateObjectDatabase(sl::Objects &objects, sl::Pose &cam_w_pose)
 {
-    // TODO: something here
+    currPose = cam_w_pose;
+
     for(int i = 0; i < objects.object_list.size(); i++)
     {
         std::cout << objects.object_list.at(i).id << "\n";
@@ -225,5 +233,38 @@ void ObjectDatabase::updateObjectDatabase(sl::Objects &objects, sl::Pose &cam_w_
 
 void ObjectDatabase::updateROSMap()
 {
+    if(mObjects.size() <= 0)
+    {
+        return;
+    }
 
+    vision_msgs::Detection3DArray objDB;
+
+    for(size_t i = 0; i < mObjects.size(); i++)
+    {
+        vision_msgs::Detection3D obj;
+        ObjectMap temp = mObjects.at(i);
+
+        obj.bbox.center.position.x = temp.centroid.x();   // 1 + 4/2
+        obj.bbox.center.position.y = temp.centroid.y(); // 2 + 5/2
+        obj.bbox.center.position.z = temp.centroid.z();   // 3 + 6/2
+        obj.bbox.center.orientation.x = 0;
+        obj.bbox.center.orientation.y = 0;
+        obj.bbox.center.orientation.z = 0;
+        obj.bbox.center.orientation.w = 1;
+        obj.bbox.size.x = temp.size.x;
+        obj.bbox.size.y = temp.size.y;
+        obj.bbox.size.z = temp.size.z;
+
+        vision_msgs::ObjectHypothesisWithPose hypo;
+        hypo.id = temp.class_id;
+        hypo.score = 1;
+
+        obj.results.push_back(hypo);
+
+        objDB.detections.push_back(obj);
+    }
+    objDB.header = std_msgs::Header();
+
+    publisher_object2map.publish(objDB);
 }

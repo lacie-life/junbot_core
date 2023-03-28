@@ -10,11 +10,13 @@
 #include <string>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
-#include <sl/Camera.hpp>
+
 #include <ros/ros.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf/transform_broadcaster.h>
 #include <nav_msgs/Odometry.h>
+
+#include <sl/Camera.hpp>
 
 typedef struct ObjectMap
 {
@@ -64,6 +66,10 @@ protected:
     std::vector<int> mvInterestNames;
 
     int DataBaseSize;
+
+    ros::NodeHandle nh;
+    ros::Publisher publisher_object2map;
+    sl::Pose currPose;
 };
 
 #endif //OBJECT_MAPPING_OBJECTDATABASE_H
