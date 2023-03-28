@@ -30,6 +30,7 @@ python gen_wts.py -w yolov5s.pt
 
 # TODO
 
-- [ ] Add ObjectDatabase
-- [ ] Convert Object to Map
-- [ ] Publish Polygon
+- [x] Add ObjectDatabase
+- [x] Convert Object to Map
+- [x] Publish Polygon
+- [ ] Test with ZED 

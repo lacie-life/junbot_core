@@ -40,7 +40,6 @@ ObjectDatabase::ObjectDatabase()
 
     // ROS Publisher
     publisher_object2map = nh.advertise<vision_msgs::Detection3DArray>("object_list", 1000);
-
 }
 
 ObjectDatabase::~ObjectDatabase()
