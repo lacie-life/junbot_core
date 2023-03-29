@@ -61,9 +61,10 @@ int main(int argc, char **argv) {
     ros::Subscriber subPlan = n.subscribe("/move_base/DWAPlannerROS/global_plan", 10000, globalPlanCallback);
     ros::Subscriber subObj = n.subscribe("/object_costmap_layer/obsctacles_temp", 10000, objectCallback);
     ros::Publisher pubObj = n.advertise<custom_msgs::Obstacles>("/object_costmap_layer/obsctacles", 1000);
-    float coner[3][3] = {{-1.77,-0.77,0},
-                            {1.03,-0.77,0},
-                            {-2,1.55}};
+    float coner[4][3] = {{-0.1,0.8,0},
+                            {2.3,0.8,0},
+                            {-5,2.3,0},
+                            {2.35,4.15,0}};
                             // {-6.3, 0.85, 0}
     ros::Rate rate(100);
     while (ros::ok())
@@ -97,7 +98,7 @@ int main(int argc, char **argv) {
                 }
             }
         }
-        for (int j = 0; j < 3; ++j) {
+        for (int j = 0; j < 4; ++j) {
             std::vector<geometry_msgs::Point> waypointError;
             custom_msgs::Form temp;
             for (int k = 0; k < path.poses.size(); ++k) {
