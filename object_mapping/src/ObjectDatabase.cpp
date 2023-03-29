@@ -7,16 +7,21 @@
 #include <vision_msgs/ObjectHypothesisWithPose.h>
 #include <vision_msgs/Detection3D.h>
 #include <vision_msgs/Detection3DArray.h>
+#include <visualization_msgs/Marker.h>
+
+#include <random>
+#include <opencv2/core/eigen.hpp>
+#include <Eigen/Geometry>
 
 bool ObjectMap::operator ==(const std::string &x){
     return(this->object_name == x);
 }
 
-ObjectDatabase::ObjectDatabase()
+ObjectDatabase::ObjectDatabase(bool rViz_view)
 {
     DataBaseSize = 0;
     mObjects.clear();
-    mObjects.clear();
+    rviz_visual = rViz_view;
 
     mvInterestNames = {-1, 0, 62, 58, 41, 77,
                        66, 75, 64, 45, 56, 60};
@@ -40,33 +45,13 @@ ObjectDatabase::ObjectDatabase()
 
     // ROS Publisher
     publisher_object2map = nh.advertise<vision_msgs::Detection3DArray>("object_list", 1000);
+    publisher_object = nh.advertise<visualization_msgs::Marker>("objectmap", 1000);
+    publisher_cameraPose = nh.advertise<geometry_msgs::PoseWithCovarianceStamped>("initialpose", 1000);
 }
 
 ObjectDatabase::~ObjectDatabase()
 {
 
-}
-
-cv::Scalar  ObjectDatabase::getObjectColor(int class_id)
-{
-    return mvColors[class_id];
-}
-
-cv::Scalar  ObjectDatabase::getObjectColor(std::string class_name)
-{
-    for (int i = 0; i < mvInterestNames.size(); i++)
-    {
-        if(class_name == std::to_string(mvInterestNames[i]))
-        {
-            return mvColors[i];
-        }
-    }
-    return mvColors[0];
-}
-
-float ObjectDatabase::getObjectSize(int class_id)
-{
-    return mvSizes[class_id];
 }
 
 std::vector<ObjectMap> ObjectDatabase::getObjectByName(std::string objectName)
@@ -132,7 +117,6 @@ void ObjectDatabase::addObject(sl::ObjectData &object)
 
             // Update to object map layer
             updateROSMap();
-
             return;
         }
     }
@@ -169,7 +153,6 @@ void ObjectDatabase::addObject(sl::ObjectData &object)
     else // Find multiple objects with the same name in the database
     {
         // TODO: Add check moving object
-
         // 6. Go through each object with the same name and find the one closest to the center point
         for(unsigned int j = 0; j < likely_obj.size(); j++)
         {
@@ -224,9 +207,105 @@ void ObjectDatabase::updateObjectDatabase(sl::Objects &objects, sl::Pose &cam_w_
     {
         std::cout << objects.object_list.at(i).id << "\n";
         std::cout << objects.object_list.at(i).unique_object_id << "\n";
+
         sl::ObjectData obj;
         objects.getObjectDataFromId(obj, i);
         addObject(obj);
+    }
+}
+
+geometry_msgs::Point ObjectDatabase::corner_to_marker(const sl::float3& v){
+    geometry_msgs::Point point;
+    point.x = v.x;
+    point.y = v.y;
+    point.z = v.z;
+
+    sl::Matrix4f T = currPose.pose_data;
+    sl::Matrix3f R = currPose.getRotationMatrix();
+
+    // TODO: Coding here
+    Eigen::Vector3d p_world = R * sl::Matrix3f(v.x, v.y, v.z);
+    geometry_msgs::Point p;
+    p.x= p_world[0] + T(0, 3);
+    p.y= p_world[1] + T(1, 3);
+    p.z= p_world[2] + T(2, 3);
+
+    return point;
+}
+
+void ObjectDatabase::updaterVizView()
+{
+    // Update object pose
+    for(size_t i=0; i< mObjects.size(); i++)
+    {
+        // Generate color
+        std::vector<std::vector<float> > colors_bgr{
+            {135,0,248},
+            {255,0,253},
+            {4,254,119},
+            {255,126,1},
+            {0,112,255},
+            {0,250,250}   };
+
+        std::vector<float> color = colors_bgr[mObjects.at(i).class_id % 6];
+
+        // The color used for the object is random
+        std::default_random_engine e;
+        std::uniform_real_distribution<double>  random(0.5,1);
+        float r = random(e); float g = random(e); float b = random(e);
+
+        // object
+        visualization_msgs::Marker marker;
+        marker.id = mObjects.at(i).object_id;
+        marker.lifetime = ros::Duration(0.1);
+        marker.header.frame_id= "map";
+        marker.header.stamp=ros::Time::now();
+
+        marker.type = visualization_msgs::Marker::LINE_LIST; //LINE_STRIP;
+        marker.action = visualization_msgs::Marker::ADD;
+        marker.color.r = color[2]/255.0; marker.color.g = color[1]/255.0; marker.color.b = color[0]/255.0; marker.color.a = 1.0;
+        marker.scale.x = 0.01;
+
+        std::cout << "Object: " << mObjects.at(i).bounding_box.at(4) << std::endl;
+        std::cout << "Object: " << mObjects.at(i).bounding_box.at(0) << std::endl;
+
+        // ZED 3D bounding box
+        //     1------2
+        //    /|     /|
+        //   / |    / |
+        //  0------3  |
+        //  |  5---|--6
+        //  | /    | /
+        //  4------7
+
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(4)));
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(7)));
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(7)));
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(6)));
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(6)));
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(5)));
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(5)));
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(4)));
+
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(4)));
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(0)));
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(7)));
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(3)));
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(6)));
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(2)));
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(5)));
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(1)));
+
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(0)));
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(1)));
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(1)));
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(2)));
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(2)));
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(3)));
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(3)));
+        marker.points.push_back(corner_to_marker(mObjects.at(i).bounding_box.at(0)));
+
+        publisher_object.publish(marker);
     }
 }
 
@@ -237,6 +316,8 @@ void ObjectDatabase::updateROSMap()
         return;
     }
 
+    std::cout << "Number object in DB: " << mObjects.size() << "\n";
+
     vision_msgs::Detection3DArray objDB;
 
     for(size_t i = 0; i < mObjects.size(); i++)
@@ -244,9 +325,9 @@ void ObjectDatabase::updateROSMap()
         vision_msgs::Detection3D obj;
         ObjectMap temp = mObjects.at(i);
 
-        obj.bbox.center.position.x = temp.centroid.x();   // 1 + 4/2
-        obj.bbox.center.position.y = temp.centroid.y(); // 2 + 5/2
-        obj.bbox.center.position.z = temp.centroid.z();   // 3 + 6/2
+        obj.bbox.center.position.x = temp.centroid.x();
+        obj.bbox.center.position.y = temp.centroid.y();
+        obj.bbox.center.position.z = temp.centroid.z();
         obj.bbox.center.orientation.x = 0;
         obj.bbox.center.orientation.y = 0;
         obj.bbox.center.orientation.z = 0;
@@ -266,4 +347,9 @@ void ObjectDatabase::updateROSMap()
     objDB.header = std_msgs::Header();
 
     publisher_object2map.publish(objDB);
+
+    if(rviz_visual)
+    {
+        updaterVizView();
+    }
 }
