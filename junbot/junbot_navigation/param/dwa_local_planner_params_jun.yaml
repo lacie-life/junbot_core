@@ -1,25 +1,25 @@
 DWAPlannerROS:
 
 # Robot Configuration Parameters
-  max_vel_x: 0.26
-  min_vel_x: -0.26
+  max_vel_x: 0.2
+  min_vel_x: 0
 
   max_vel_y: 0.0
   min_vel_y: 0.0
 
 # The velocity when robot is moving in a straight line
-  max_trans_vel:  0.26
-  min_trans_vel:  0.13
+  max_trans_vel:  0.2
+  min_trans_vel:  0
 
-  max_rot_vel: 1.82
-  min_rot_vel: 0.9
+  max_rot_vel: 1
+  min_rot_vel: 0.7
 
   acc_lim_x: 2.5
   acc_lim_y: 0.0
   acc_lim_theta: 3.2 
 
 # Goal Tolerance Parametes
-  xy_goal_tolerance: 0.2
+  xy_goal_tolerance: 0.1
   yaw_goal_tolerance: 0.2
   latch_xy_goal_tolerance: false
 
@@ -32,7 +32,7 @@ DWAPlannerROS:
 
 # Trajectory Scoring Parameters
   path_distance_bias: 32
-  goal_distance_bias: 24
+  goal_distance_bias: 20
   occdist_scale: 0.02
   forward_point_distance: 0.325
   stop_time_buffer: 0.2
@@ -42,13 +42,13 @@ DWAPlannerROS:
 # Oscillation Prevention Parameters
   oscillation_reset_dist: 0.05
 
-# Debugging
-  plugins:
-    - { name: static_layer, type: "costmap_2d::StaticLayer" }
-    - { name: object_layer, type: "object_layer::ObjectLayer" }
-    - { name: obstacles, type: "costmap_2d::ObstacleLayer"}
-    - { name: inflation_layer, type: "costmap_2d::InflationLayer" }
-  obstacles:
-    observation_sources: scan
-    scan: {sensor_frame: base_scan, data_type: LaserScan, topic: scan, marking: true, clearing: true}
+# # Debugging
+#   plugins:
+#     - { name: static_layer, type: "costmap_2d::StaticLayer" }
+#     - { name: object_layer, type: "object_layer::ObjectLayer" }
+#     - { name: obstacles, type: "costmap_2d::ObstacleLayer"}
+#     - { name: inflation_layer, type: "costmap_2d::InflationLayer" }
+#   obstacles:
+#     observation_sources: scan
+#     scan: {sensor_frame: base_scan, data_type: LaserScan, topic: scan, marking: true, clearing: true}
   
