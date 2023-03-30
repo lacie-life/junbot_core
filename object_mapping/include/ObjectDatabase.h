@@ -35,27 +35,29 @@ class ObjectDatabase {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    ObjectDatabase();
+    ObjectDatabase(bool rViz_view = false);
     ~ObjectDatabase();
 
     void updateObjectDatabase(sl::Objects& objects, sl::Pose &cam_w_pose);
 
     void addObject(sl::ObjectData& object);
-    cv::Scalar  getObjectColor(int class_id); // defined object color
-    cv::Scalar  getObjectColor(std::string class_name); // defined object color
-    float getObjectSize(int class_id);        // defined object size
 
     // Return the object data with the same name in the database
     std::vector<ObjectMap>  getObjectByName(std::string objectName);
 
+    geometry_msgs::Point corner_to_marker(const sl::float3& v);
+
     // Publish to ROS
     void updateROSMap();
+    void updaterVizView();
 
     // Get all objects
     std::vector<ObjectMap> getAllObject();
 
-    // Semantic point cloud target array
+    // Objects array
     std::vector<ObjectMap> mObjects;
+
+    bool rviz_visual = false;
 
 protected:
     // the color of each object
@@ -69,6 +71,9 @@ protected:
 
     ros::NodeHandle nh;
     ros::Publisher publisher_object2map;
+    ros::Publisher publisher_object;
+    ros::Publisher publisher_cameraPose;
+    tf::TransformBroadcaster camera_broadcaster;
     sl::Pose currPose;
 };
 

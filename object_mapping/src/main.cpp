@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include <sl/Camera.hpp>
+#include <ros/ros.h>
 
 #include "GLViewer.hpp"
 #include "Detector.h"
@@ -12,6 +13,9 @@
 int main(int argc, char** argv) {
 
     std::cout << "Hello world \n";
+
+    ros::init(argc, argv, "object_mapping");
+    ros::start();
 
     // Open ZED camera
     sl::Camera zed;
@@ -53,14 +57,17 @@ int main(int argc, char** argv) {
     viewer.init(argc, argv, camera_info.calibration_parameters.left_cam, true);
 
     Detector* detector = new Detector(argv[1]);
-    ObjectDatabase* oDB = new ObjectDatabase();
+    ObjectDatabase* oDB = new ObjectDatabase(true);
 
     sl::Mat left_sl, point_cloud;
     cv::Mat left_cv_rgb;
     sl::ObjectDetectionRuntimeParameters objectTracker_parameters_rt;
     sl::Objects objects;
+
     sl::Pose cam_w_pose;
+    sl::Pose w_cam_pose;
     cam_w_pose.pose_data.setIdentity();
+    w_cam_pose.pose_data.setIdentity();
 
     int frameCount = 0;
 
@@ -107,19 +114,25 @@ int main(int argc, char** argv) {
                 cv::rectangle(left_cv_rgb, r, cv::Scalar(0x27, 0xC1, 0x36), 2);
                 cv::putText(left_cv_rgb, std::to_string((int) objs[j].class_id), cv::Point(r.x, r.y - 1), cv::FONT_HERSHEY_PLAIN, 1.2, cv::Scalar(0xFF, 0xFF, 0xFF), 2);
             }
+
+            cv::resize(left_cv_rgb, left_cv_rgb, cv::Size(640, 480), cv::INTER_LINEAR);
+
             cv::imshow("Objects", left_cv_rgb);
             cv::waitKey(10);
 
             // Retrieve the tracked objects, with 2D and 3D attributes
             zed.retrieveObjects(objects, objectTracker_parameters_rt);
 
+            zed.getPosition(w_cam_pose, sl::REFERENCE_FRAME::WORLD);
             // Update object in object database
-            zed.getPosition(cam_w_pose, sl::REFERENCE_FRAME::WORLD);
-            oDB->updateObjectDatabase(objects, cam_w_pose);
+            oDB->updateObjectDatabase(objects, w_cam_pose);
 
             // GL Viewer
             zed.retrieveMeasure(point_cloud, sl::MEASURE::XYZRGBA, sl::MEM::GPU, pc_resolution);
+            zed.getPosition(cam_w_pose, sl::REFERENCE_FRAME::WORLD);
             viewer.updateData(point_cloud, objects.object_list, cam_w_pose.pose_data);
+
+            frameCount++;
         }
     }
 
