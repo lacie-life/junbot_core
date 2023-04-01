@@ -224,11 +224,15 @@ geometry_msgs::Point ObjectDatabase::corner_to_marker(const sl::float3& v){
     sl::Matrix3f R = currPose.getRotationMatrix();
 
     // TODO: Coding here
-    // Eigen::Vector3d p_world = R * sl::Matrix3f(v.x, v.y, v.z);
-    // geometry_msgs::Point p;
-    // p.x= p_world[0] + T(0, 3);
-    // p.y= p_world[1] + T(1, 3);
-    // p.z= p_world[2] + T(2, 3);
+    sl::Matrix3f temp;
+    temp(0, 0) = v.x;
+    temp(0, 1) = v.x;
+    temp(0, 2) = v.x;
+     sl::Matrix3f p_world = R * temp;
+     geometry_msgs::Point p;
+     p.x= p_world(0, 0) + T(0, 3);
+     p.y= p_world(0, 1) + T(1, 3);
+     p.z= p_world(0, 2) + T(2, 3);
 
     return point;
 }
