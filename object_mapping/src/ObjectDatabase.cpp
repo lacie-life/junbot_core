@@ -99,29 +99,15 @@ void ObjectDatabase::addObject(sl::ObjectData &object)
         temp.object_id = DataBaseSize;
         mObjects.push_back(temp);
 
+        std::cout << "[addObject] Case 1 \n";
+
         // Update to object map layer
         updateROSMap();
 
         return;
     }
 
-    // 3. Check by unique_object_id
-    for(int i = 0; i < mObjects.size(); i++)
-    {
-        if(temp.zed_unique_object_id == mObjects.at(i).zed_unique_object_id)
-        {
-            // Update position
-            mObjects.at(i).centroid = temp.centroid;
-            mObjects.at(i).bounding_box = temp.bounding_box;
-            mObjects.at(i).size = temp.size;
-
-            // Update to object map layer
-            updateROSMap();
-            return;
-        }
-    }
-
-    // 4. The object already exists in the database
+    // 3. The object already exists in the database
     // find out whether the new object already exists in the database
     std::vector<ObjectMap>::iterator iter   = mObjects.begin()-1;
     std::vector<ObjectMap>::iterator it_end = mObjects.end();
@@ -136,14 +122,16 @@ void ObjectDatabase::addObject(sl::ObjectData &object)
     }
 
     std::vector<ObjectMap>::iterator best_close;// most recent index
-    float center_distance=100;// Corresponding distance
+    float center_distance = 100;// Corresponding distance
 
-    // 5. If not found, add it directly to the database
+    // 4. If not found, add it directly to the database
     if(!likely_obj.size())
     {
         DataBaseSize++;
         temp.object_id = DataBaseSize;
         mObjects.push_back(temp);
+
+        std::cout << "[addObject] Case 2 \n";
 
         // Update to object map layer
         updateROSMap();
@@ -153,7 +141,7 @@ void ObjectDatabase::addObject(sl::ObjectData &object)
     else // Find multiple objects with the same name in the database
     {
         // TODO: Add check moving object
-        // 6. Go through each object with the same name and find the one closest to the center point
+        // 5. Go through each object with the same name and find the one closest to the center point
         for(unsigned int j = 0; j < likely_obj.size(); j++)
         {
             std::vector<ObjectMap>::iterator& temp_iter = likely_obj[j];
@@ -167,7 +155,7 @@ void ObjectDatabase::addObject(sl::ObjectData &object)
                 best_close      = temp_iter;// corresponding index
             }
         }
-        // 7. If the distance is smaller than the object size,
+        // 6. If the distance is smaller than the object size,
         // it is considered to be the same object in the same space,
         // and the information of the object in the database is updated
         for (int i = 0; i < mvInterestNames.size(); i++)
@@ -182,12 +170,14 @@ void ObjectDatabase::addObject(sl::ObjectData &object)
                 }
                 else
                 {
-                    // 8. If the distance exceeds the size of the object,
+                    // 7. If the distance exceeds the size of the object,
                     // it is considered to be the same object in a different position,
                     // and it is directly put into the database
                     DataBaseSize++;
                     temp.object_id = DataBaseSize;
                     mObjects.push_back(temp);
+
+                    std::cout << "[addObject] Case 3 \n";
                 }
             }
         }
@@ -205,8 +195,8 @@ void ObjectDatabase::updateObjectDatabase(sl::Objects &objects, sl::Pose &cam_w_
 
     for(int i = 0; i < objects.object_list.size(); i++)
     {
-        std::cout << objects.object_list.at(i).id << "\n";
-        std::cout << objects.object_list.at(i).unique_object_id << "\n";
+//        std::cout << objects.object_list.at(i).id << "\n";
+//        std::cout << objects.object_list.at(i).unique_object_id << "\n";
 
         sl::ObjectData obj;
         objects.getObjectDataFromId(obj, i);

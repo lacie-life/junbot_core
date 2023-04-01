@@ -27,6 +27,14 @@ int main(int argc, char** argv) {
     // OpenGL's coordinate system is right_handed
     init_parameters.coordinate_system = sl::COORDINATE_SYSTEM::RIGHT_HANDED_Y_UP;
 
+    if (argc > 1 && std::string(argv[2]).find(".svo") != std::string::npos) {
+        // SVO input mode
+        init_parameters.input.setFromSVOFile(argv[2]);
+        init_parameters.svo_real_time_mode=true;
+
+        std::cout << "[Debug] Using SVO File input: " << argv[2] << std::endl;
+    }
+
     // Open the camera
     auto returned_state = zed.open(init_parameters);
     if (returned_state != sl::ERROR_CODE::SUCCESS) {
