@@ -41,13 +41,13 @@ void objectCallback(custom_msgs::Obstacles::ConstPtr objTemp)
     m.lock();
     object.list = objTemp->list;
 
-    ROS_INFO("Object Callback");
-    for(int i = 0; i < 4; i++)
-    {
-        std::cout << object.list.at(0).form.at(i).x << "\n";
-        std::cout << object.list.at(0).form.at(i).y << "\n";
-        std::cout << object.list.at(0).form.at(i).z << "\n";
-    }
+    // ROS_INFO("Object Callback");
+    // for(int i = 0; i < 4; i++)
+    // {
+    //     std::cout << object.list.at(0).form.at(i).x << "\n";
+    //     std::cout << object.list.at(0).form.at(i).y << "\n";
+    //     std::cout << object.list.at(0).form.at(i).z << "\n";
+    // }
     m.unlock();
 }
 
@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
                 custom_msgs::Form temp;
                 for (int k = 0; k < path.poses.size(); ++k) {
                     distance = calculateDistance(object.list[i].form[j].x, object.list[i].form[j].y,path.poses[k].pose.position.x, path.poses[k].pose.position.y);
-                    if (distance <= 0.3) {
+                    if (distance <= 0.03) {
                         geometry_msgs::Point p;
                         p.x = path.poses[k].pose.position.x;
                         p.y = path.poses[k].pose.position.y;
