@@ -339,6 +339,11 @@ namespace object_layer
         // set costs of obstacle polygons
         for (int i = 0; i < _obstacle_polygons.size(); ++i)
         {
+            std::cout << "Polygon " << i << "\n";
+            std::cout << _obstacle_polygons[i].at(0).x;
+            std::cout << _obstacle_polygons[i].at(1).x;
+            std::cout << _obstacle_polygons[i].at(2).x;
+            std::cout << _obstacle_polygons[i].at(3).x;
             setPolygonCost(master_grid, _obstacle_polygons[i], costmap_2d::LETHAL_OBSTACLE, min_i, min_j, max_i, max_j, true, _obstacle_classId[i]);
         }
 

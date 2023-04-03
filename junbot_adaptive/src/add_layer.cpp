@@ -11,7 +11,7 @@ int main(int argc, char **argv)
     ros::Publisher chatter_pub = n.advertise<custom_msgs::Obstacles>("/object_costmap_layer/obsctacles_temp", 1000);
 
     int  count = 0;
-    ros::Rate rate(100);
+    ros::Rate rate(1);
     while (ros::ok())
     {
         // create message msg with date type is string
