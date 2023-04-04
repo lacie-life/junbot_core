@@ -36,7 +36,7 @@ namespace object_layer
         ros::NodeHandle nh("~/" + name_);
         current_ = true;
 
-        _base_frame = "base_link";
+        _base_frame = "t265_pose_frame";
         _map_frame = "map";
         _one_zone_mode = true;
         _clear_obstacles = true;
@@ -53,14 +53,14 @@ namespace object_layer
         _min_x = _min_y = _max_x = _max_y = 0;
 
         // reading the defined topics out of the namespace of this plugin!
-        std::string param{"zone_topics"};
-        parseTopicsFromYaml(nh, param);
-        param = "obstacle_topics";
+        std::string param{"obstacle_topics"};
+        // parseTopicsFromYaml(nh, param);
+        // param = "obstacle_topics";
         parseTopicsFromYaml(nh, param);
 
         // reading the defined forms out of the namespace of this plugin!
-        param = "forms";
-        parseFormListFromYaml(nh, param);
+        // param = "forms";
+        // parseFormListFromYaml(nh, param);
 
         // compute map bounds for the current set of areas and obstacles.
         computeMapBounds();
@@ -331,19 +331,21 @@ namespace object_layer
 
         // TODO: Change cost value by object class
         // set costs of zone polygons
-        for (int i = 0; i < _zone_polygons.size(); ++i)
-        {
-            setPolygonCost(master_grid, _zone_polygons[i], costmap_2d::LETHAL_OBSTACLE, min_i, min_j, max_i, max_j, false);
-        }
+        // for (int i = 0; i < _zone_polygons.size(); ++i)
+        // {
+        //     setPolygonCost(master_grid, _zone_polygons[i], costmap_2d::LETHAL_OBSTACLE, min_i, min_j, max_i, max_j, false);
+        // }
 
         // set costs of obstacle polygons
+        std::cout << "Number polygon: " << _obstacle_polygons.size() << "\n";
+
         for (int i = 0; i < _obstacle_polygons.size(); ++i)
         {
             std::cout << "Polygon " << i << "\n";
-            std::cout << _obstacle_polygons[i].at(0).x;
-            std::cout << _obstacle_polygons[i].at(1).x;
-            std::cout << _obstacle_polygons[i].at(2).x;
-            std::cout << _obstacle_polygons[i].at(3).x;
+            std::cout << _obstacle_polygons[i].at(0).x << " ";
+            std::cout << _obstacle_polygons[i].at(1).x << " ";
+            std::cout << _obstacle_polygons[i].at(2).x << " ";
+            std::cout << _obstacle_polygons[i].at(3).x << " ";
             setPolygonCost(master_grid, _obstacle_polygons[i], costmap_2d::LETHAL_OBSTACLE, min_i, min_j, max_i, max_j, true, _obstacle_classId[i]);
         }
 

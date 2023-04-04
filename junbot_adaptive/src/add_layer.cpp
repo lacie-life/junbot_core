@@ -88,6 +88,7 @@ int main(int argc, char **argv)
     //        temp.list.push_back(obs);
     //    }
         chatter_pub.publish(temp);
+        
         ros::spinOnce();
         ++count;
         rate.sleep();
