@@ -16,8 +16,8 @@ object_layer:
   zone_topics:          [/object_costmap_layer/zone]
   obstacle_topics:      [/object_costmap_layer/obsctacles]
   one_zone:             true     
-  forms:    
-     - [0.4, 0.0]
-     - [[0.4, 0.0]]
-     - [[-0.4, 0.0],[0.0, 0.4]]
-     - [[5, 5],[-5, 5],[-5, -5],[5, -5]]
+  forms:    []
+  #    - [0.4, 0.0]
+  #    - [[0.4, 0.0]]
+  #    - [[-0.4, 0.0],[0.0, 0.4]]
+  #    - [[5, 5],[-5, 5],[-5, -5],[5, -5]]
