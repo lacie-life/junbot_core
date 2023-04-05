@@ -1,18 +1,18 @@
 DWAPlannerROS:
 
 # Robot Configuration Parameters
-  max_vel_x: 0.2
+  max_vel_x: 0.15
   min_vel_x: 0
 
   max_vel_y: 0.0
   min_vel_y: 0.0
 
 # The velocity when robot is moving in a straight line
-  max_trans_vel:  0.2
+  max_trans_vel:  0.15
   min_trans_vel:  0
 
-  max_rot_vel: 1
-  min_rot_vel: 0.7
+  max_rot_vel: 0.5
+  min_rot_vel: 0.2
 
   acc_lim_x: 2.5
   acc_lim_y: 0.0
@@ -48,7 +48,7 @@ DWAPlannerROS:
 #     - { name: object_layer, type: "object_layer::ObjectLayer" }
 #     - { name: obstacles, type: "costmap_2d::ObstacleLayer"}
 #     - { name: inflation_layer, type: "costmap_2d::InflationLayer" }
-#   obstacles:
-#     observation_sources: scan
-#     scan: {sensor_frame: base_scan, data_type: LaserScan, topic: scan, marking: true, clearing: true}
+  # obstacles:
+  #   observation_sources: scan
+  #   scan: {sensor_frame: laser, data_type: LaserScan, topic: scan, marking: true, clearing: true}
   
