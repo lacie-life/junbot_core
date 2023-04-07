@@ -23,6 +23,7 @@ catkin_package(
 install(PROGRAMS
    src/generate_plots.py
    src/data_odometry.py
+   src/path.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
