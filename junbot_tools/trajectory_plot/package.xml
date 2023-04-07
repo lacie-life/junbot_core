@@ -1,0 +1,26 @@
+<package>
+  <name>jun_plotter</name>
+  <version>1.0.0</version>
+  <description>
+    Generate plots from Odometry data in PDF format file.
+  </description>
+  <maintainer email="silviomaeta@gmail.com">Silvio Maeta</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>message_generation</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>nav_msgs</build_depend>
+
+  <run_depend>message_runtime</run_depend>
+  <run_depend>rospy</run_depend>
+
+  <build_depend>pythonutm</build_depend>
+  <run_depend>pythonutm</run_depend>
+
+</package>
+
