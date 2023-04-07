@@ -87,7 +87,7 @@ void ObjectDatabase::addObject(sl::ObjectData &object)
     temp.zed_unique_object_id = object.unique_object_id;
     temp.class_id = object.raw_label;
     temp.prob = object.confidence;
-    temp.object_name = std::to_string(object.raw_label);
+    temp.object_name = class_names[object.raw_label];
 
     // Position data
     temp.centroid = Eigen::Vector3f(object.position.x, object.position.y, object.position.z);
@@ -166,7 +166,7 @@ void ObjectDatabase::addObject(sl::ObjectData &object)
         // and the information of the object in the database is updated
         for (int i = 0; i < mvInterestNames.size(); i++)
         {
-            std::cout << "Object name: " << mvInterestNames.at(i) << " " << center_distance << std::endl;
+            std::cout << "Object name: " << class_names[mvInterestNames.at(i)] << " " << center_distance << std::endl;
 
             if(temp.object_name == std::to_string(mvInterestNames[i]))
             {
@@ -272,15 +272,14 @@ void ObjectDatabase::updaterVizView()
         marker.color.a = 1.0;
         marker.scale.x = 0.01;
 
+        std::cout << "Object " << i <<  " have " << mObjects.at(i).bounding_box.size() << " points" << std::endl;
+        std::cout << "Class: " << mObjects.at(i).object_name << std::endl;
+
         if(mObjects.at(i).bounding_box.size() != 8)
         {
             std::cout << "Skipping ... \n";
             continue;
         }
-//        std::cout << "Object point: " << mObjects.at(i).bounding_box.size() << std::endl;
-
-//        std::cout << "Object: " << mObjects.at(i).bounding_box.at(4) << std::endl;
-//        std::cout << "Object: " << mObjects.at(i).bounding_box.at(0) << std::endl;
 
         // ZED 3D bounding box
         //     1------2
