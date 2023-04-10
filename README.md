@@ -78,6 +78,8 @@ sudo apt-get install ros-noetic-ddynamic-reconfigure
 sudo apt-get -y install libflann-dev
 
 sudo apt-get -y install libflann1.9
+
+sudo apt install build-essential libboost-system-dev libboost-thread-dev libboost-program-options-dev libboost-test-dev
 ```
 
 3. object_slam (Skip CUDA Install if use jetpack in Jetson series)
