@@ -80,6 +80,11 @@ sudo apt-get -y install libflann-dev
 sudo apt-get -y install libflann1.9
 
 sudo apt install build-essential libboost-system-dev libboost-thread-dev libboost-program-options-dev libboost-test-dev
+
+sudo apt-get install cmake libblkid-dev e2fslibs-dev libboost-all-dev libaudit-dev
+
+sudo apt-get install libvtk7-dev
+
 ```
 
 3. object_slam (Skip CUDA Install if use jetpack in Jetson series)
