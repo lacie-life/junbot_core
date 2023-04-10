@@ -74,6 +74,10 @@
 sudo apt install qtmultimedia5-dev
 
 sudo apt-get install ros-noetic-ddynamic-reconfigure
+
+sudo apt-get -y install libflann-dev
+
+sudo apt-get -y install libflann1.9
 ```
 
 3. object_slam (Skip CUDA Install if use jetpack in Jetson series)
