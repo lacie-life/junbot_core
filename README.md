@@ -58,6 +58,10 @@
    - [ ] SLAM
    - [ ] Re-path planning
 
+- [ ] Hardware
+   - [ ] Assembly 
+   - [ ] Testing in farm
+   
 # Install 
 
 1. ROS Noetic
