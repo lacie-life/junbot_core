@@ -37,11 +37,11 @@ ObjectDatabase::ObjectDatabase(bool rViz_view)
     for (int i = 0; i < mvInterestNames.size(); i++)
     {
         // voc dataset 20 types of objects
-        mvSizes.push_back(0.6);
+        mvSizes.push_back(1.0);
     }
-    mvSizes[5] = 0.06;   // Bottles within 0.06 meters are considered to be the same object
-    mvSizes[10] = 0.5;    // Chair
-    mvSizes[2] = 0.25;  // monitor
+    mvSizes[5] = 1.0;   // Bottles within 0.06 meters are considered to be the same object
+    mvSizes[10] = 1.0;    // Chair
+    mvSizes[2] = 1.0;  // monitor
 
     // ROS Publisher
     publisher_object2map = nh.advertise<vision_msgs::Detection3DArray>("object_list", 1000);
@@ -77,6 +77,7 @@ std::vector<ObjectMap> ObjectDatabase::getAllObject()
 }
 
 // Create object map from Zed tracked objects
+// TODO: Fixing here
 void ObjectDatabase::addObject(sl::ObjectData &object)
 {
     // 1. Convert sl::ObjectData to ObjectMap
@@ -86,6 +87,7 @@ void ObjectDatabase::addObject(sl::ObjectData &object)
     temp.zed_unique_object_id = object.unique_object_id;
     temp.class_id = object.raw_label;
     temp.prob = object.confidence;
+    temp.object_name = class_names[object.raw_label];
 
     // Position data
     temp.centroid = Eigen::Vector3f(object.position.x, object.position.y, object.position.z);
@@ -140,6 +142,10 @@ void ObjectDatabase::addObject(sl::ObjectData &object)
     }
     else // Find multiple objects with the same name in the database
     {
+        std::cout << "[addObject] Case 3 \n";
+
+        std::cout << "Likely objects: " << likely_obj.size() << std::endl;
+
         // TODO: Add check moving object
         // 5. Go through each object with the same name and find the one closest to the center point
         for(unsigned int j = 0; j < likely_obj.size(); j++)
@@ -160,6 +166,8 @@ void ObjectDatabase::addObject(sl::ObjectData &object)
         // and the information of the object in the database is updated
         for (int i = 0; i < mvInterestNames.size(); i++)
         {
+            std::cout << "Object name: " << class_names[mvInterestNames.at(i)] << " " << center_distance << std::endl;
+
             if(temp.object_name == std::to_string(mvInterestNames[i]))
             {
                 if(center_distance < mvSizes[i])
@@ -177,7 +185,7 @@ void ObjectDatabase::addObject(sl::ObjectData &object)
                     temp.object_id = DataBaseSize;
                     mObjects.push_back(temp);
 
-                    std::cout << "[addObject] Case 3 \n";
+                    std::cout << "[addObject] Case 3.1 \n";
                 }
             }
         }
@@ -195,9 +203,6 @@ void ObjectDatabase::updateObjectDatabase(sl::Objects &objects, sl::Pose &cam_w_
 
     for(int i = 0; i < objects.object_list.size(); i++)
     {
-//        std::cout << objects.object_list.at(i).id << "\n";
-//        std::cout << objects.object_list.at(i).unique_object_id << "\n";
-
         sl::ObjectData obj;
         objects.getObjectDataFromId(obj, i);
         addObject(obj);
@@ -210,19 +215,23 @@ geometry_msgs::Point ObjectDatabase::corner_to_marker(const sl::float3& v){
     point.y = v.y;
     point.z = v.z;
 
-    sl::Matrix4f T = currPose.pose_data;
-    sl::Matrix3f R = currPose.getRotationMatrix();
-
-    // TODO: Coding here
-    sl::Matrix3f temp;
-    temp(0, 0) = v.x;
-    temp(0, 1) = v.x;
-    temp(0, 2) = v.x;
-     sl::Matrix3f p_world = R * temp;
-     geometry_msgs::Point p;
-     p.x= p_world(0, 0) + T(0, 3);
-     p.y= p_world(0, 1) + T(1, 3);
-     p.z= p_world(0, 2) + T(2, 3);
+//    sl::Matrix4f T = currPose.pose_data;
+//    sl::Matrix3f R = currPose.getRotationMatrix();
+//
+//    auto cam_to_world = currPose;
+//
+//    cam_to_world.pose_data.inverse();
+//
+//    // TODO: Coding here
+//    sl::Matrix3f temp;
+//    temp(0, 0) = v.x;
+//    temp(0, 1) = v.x;
+//    temp(0, 2) = v.x;
+//    sl::Matrix3f p_world = R * temp;
+//    geometry_msgs::Point p;
+//    p.x= p_world(0, 0) + T(0, 3);
+//    p.y= p_world(0, 1) + T(1, 3);
+//    p.z= p_world(0, 2) + T(2, 3);
 
     return point;
 }
@@ -257,11 +266,20 @@ void ObjectDatabase::updaterVizView()
 
         marker.type = visualization_msgs::Marker::LINE_LIST; //LINE_STRIP;
         marker.action = visualization_msgs::Marker::ADD;
-        marker.color.r = color[2]/255.0; marker.color.g = color[1]/255.0; marker.color.b = color[0]/255.0; marker.color.a = 1.0;
+        marker.color.r = color[2]/255.0;
+        marker.color.g = color[1]/255.0;
+        marker.color.b = color[0]/255.0;
+        marker.color.a = 1.0;
         marker.scale.x = 0.01;
 
-        std::cout << "Object: " << mObjects.at(i).bounding_box.at(4) << std::endl;
-        std::cout << "Object: " << mObjects.at(i).bounding_box.at(0) << std::endl;
+        std::cout << "Object " << i <<  " have " << mObjects.at(i).bounding_box.size() << " points" << std::endl;
+        std::cout << "Class: " << mObjects.at(i).object_name << std::endl;
+
+        if(mObjects.at(i).bounding_box.size() != 8)
+        {
+            std::cout << "Skipping ... \n";
+            continue;
+        }
 
         // ZED 3D bounding box
         //     1------2

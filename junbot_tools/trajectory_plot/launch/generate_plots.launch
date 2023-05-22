@@ -1,0 +1,9 @@
+<launch>
+
+    <!-- Generate plots using odometry data -->
+    <node name="generate_plots" pkg="jun_plotter" type="path.py" output="screen"></node>
+
+     <node pkg="tf" type="static_transform_publisher" name="cam_to_map" args="0 0 0 0 0 0 map camera_odom_frame 70" > </node>
+
+</launch>
+

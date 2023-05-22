@@ -20,12 +20,13 @@ int main(int argc, char** argv) {
     // Open ZED camera
     sl::Camera zed;
     sl::InitParameters init_parameters;
+    init_parameters.coordinate_units = sl::UNIT::METER;
     init_parameters.camera_resolution = sl::RESOLUTION::HD1080;
     init_parameters.sdk_verbose = true;
     init_parameters.depth_mode = sl::DEPTH_MODE::ULTRA;
 
-    // OpenGL's coordinate system is right_handed
-    init_parameters.coordinate_system = sl::COORDINATE_SYSTEM::RIGHT_HANDED_Y_UP;
+    // ROS coordinate
+    init_parameters.coordinate_system = sl::COORDINATE_SYSTEM::RIGHT_HANDED_Z_UP_X_FWD;
 
     if (argc > 1 && std::string(argv[2]).find(".svo") != std::string::npos) {
         // SVO input mode
@@ -69,6 +70,7 @@ int main(int argc, char** argv) {
 
     sl::Mat left_sl, point_cloud;
     cv::Mat left_cv_rgb;
+//    sl::RuntimeParameters
     sl::ObjectDetectionRuntimeParameters objectTracker_parameters_rt;
     sl::Objects objects;
 

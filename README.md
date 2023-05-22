@@ -58,6 +58,10 @@
    - [ ] SLAM
    - [ ] Re-path planning
 
+- [ ] Hardware
+   - [ ] Assembly 
+   - [ ] Testing in farm
+   
 # Install 
 
 1. ROS Noetic
@@ -74,6 +78,26 @@
 sudo apt install qtmultimedia5-dev
 
 sudo apt-get install ros-noetic-ddynamic-reconfigure
+
+sudo apt-get -y install libflann-dev
+
+sudo apt-get -y install libflann1.9
+
+sudo apt install build-essential libboost-system-dev libboost-thread-dev libboost-program-options-dev libboost-test-dev
+
+sudo apt-get install cmake libblkid-dev e2fslibs-dev libboost-all-dev libaudit-dev
+
+sudo apt-get install libvtk7-dev
+
+sudo apt-get install ros-noetic-joy ros-noetic-teleop-twist-joy \
+  ros-noetic-teleop-twist-keyboard ros-noetic-laser-proc \
+  ros-noetic-rgbd-launch ros-noetic-rosserial-arduino \
+  ros-noetic-rosserial-python ros-noetic-rosserial-client \
+  ros-noetic-rosserial-msgs ros-noetic-amcl ros-noetic-map-server \
+  ros-noetic-move-base ros-noetic-urdf ros-noetic-xacro \
+  ros-noetic-compressed-image-transport ros-noetic-rqt* ros-noetic-rviz \
+  ros-noetic-gmapping ros-noetic-navigation ros-noetic-interactive-markers
+
 ```
 
 3. object_slam (Skip CUDA Install if use jetpack in Jetson series)
