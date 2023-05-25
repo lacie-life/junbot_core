@@ -61,7 +61,7 @@ rosrun junbot_gui junbot_gui
 
 ### Use case
 
-![Fig.1](https://github.com/lacie-life/junbot_planner/blob/main/junbot_gui/doc/details.png?raw=true)
+![Fig.1](https://github.com/lacie-life/junbot_planner/blob/main/junbot_gui/doc/details.jpg?raw=true)
 
 ## TODO
 
