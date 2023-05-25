@@ -32,8 +32,6 @@ private slots:
 
     void on_btnLogin_clicked();
 
-    //    void on_btnRegedit_clicked();
-
     void SltAnimationFinished();
 
     void SltEditFinished();

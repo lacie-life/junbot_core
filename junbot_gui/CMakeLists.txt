@@ -79,7 +79,7 @@ add_executable(junbot_gui
     ${SOURCES}
     ${UI_HEADERS}
     ${RCC_SOURCES}
-)
+        src/QUserLoginWidget.cpp include/QUserLoginWidget.h)
 
 target_link_libraries(junbot_gui PRIVATE
     ${QT_LIBRARIES}
