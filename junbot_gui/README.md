@@ -63,6 +63,23 @@ rosrun junbot_gui junbot_gui
 
 ![Fig.1](https://github.com/lacie-life/junbot_planner/blob/main/junbot_gui/doc/details.jpg?raw=true)
 
-## TODO
+### Main Class
 
+- <b> class AppModel <\b> : App Manager 
+    
+- <b> class QNode <\b> : Ros Interface
+    
+- <b> class QDBHandler <\b> : SQLite Interface
+    
+- <b> UI Classes <\b> : QRobotItem, MainWindow, QLoginWidget, QUserLoginWidget
+
+- <b> Other classes <\b> : AppConstants, QRobotMission, QRobotUtils, QCustomWidget
+    
+## TODO
+    - [ ] Refactor Code
+    - [ ] Ui for MainWindow, QLoginWidget, QUserLoginWidget
+    - [ ] User Module 
+    - [ ] Robot State Module
+    - [ ] Mission Module
+    - [ ] Total test
 
