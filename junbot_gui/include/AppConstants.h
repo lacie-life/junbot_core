@@ -17,8 +17,6 @@ Q_OBJECT
     Q_ENUMS(QRobotStatus)
     Q_ENUMS(QRobotColor)
     Q_ENUMS(QLogLevel)
-    Q_ENUMS(QRobotAction)
-    Q_ENUMS(QDisplayMode)
     Q_ENUMS(QMissionStatus)
 
 public:
@@ -28,6 +26,14 @@ public:
         Warning,
         Error,
         NotReady,
+    };
+
+    enum QLogLevel {
+        Debug,
+        Info,
+        Warn,
+        Err,
+        Fatal,
     };
 
     enum QMissionStatus {
@@ -41,31 +47,6 @@ public:
         Blue,
         Red,
         Yellow,
-    };
-
-    enum QLogLevel {
-        Debug,
-        Info,
-        Warn,
-        Err,
-        Fatal,
-    };
-
-    enum QRobotAction {
-        UpLeft = 0,
-        Up,
-        UpRight,
-        Left,
-        Stop,
-        Right,
-        DownLeft,
-        Down,
-        DownRight,
-    };
-
-    enum QDisplayMode {
-        Robot,
-        Control,
     };
 };
 
