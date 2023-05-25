@@ -35,24 +35,24 @@ QLoginWidget::QLoginWidget(QWidget *parent)
                                                               Qt::SmoothTransformation));
 
     // check IP in local network
-            foreach (QHostAddress address, QNetworkInterface::allAddresses()) {
-            if (address.protocol() == QAbstractSocket::IPv4Protocol) {
-                QString addre = address.toString();
+    foreach (QHostAddress address, QNetworkInterface::allAddresses()) {
+        if (address.protocol() == QAbstractSocket::IPv4Protocol) {
+            QString addre = address.toString();
 
-                CONSOLE << addre;
+            CONSOLE << addre;
 
-                if (addre.split(".")[0] == "192") {
-                    m_qRosIp = addre;
-                    m_qMasterIp = "http://" + addre + ":11311";
-                } else if (addre.split(".")[0] == "10") {
-                    m_qRosIp = addre;
-                    m_qMasterIp = "http://" + addre + ":11311";
-                } else if (addre.split(".")[0] == "172") {
-                    m_qRosIp = addre;
-                    m_qMasterIp = "http://" + addre + ":11311";
-                }
+            if (addre.split(".")[0] == "192") {
+                m_qRosIp = addre;
+                m_qMasterIp = "http://" + addre + ":11311";
+            } else if (addre.split(".")[0] == "10") {
+                m_qRosIp = addre;
+                m_qMasterIp = "http://" + addre + ":11311";
+            } else if (addre.split(".")[0] == "172") {
+                m_qRosIp = addre;
+                m_qMasterIp = "http://" + addre + ":11311";
             }
         }
+    }
 
     // Set ip for ROS master connection
     connect(ui->pushButton_auto, &QPushButton::clicked, [=]() {

@@ -11,14 +11,13 @@
 class AppModel : public QObject {
 Q_OBJECT
 public:
-    explicit AppModel(QObject *parent = nullptr);
+    explicit AppModel(int argc, char **argv, QObject *parent = nullptr);
 
     ~AppModel();
 
     void readSettings();
     void writeSettings();
 
-    void initUis();
     void initVideos();
     void initTopicList();
     void initOthers();
@@ -39,6 +38,10 @@ signals:
     void signalSet2DGoal();
     void signalDisconnect();
 
+public:
+    // Ros interface
+    QNode m_rosNode;
+
 private:
     void connections();
 
@@ -46,9 +49,8 @@ private:
     QString m_masterUrl;
     QString m_hostUrl;
 
-    QNode *m_rosNode = nullptr;
-    QRobotItem *m_robotItem = nullptr;
-    QDBHandler *m_dbHandler = nullptr;
+    // DB interface
+    QDBHandler *m_dbHandler;
 };
 
 #endif // APPMODEL_H

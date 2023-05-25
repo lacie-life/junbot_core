@@ -22,7 +22,7 @@
 
 #include "QRobotUltis.h"
 #include "QRobotItem.h"
-#include "QNode.h"
+#include "AppModel.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -54,11 +54,6 @@ public:
 
 public slots:
 
-    /******************************************
-       ** Auto-connections (connectSlotsByName())
-       *******************************************/
-    void on_actionAbout_triggered();
-
     void slot_batteryState(sensor_msgs::BatteryState);
 
     void slot_rosShutdown();
@@ -67,10 +62,7 @@ public slots:
 
     void slot_cmd_control();
 
-    /******************************************
-      ** Manual connections
-      *******************************************/
-    void updateLoggingView();  // no idea why this can't connect automatically
+    void updateLoggingView();
     void Slider_raw_valueChanged(int v);
 
     void Slider_linear_valueChanged(int value);
@@ -79,27 +71,9 @@ public slots:
 
     void slot_set_2D_Pos();
 
-    void slot_set_select();
-
-    void slot_move_camera_btn();
-
-    // Set interface
-    void slot_setting_frame();
-
-    void slot_set_mutil_goal_btn();
-
-    // return flight
-    void slot_return_point();
-
-    // Robot position
-    void slot_position_change(QString, double, double, double, double);
-
-    // display image
     void slot_show_image(int, QImage);
 
     void slot_dis_connect();
-
-    void slot_hide_table_widget();
 
     void slot_closeWindows();
 
@@ -111,18 +85,13 @@ public slots:
 
     void slot_updateCursorPos(QPointF pos);
 
-    void slot_changeMapType(int);
-
     void slot_updateRobotStatus(AppEnums::QRobotStatus);
-    //  void on_horizontalSlider_raw_valueChanged(int value);
 
 signals:
 
     void signalSet2DPose();
 
     void signalSet2DGoal();
-
-    void signalSetMoveCamera();
 
     void signalDisconnect();
 
@@ -135,24 +104,18 @@ private:
 
     void connections();
 
-    void display_rviz();
-
     void setCurrentMenu(QPushButton *btn);
 
 private:
     Ui::MainWindow *ui;
     bool isPressedWidget;
     QPoint m_lastPos;
-    QNode m_qnode;
 
-    QString m_masterUrl;
-    QString m_hostUrl;
-    double m_turnLightThre = 0.1;
     QGraphicsScene *m_qgraphicsScene = nullptr;
     QRobotItem *m_roboItem = nullptr;
     QVariantList m_sendVelList, m_recvVelList, m_timeList;
 
-    int line_max = 10;
+    AppModel* m_model;
 
     QTimer *m_timerChart;
     QTimer *m_timerPubImageMap;

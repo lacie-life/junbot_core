@@ -7,7 +7,8 @@
 #include <QVector>
 
 MainWindow::MainWindow(int argc, char **argv, QWidget *parent)
-        : QMainWindow(parent), ui(new Ui::MainWindow), m_qnode(argc, argv) {
+        : QMainWindow(parent), ui(new Ui::MainWindow)
+        {
     ui->setupUi(this);
 
     // read configuration file
@@ -16,7 +17,9 @@ MainWindow::MainWindow(int argc, char **argv, QWidget *parent)
     setWindowIcon(QIcon(":/image/data/images/robot.png"));
     setWindowFlags(Qt::CustomizeWindowHint);  // remove title bar
 
-    ui->view_logging->setModel(m_qnode.loggingModel());
+    m_model = new AppModel(argc, argv, this);
+
+    ui->view_logging->setModel(m_model->m_rosNode.loggingModel());
 
     // Setting signal and slot
     connections();
@@ -42,7 +45,6 @@ void MainWindow::initUis() {
     m_timerCurrentTime = new QTimer;
     m_timerCurrentTime->setInterval(100);
     m_timerCurrentTime->start();
-    // ui.centralwidget->hide();
 
     // view scene loading
     m_qgraphicsScene = new QGraphicsScene();
@@ -77,35 +79,24 @@ void MainWindow::initUis() {
     ui->btn_status->setIcon(QIcon(":/image/data/images/status.png"));
     ui->btn_other->setIcon(QIcon(":/image/data/images/toolbar_other.png"));
 
-    // Rviz Widget (QGraphicView)
-    ui->widget_rviz->hide();
-
     // dashboard
-    if (m_showMode == AppEnums::QDisplayMode::Robot) {
-        ui->stackedWidget_left->hide();
-        ui->btn_status->hide();
-        ui->btn_control->hide();
-        ui->settings_btn->hide();
-        this->showFullScreen();
-    } else {
-        QSettings windows_setting("junbot_gui", "windows");
-        int x = windows_setting.value("WindowGeometry/x").toInt();
-        int y = windows_setting.value("WindowGeometry/y").toInt();
-        int width = windows_setting.value("WindowGeometry/width").toInt();
-        int height = windows_setting.value("WindowGeometry/height").toInt();
-        QDesktopWidget *desktopWidget = QApplication::desktop();
-        QRect clientRect = desktopWidget->availableGeometry();
-        QRect targRect0 = QRect(clientRect.width() / 4, clientRect.height() / 4,
-                                clientRect.width() / 2, clientRect.height() / 2);
-        QRect targRect = QRect(x, y, width, height);
-        if (width == 0 || height == 0 || x < 0 || x > clientRect.width() || y < 0 ||
-            y > clientRect
-                    .height())  // If the window position was abnormal when the software was closed last time, it will be displayed in the center of the display this time.
-        {
-            targRect = targRect0;
-        }
-        this->setGeometry(targRect);  // Set the size of the main window
+    QSettings windows_setting("junbot_gui", "windows");
+    int x = windows_setting.value("WindowGeometry/x").toInt();
+    int y = windows_setting.value("WindowGeometry/y").toInt();
+    int width = windows_setting.value("WindowGeometry/width").toInt();
+    int height = windows_setting.value("WindowGeometry/height").toInt();
+    QDesktopWidget *desktopWidget = QApplication::desktop();
+    QRect clientRect = desktopWidget->availableGeometry();
+    QRect targRect0 = QRect(clientRect.width() / 4, clientRect.height() / 4,
+                            clientRect.width() / 2, clientRect.height() / 2);
+    QRect targRect = QRect(x, y, width, height);
+    if (width == 0 || height == 0 || x < 0 || x > clientRect.width() || y < 0 ||
+        y > clientRect
+                .height())  // If the window position was abnormal when the software was closed last time, it will be displayed in the center of the display this time.
+    {
+        targRect = targRect0;
     }
+    this->setGeometry(targRect);  // Set the size of the main window
 }
 
 // Video topic init
@@ -115,20 +106,20 @@ void MainWindow::initVideos() {
     QStringList topics = video_topic_setting.value("video/topics").toStringList();
     if (topics.size() == 4) {
         if (topics[0] != "") {
-            m_qnode.Sub_Image(topics[0], 0);
+            m_model->m_rosNode.Sub_Image(topics[0], 0);
         }
         if (topics[1] != "") {
-            m_qnode.Sub_Image(topics[1], 1);
+            m_model->m_rosNode.Sub_Image(topics[1], 1);
         }
         if (topics[2] != "") {
-            m_qnode.Sub_Image(topics[2], 2);
+            m_model->m_rosNode.Sub_Image(topics[2], 2);
         }
         if (topics[3] != "") {
-            m_qnode.Sub_Image(topics[3], 3);
+            m_model->m_rosNode.Sub_Image(topics[3], 3);
         }
     }
 
-    connect(&m_qnode, &QNode::Show_image, this,
+    connect(&m_model->m_rosNode, &QNode::Show_image, this,
             &MainWindow::slot_show_image);
 }
 
@@ -136,7 +127,7 @@ void MainWindow::initVideos() {
 void MainWindow::initTopicList() {
     ui->topic_listWidget->clear();
     ui->topic_listWidget->addItem(QString("%1   (%2)").arg("Name", "Type"));
-    QMap<QString, QString> topic_list = m_qnode.get_topic_list();
+    QMap<QString, QString> topic_list = m_model->m_rosNode.get_topic_list();
     for (QMap<QString, QString>::iterator iter = topic_list.begin();
          iter != topic_list.end(); iter++) {
         ui->topic_listWidget->addItem(
@@ -161,7 +152,7 @@ void MainWindow::initOthers() {
 bool MainWindow::connectMaster(QString master_ip, QString ros_ip, bool use_envirment) {
 
     if (use_envirment) {
-        if (!m_qnode.init()) {
+        if (!m_model->m_rosNode.init()) {
             return false;
         } else {
             initVideos();
@@ -169,7 +160,7 @@ bool MainWindow::connectMaster(QString master_ip, QString ros_ip, bool use_envir
             initOthers();
         }
     } else {
-        if (!m_qnode.init(master_ip.toStdString(), ros_ip.toStdString())) {
+        if (!m_model->m_rosNode.init(master_ip.toStdString(), ros_ip.toStdString())) {
             return false;
         } else {
             initVideos();
@@ -224,24 +215,21 @@ void MainWindow::slot_cmd_control() {
     float turn = ui->horizontalSlider_raw->value() * 0.01;
     bool is_all = false;
 
-    CONSOLE << "Key: " << key;
-    CONSOLE << "Name: " << button_key;
-
     if (button_key == "forward") {
         // forward
-        m_qnode.move_base(is_all ? 'I' : 'i', liner, turn);
+        m_model->m_rosNode.move_base(is_all ? 'I' : 'i', liner, turn);
     } else if (button_key == "back") {
         // backward
-        m_qnode.move_base(is_all ? '<' : ',', liner, turn);
+        m_model->m_rosNode.move_base(is_all ? '<' : ',', liner, turn);
     } else if (button_key == "r_left") {
         // rotate left
-        m_qnode.move_base(is_all ? 'J' : 'j', liner, turn);
+        m_model->m_rosNode.move_base(is_all ? 'J' : 'j', liner, turn);
     } else if (button_key == "r_right") {
         // rotate right
-        m_qnode.move_base(is_all ? 'L' : 'l', liner, turn);
+        m_model->m_rosNode.move_base(is_all ? 'L' : 'l', liner, turn);
     } else {
         // stop
-        m_qnode.move_base(is_all ? 'K' : 'k', liner, turn);
+        m_model->m_rosNode.move_base(is_all ? 'K' : 'k', liner, turn);
     }
 }
 
@@ -252,31 +240,6 @@ void MainWindow::slot_set_2D_Goal() {
 void MainWindow::slot_set_2D_Pos() {
     emit signalSet2DPose();
 }
-
-void MainWindow::slot_set_select() {
-    // pending
-}
-
-void MainWindow::slot_move_camera_btn() {
-    emit signalSetMoveCamera();
-}
-
-void MainWindow::slot_setting_frame() {
-    // pending
-}
-
-void MainWindow::slot_set_mutil_goal_btn() {
-    // pending
-}
-
-void MainWindow::slot_return_point() {
-    // pending
-}
-
-void MainWindow::slot_position_change(QString frame, double x, double y, double z, double w) {
-    // pending
-}
-
 
 void MainWindow::slot_show_image(int frame_id, QImage image) {
     switch (frame_id) {
@@ -298,41 +261,20 @@ void MainWindow::slot_dis_connect() {
     this->close();
 }
 
-void MainWindow::slot_hide_table_widget() {
-    if (ui->stackedWidget_left->isHidden()) {
-        ui->stackedWidget_left->show();
-    } else {
-        ui->stackedWidget_left->hide();
-    }
-}
-
 void MainWindow::slot_pubImageMapTimeOut() {
     QImage image(600, 600, QImage::Format_RGB888);
     QPainter painter(&image);
     painter.setRenderHint(QPainter::Antialiasing);
     m_qgraphicsScene->render(&painter);
-    m_qnode.pub_imageMap(image);
+    m_model->m_rosNode.pub_imageMap(image);
 }
 
 void MainWindow::slot_updateCursorPos(QPointF pos) {
-    QPointF mapPos = m_qnode.transScenePoint2Word(pos);
+    QPointF mapPos = m_model->m_rosNode.transScenePoint2Word(pos);
     ui->label_pos_map->setText("x: " + QString::number(mapPos.x()).mid(0, 4) +
                                "  y: " + QString::number(mapPos.y()).mid(0, 4));
     ui->label_pos_scene->setText("x: " + QString::number(pos.x()).mid(0, 4) +
                                  "  y: " + QString::number(pos.y()).mid(0, 4));
-}
-
-void MainWindow::slot_changeMapType(int index) {
-    switch (index) {
-        case 0:
-            ui->widget_rviz->hide();
-            ui->mapViz->show();
-            break;
-        case 1:
-            ui->mapViz->hide();
-            ui->widget_rviz->show();
-            break;
-    }
 }
 
 void MainWindow::slot_updateRobotStatus(AppEnums::QRobotStatus status) {
@@ -373,9 +315,9 @@ void MainWindow::slot_updateRobotStatus(AppEnums::QRobotStatus status) {
 }
 
 void MainWindow::connections() {
-    connect(&m_qnode, &QNode::loggingUpdated, this, &MainWindow::updateLoggingView);
-    connect(&m_qnode, &QNode::rosShutdown, this, &MainWindow::slot_rosShutdown);
-    connect(&m_qnode, &QNode::Master_shutdown, this, &MainWindow::slot_rosShutdown);
+    connect(&m_model->m_rosNode, &QNode::loggingUpdated, this, &MainWindow::updateLoggingView);
+    connect(&m_model->m_rosNode, &QNode::rosShutdown, this, &MainWindow::slot_rosShutdown);
+    connect(&m_model->m_rosNode, &QNode::Master_shutdown, this, &MainWindow::slot_rosShutdown);
 
     // Main display screen
 
@@ -413,10 +355,10 @@ void MainWindow::connections() {
     });
 
     // Robot status
-    connect(&m_qnode, &QNode::updateRobotStatus, this, &MainWindow::slot_updateRobotStatus);
+    connect(&m_model->m_rosNode, &QNode::updateRobotStatus, this, &MainWindow::slot_updateRobotStatus);
 
     // Robot battery
-    connect(&m_qnode, &QNode::batteryState, this, &MainWindow::slot_batteryState);
+    connect(&m_model->m_rosNode, &QNode::batteryState, this, &MainWindow::slot_batteryState);
 
     // Function to bind slider
     connect(ui->horizontalSlider_raw, SIGNAL(valueChanged(int)), this,
@@ -451,70 +393,24 @@ void MainWindow::connections() {
     connect(ui->max_btn, SIGNAL(clicked()), this, SLOT(slot_maxWindows()));
 
     // Map and Path display
-    connect(&m_qnode, SIGNAL(updateMap(QImage)), m_roboItem,
+    connect(&m_model->m_rosNode, SIGNAL(updateMap(QImage)), m_roboItem,
             SLOT(paintMaps(QImage)));
-    connect(&m_qnode, SIGNAL(plannerPath(QPolygonF)), m_roboItem,
+    connect(&m_model->m_rosNode, SIGNAL(plannerPath(QPolygonF)), m_roboItem,
             SLOT(paintPlannerPath(QPolygonF)));
-    connect(&m_qnode, SIGNAL(updateRoboPose(QRobotPose)), m_roboItem,
+    connect(&m_model->m_rosNode, SIGNAL(updateRoboPose(QRobotPose)), m_roboItem,
             SLOT(paintRoboPos(QRobotPose)));
-    connect(&m_qnode, SIGNAL(updateLaserScan(QPolygonF)), m_roboItem,
+    connect(&m_model->m_rosNode, SIGNAL(updateLaserScan(QPolygonF)), m_roboItem,
             SLOT(paintLaserScan(QPolygonF)));
     connect(m_roboItem, SIGNAL(cursorPos(QPointF)), this,
             SLOT(slot_updateCursorPos(QPointF)));
 
     // map
-    connect(m_roboItem, SIGNAL(signalPub2DPos(QRobotPose)), &m_qnode,
+    connect(m_roboItem, SIGNAL(signalPub2DPos(QRobotPose)), &m_model->m_rosNode,
             SLOT(slot_pub2DPos(QRobotPose)));
-    connect(m_roboItem, SIGNAL(signalPub2DGoal(QRobotPose)), &m_qnode,
+    connect(m_roboItem, SIGNAL(signalPub2DGoal(QRobotPose)), &m_model->m_rosNode,
             SLOT(slot_pub2DGoal(QRobotPose)));
     connect(this, SIGNAL(signalSet2DPose()), m_roboItem, SLOT(slot_set2DPos()));
     connect(this, SIGNAL(signalSet2DGoal()), m_roboItem, SLOT(slot_set2DGoal()));
-    connect(this, SIGNAL(signalSetMoveCamera()), m_roboItem,
-            SLOT(slot_setMoveCamera()));
-    //    connect(ui.stackedWidget_2,SIGNAL())
-}
-
-void MainWindow::display_rviz() {
-    QSettings settings("junbot_gui", "Displays");
-    bool Grid_enable = settings.value("Grid/enable", bool(true)).toBool();
-    double Grid_count = settings.value("Grid/count", double(20)).toDouble();
-
-    bool Map_enable = settings.value("Map/enable", bool(true)).toBool();
-    QString Map_topic = settings.value("Map/topic", QString("/map")).toString();
-    double Map_alpha = settings.value("Map/alpha", double(0.7)).toDouble();
-    QString Map_scheme = settings.value("Map/scheme", QString("map")).toString();
-    bool Laser_enable = settings.value("Laser/enable", bool(true)).toBool();
-    QString Laser_topic =
-            settings.value("Laser/topic", QString("/scan")).toString();
-    bool Polygon_enable = settings.value("Polygon/enable", bool(true)).toBool();
-    QString Polygon_topic =
-            settings
-                    .value("Polygon/topic", QString("/move_base/local_costmap/footprint"))
-                    .toString();
-
-    bool RobotModel_enable =
-            settings.value("RobotModel/enable", bool(true)).toBool();
-    bool Navigation_enable =
-            settings.value("Navigation/enable", bool(true)).toBool();
-    QString GlobalMap_topic =
-            settings
-                    .value("Navigation/GlobalMap/topic",
-                           QString("/move_base/global_costmap/costmap"))
-                    .toString();
-    QString GlobalMap_paln = settings
-            .value("Navigation/GlobalPlan/topic",
-                   QString("/move_base/NavfnROS/plan"))
-            .toString();
-    QString LocalMap_topic =
-            settings
-                    .value("Navigation/LocalMap/topic",
-                           QString("/move_base/local_costmap/costmap"))
-                    .toString();
-    QString LocalMap_plan =
-            settings
-                    .value("Navigation/LocalPlan/topic",
-                           QString("/move_base/DWAPlannerROS/local_plan"))
-                    .toString();
 }
 
 // Setting menu bar => change display? 
@@ -539,51 +435,16 @@ void MainWindow::setCurrentMenu(QPushButton *cur_btn) {
     }
 }
 
-
-/*****************************************************************************
-** Implemenation [Slots][manually connected]
-*****************************************************************************/
-
-/**
- * This function is signalled by the underlying model. When the model changes,
- * this will drop the cursor down to the last line in the QListview to ensure
- * the user can always see the latest log message.
- */
-void MainWindow::updateLoggingView() { ui->view_logging->scrollToBottom(); }
-
-/*****************************************************************************
-** Implementation [Menu]
-*****************************************************************************/
-
-void MainWindow::on_actionAbout_triggered() {
-    // QMessageBox::about(this, tr("About ..."),tr("<h2>PACKAGE_NAME Test Program
-    // 0.10</h2><p>Copyright Yujin Robot</p><p>This package needs an about
-    // description.</p>"));
+void MainWindow::updateLoggingView()
+{
+    ui->view_logging->scrollToBottom();
 }
 
-/*****************************************************************************
-** Implementation [Configuration]
-*****************************************************************************/
 
 void MainWindow::readSettings() {
     QSettings settings("junbot_gui", "settings");
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("windowState").toByteArray());
-    m_masterUrl =
-            settings.value("connect/master_url", QString("http://192.168.1.2:11311/"))
-                    .toString();
-    m_hostUrl =
-            settings.value("connect/host_url", QString("192.168.1.3")).toString();
-    m_useEnviorment =
-            settings.value("connect/use_enviorment", bool(false)).toBool();
-    m_autoConnect = settings.value("connect/auto_connect", bool(false)).toBool();
-    m_turnLightThre =
-            settings.value("connect/lineEdit_turnLightThre", double(0.1)).toDouble();
-    if (settings.value("main/show_mode", "control").toString() == "control") {
-        m_showMode = AppEnums::QDisplayMode::Control;
-    } else {
-        m_showMode = AppEnums::QDisplayMode::Robot;
-    }
 }
 
 void MainWindow::writeSettings() {
@@ -613,9 +474,15 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event) {
     isPressedWidget = false;
 }
 
-void MainWindow::slot_closeWindows() { this->close(); }
+void MainWindow::slot_closeWindows()
+{
+    this->close();
+}
 
-void MainWindow::slot_minWindows() { this->showMinimized(); }
+void MainWindow::slot_minWindows()
+{
+    this->showMinimized();
+}
 
 void MainWindow::slot_maxWindows() {
     if (this->isFullScreen()) {
