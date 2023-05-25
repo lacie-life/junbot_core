@@ -16,28 +16,42 @@
 #include "QRobotUltis.h"
 #include "AppConstants.h"
 
-class QRobotItem : public QObject, public QGraphicsItem
-{
-    Q_OBJECT
+class QRobotItem : public QObject, public QGraphicsItem {
+Q_OBJECT
 public:
     QRobotItem(QObject *parent = nullptr);
+
     ~QRobotItem();
+
     QRectF boundingRect() const;
+
     void wheelEvent(QGraphicsSceneWheelEvent *event);
+
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
+
     void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+
     void hoverMoveEvent(QGraphicsSceneHoverEvent *event);
+
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                QWidget *widget);
+
     int QColorToInt(const QColor &color);
+
     void setRobotColor(AppEnums::QRobotColor color);
+
     void setRobotSize(QSize size);
 
     void get_version() { qDebug() << "1.0.0"; }
+
     void setMax();
+
     void setMin();
+
     void setDefault();
+
     void move(double x, double y);
 
 public:
@@ -62,25 +76,40 @@ public:
     QCursor *currCursor = NULL;
 
 signals:
+
     void cursorPos(QPointF);
+
     void signalPub2DPos(QRobotPose pose);
+
     void signalPub2DGoal(QRobotPose pose);
 
 public slots:
+
     void paintMaps(QImage map);
+
     void paintRoboPos(QRobotPose pos);
+
     void paintImage(int, QImage);
+
     void paintPlannerPath(QPolygonF);
+
     void paintLaserScan(QPolygonF);
+
     void slot_set2DPos();
+
     void slot_set2DGoal();
+
     void slot_setMoveCamera();
 
 private:
     void drawMap(QPainter *painter);
+
     void drawRoboPos(QPainter *painter);
+
     void drawLaserScan(QPainter *painter);
+
     void drawPlannerPath(QPainter *painter);
+
     void drawTools(QPainter *painter);
 
 private:

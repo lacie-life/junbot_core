@@ -30,6 +30,8 @@ set(ModuleList
     Widgets
     Multimedia
     Network
+    Sql
+    Svg
 )
 
 foreach(QtModule ${ModuleList})

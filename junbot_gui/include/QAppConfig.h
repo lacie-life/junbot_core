@@ -17,27 +17,27 @@
 #include <assert.h>
 #include <memory>
 
-class QAppConfig : public QObject
-{
-  Q_OBJECT
+class QAppConfig : public QObject {
+Q_OBJECT
 public:
-  explicit QAppConfig(QObject* parent = nullptr, QString config_path = CONFIG_PATH);
-  ~QAppConfig();
+    explicit QAppConfig(QObject *parent = nullptr, QString config_path = CONFIG_PATH);
+
+    ~QAppConfig();
 
 public:
-  template <typename T>
-  static T get(const std::string &key);
+    template<typename T>
+    static T get(const std::string &key);
 
-  // Get a vector of content by key
-  template<typename T>
-  static std::vector<T> getVector(const std::string &key);
+    // Get a vector of content by key
+    template<typename T>
+    static std::vector<T> getVector(const std::string &key);
 
-  static bool getBool(const std::string &key);
+    static bool getBool(const std::string &key);
 
 signals:
 
 private:
-  cv::FileStorage m_file;
+    cv::FileStorage m_file;
 
 };
 

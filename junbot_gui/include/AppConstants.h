@@ -13,56 +13,60 @@
 #define CONFIG_PATH "./data/config.yaml"
 
 class AppEnums : public QObject {
-  Q_OBJECT
-  Q_ENUMS(QRobotStatus)
-  Q_ENUMS(QRobotColor)
-  Q_ENUMS(QLogLevel)
-  Q_ENUMS(QRobotAction)
-  Q_ENUMS(QDisplayMode)
+Q_OBJECT
+    Q_ENUMS(QRobotStatus)
+    Q_ENUMS(QRobotColor)
+    Q_ENUMS(QLogLevel)
+    Q_ENUMS(QRobotAction)
+    Q_ENUMS(QDisplayMode)
+    Q_ENUMS(QMissionStatus)
 
 public:
-  enum QRobotStatus
-  {
-    None,
-    Normal,
-    Warning,
-    Error,
-  };
+    enum QRobotStatus {
+        None,
+        Normal,
+        Warning,
+        Error,
+        NotReady,
+    };
 
-  enum QRobotColor
-  {
-    Blue,
-    Red,
-    Yellow,
-  };
+    enum QMissionStatus {
+        Idle,
+        Running,
+        Paused,
+        Stopped,
+    };
 
-  enum QLogLevel
-  {
-    Debug,
-    Info,
-    Warn,
-    Err,
-    Fatal,
-  };
+    enum QRobotColor {
+        Blue,
+        Red,
+        Yellow,
+    };
 
-  enum QRobotAction
-  {
-    UpLeft = 0,
-    Up,
-    UpRight,
-    Left,
-    Stop,
-    Right,
-    DownLeft,
-    Down,
-    DownRight,
-  };
+    enum QLogLevel {
+        Debug,
+        Info,
+        Warn,
+        Err,
+        Fatal,
+    };
 
-  enum QDisplayMode
-  {
-    Robot,
-    Control,
-  };
+    enum QRobotAction {
+        UpLeft = 0,
+        Up,
+        UpRight,
+        Left,
+        Stop,
+        Right,
+        DownLeft,
+        Down,
+        DownRight,
+    };
+
+    enum QDisplayMode {
+        Robot,
+        Control,
+    };
 };
 
 #endif // APPCONSTANTS_H

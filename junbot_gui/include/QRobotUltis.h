@@ -16,18 +16,15 @@ struct QRobotSpeed {
     double w;
 };
 
-inline double deg2rad(double x)
-{
-    return M_PI *x / 180.0;
+inline double deg2rad(double x) {
+    return M_PI * x / 180.0;
 }
 
-inline double rad2deg(double x)
-{
+inline double rad2deg(double x) {
     return 180.0 * x / M_PI;
 }
 
-inline double getAngle(float x1, float y1, float x2, float y2)
-{
+inline double getAngle(float x1, float y1, float x2, float y2) {
     float angle_temp;
     float xx, yy;
     xx = x2 - x1;

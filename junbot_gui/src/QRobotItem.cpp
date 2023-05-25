@@ -1,8 +1,7 @@
 #include "QRobotItem.h"
 
 QRobotItem::QRobotItem(QObject *parent)
-    : QObject{parent}
-{
+        : QObject{parent} {
     setAcceptHoverEvents(true);
     setAcceptedMouseButtons(Qt::AllButtons);
     setAcceptDrops(true);
@@ -15,67 +14,60 @@ QRobotItem::QRobotItem(QObject *parent)
     setDefault();
 }
 
-QRobotItem::~QRobotItem()
-{
+QRobotItem::~QRobotItem() {
 
 }
 
 void QRobotItem::setRobotColor(AppEnums::QRobotColor color) {
     switch (color) {
-    case AppEnums::QRobotColor::Blue: {
-       robotImg.load(":/image/data/images/Navigate.png");
-//       CONSOLE << robotImg.height();
-//       CONSOLE << robotImg.width();
-    } break;
-    case AppEnums::QRobotColor::Red: {
-        robotImg.load(":/image/data/images/robot_red.png");
-    } break;
-    case AppEnums::QRobotColor::Yellow: {
-        robotImg.load(":/image/data/images/robot_yellow.png");
-    } break;
+        case AppEnums::QRobotColor::Blue: {
+            robotImg.load(":/image/data/images/Navigate.png");
+        }
+            break;
+        case AppEnums::QRobotColor::Red: {
+            robotImg.load(":/image/data/images/robot_red.png");
+        }
+            break;
+        case AppEnums::QRobotColor::Yellow: {
+            robotImg.load(":/image/data/images/robot_yellow.png");
+        }
+            break;
     }
     QMatrix matrix;
     matrix.rotate(90);
     robotImg = robotImg.transformed(matrix, Qt::SmoothTransformation);
 }
 
-void QRobotItem::setRobotSize(QSize size)
-{
+void QRobotItem::setRobotSize(QSize size) {
     robotImg = robotImg.scaled(size);
 }
 
-int QRobotItem::QColorToInt(const QColor &color)
-{
-    return (int)(((unsigned int)color.blue() << 16) |
-                 (unsigned short)(((unsigned short)color.green() << 8) |
-                                  color.red()));
+int QRobotItem::QColorToInt(const QColor &color) {
+    return (int) (((unsigned int) color.blue() << 16) |
+                  (unsigned short) (((unsigned short) color.green() << 8) |
+                                    color.red()));
 }
 
-void QRobotItem::paintImage(int id, QImage image)
-{
+void QRobotItem::paintImage(int id, QImage image) {
     m_image = image;
 }
 
-void QRobotItem::paintLaserScan(QPolygonF points)
-{
+void QRobotItem::paintLaserScan(QPolygonF points) {
     laserPoints = points;
     update();
 }
 
-void QRobotItem::paintPlannerPath(QPolygonF path)
-{
+void QRobotItem::paintPlannerPath(QPolygonF path) {
     plannerPath = path;
     update();
 }
 
-void QRobotItem::paintMaps(QImage map)
-{
+void QRobotItem::paintMaps(QImage map) {
     m_imageMap = map;
     update();
 }
 
-void QRobotItem::paintRoboPos(QRobotPose pos)
-{
+void QRobotItem::paintRoboPos(QRobotPose pos) {
     //  qDebug()<<"pos:"<<pos.x<<" "<<pos.y<<" "<<pos.theta;
     RoboPostion = QPointF(pos.x, pos.y);
     m_roboYaw = pos.theta;
@@ -83,8 +75,7 @@ void QRobotItem::paintRoboPos(QRobotPose pos)
 }
 
 void QRobotItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
-                       QWidget *widget)
-{
+                       QWidget *widget) {
     drawMap(painter);
     drawRoboPos(painter);
     drawPlannerPath(painter);
@@ -92,12 +83,11 @@ void QRobotItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
     drawTools(painter);
 }
 
-void QRobotItem::drawTools(QPainter *painter)
-{
+void QRobotItem::drawTools(QPainter *painter) {
     if (currCursor == set2DPoseCursor || currCursor == set2DGoalCursor) {
 
         if (m_pressedPoint.x() != 0 && m_pressedPoint.y() != 0 &&
-                m_pressingPoint.x() != 0 && m_pressingPoint.y() != 0) {
+            m_pressingPoint.x() != 0 && m_pressingPoint.y() != 0) {
             painter->setPen(QPen(QColor(0, 255, 0, 255), 2));
 
             double theta = qAtan((m_pressingPoint.y() - m_pressedPoint.y()) /
@@ -148,13 +138,11 @@ void QRobotItem::drawTools(QPainter *painter)
     }
 }
 
-void QRobotItem::drawMap(QPainter *painter)
-{
+void QRobotItem::drawMap(QPainter *painter) {
     painter->drawImage(0, 0, m_imageMap);
 }
 
-void QRobotItem::drawRoboPos(QPainter *painter)
-{
+void QRobotItem::drawRoboPos(QPainter *painter) {
     painter->setPen(QPen(QColor(255, 0, 0, 255), 1, Qt::SolidLine, Qt::RoundCap,
                          Qt::RoundJoin));
     painter->save();
@@ -165,63 +153,53 @@ void QRobotItem::drawRoboPos(QPainter *painter)
                         robotImg);
     painter->restore();
 }
-void QRobotItem::drawLaserScan(QPainter *painter)
-{
+
+void QRobotItem::drawLaserScan(QPainter *painter) {
     painter->setPen(QPen(QColor(255, 0, 0, 255), 1));
     painter->drawPoints(laserPoints);
 }
 
-void QRobotItem::drawPlannerPath(QPainter *painter)
-{
+void QRobotItem::drawPlannerPath(QPainter *painter) {
     painter->setPen(QPen(QColor(0, 0, 0, 255), 1));
     painter->drawPoints(plannerPath);
 }
 
-void QRobotItem::setMax()
-{
+void QRobotItem::setMax() {
     m_scaleValue *= 1.1;
     setScale(m_scaleValue);
 }
 
-void QRobotItem::setMin()
-{
+void QRobotItem::setMin() {
     m_scaleValue *= 0.9;
     setScale(m_scaleValue);
 }
 
-void QRobotItem::setDefault()
-{
+void QRobotItem::setDefault() {
     this->setScale(defaultScale);
     this->moveBy(0, 0);
     m_scaleValue = defaultScale;
 }
 
-QRectF QRobotItem::boundingRect() const
-{
+QRectF QRobotItem::boundingRect() const {
     return QRectF(0, 0, m_imageMap.width(), m_imageMap.height());
 }
 
-void QRobotItem::move(double x, double y)
-{
+void QRobotItem::move(double x, double y) {
     this->moveBy(x, y);
 }
 
 // mouse event
-void QRobotItem::wheelEvent(QGraphicsSceneWheelEvent *event)
-{
+void QRobotItem::wheelEvent(QGraphicsSceneWheelEvent *event) {
     this->setCursor(Qt::CrossCursor);
-    if ((event->delta() > 0) && (m_scaleValue >= 50))
-    {
+    if ((event->delta() > 0) && (m_scaleValue >= 50)) {
         return;
     } else if ((event->delta() < 0) &&
                (m_scaleValue <=
-                m_scaleDafault))
-    {
+                m_scaleDafault)) {
         // ResetItemPos();
     } else {
         qreal qrealOriginScale = m_scaleValue;
-        if (event->delta() > 0)
-        {
+        if (event->delta() > 0) {
             m_scaleValue *= 1.1;
         } else {
             m_scaleValue *= 0.9;
@@ -239,25 +217,22 @@ void QRobotItem::wheelEvent(QGraphicsSceneWheelEvent *event)
     }
 }
 
-void QRobotItem::slot_set2DPos()
-{
+void QRobotItem::slot_set2DPos() {
     this->setCursor(*set2DPoseCursor);
     currCursor = set2DPoseCursor;
 }
 
-void QRobotItem::slot_set2DGoal()
-{
+void QRobotItem::slot_set2DGoal() {
     this->setCursor(*set2DGoalCursor);
     currCursor = set2DGoalCursor;
 }
 
-void QRobotItem::slot_setMoveCamera()
-{
+void QRobotItem::slot_setMoveCamera() {
     this->setCursor(*moveCursor);
     currCursor = moveCursor;
 }
-void QRobotItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
-{
+
+void QRobotItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         if (currCursor != moveCursor) {
             m_pressedPoint = event->pos();
@@ -270,8 +245,7 @@ void QRobotItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     update();
 }
 
-void QRobotItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
-{
+void QRobotItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     m_pressingPoint = event->pos();
 
     if (currCursor == NULL) {
@@ -286,13 +260,11 @@ void QRobotItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     update();
 }
 
-void QRobotItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
-{
+void QRobotItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
     emit cursorPos(event->pos());
 }
 
-void QRobotItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
-{
+void QRobotItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     m_isPress = false;
 
     if (currCursor == set2DPoseCursor) {
