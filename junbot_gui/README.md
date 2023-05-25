@@ -63,11 +63,8 @@ rosrun junbot_gui junbot_gui
 
 ![Fig.1](https://github.com/ScarecrowStraw/JunbotGUI/blob/main/data/readme/JunbotGUI-1.png?raw=true)
 
+![Fig.2](https://github.com/ScarecrowStraw/JunbotGUI/blob/main/data/readme/JunbotGUI-1.png?raw=true)
+
 ## TODO
 
-- [x] ~~Delete unnecessary widget/screen/dashboard/button~~
-- [ ] Test with LCD
-- [ ] Add Initial Pose Estimation Button (Run ACML automatic)
-- [ ] Update icon
-- [x] Linux Embedded
 
