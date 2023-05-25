@@ -44,13 +44,11 @@ public:
 
     void initUis();
 
-    void initVideos();
-
     void initTopicList();
 
     void initOthers();
 
-    bool connectMaster(QString master_ip, QString ros_ip, bool use_envirment = false);
+    bool connectMaster(QString master_ip, QString ros_ip);
 
 public slots:
 

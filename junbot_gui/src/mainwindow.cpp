@@ -23,7 +23,6 @@ MainWindow::MainWindow(int argc, char **argv, QWidget *parent)
 
     // Setting signal and slot
     connections();
-
 }
 
 MainWindow::~MainWindow() {
@@ -99,30 +98,6 @@ void MainWindow::initUis() {
     this->setGeometry(targRect);  // Set the size of the main window
 }
 
-// Video topic init
-void MainWindow::initVideos() {
-    QSettings video_topic_setting("junbot_gui", "settings");
-    QStringList names = video_topic_setting.value("video/names").toStringList();
-    QStringList topics = video_topic_setting.value("video/topics").toStringList();
-    if (topics.size() == 4) {
-        if (topics[0] != "") {
-            m_model->m_rosNode.Sub_Image(topics[0], 0);
-        }
-        if (topics[1] != "") {
-            m_model->m_rosNode.Sub_Image(topics[1], 1);
-        }
-        if (topics[2] != "") {
-            m_model->m_rosNode.Sub_Image(topics[2], 2);
-        }
-        if (topics[3] != "") {
-            m_model->m_rosNode.Sub_Image(topics[3], 3);
-        }
-    }
-
-    connect(&m_model->m_rosNode, &QNode::Show_image, this,
-            &MainWindow::slot_show_image);
-}
-
 // Read and display topic list
 void MainWindow::initTopicList() {
     ui->topic_listWidget->clear();
@@ -149,24 +124,13 @@ void MainWindow::initOthers() {
     m_timerChart->start();
 }
 
-bool MainWindow::connectMaster(QString master_ip, QString ros_ip, bool use_envirment) {
+bool MainWindow::connectMaster(QString master_ip, QString ros_ip) {
 
-    if (use_envirment) {
-        if (!m_model->m_rosNode.init()) {
-            return false;
-        } else {
-            initVideos();
-            initTopicList();
-            initOthers();
-        }
+    if (!m_model->connectMaster(master_ip, ros_ip)) {
+        return false;
     } else {
-        if (!m_model->m_rosNode.init(master_ip.toStdString(), ros_ip.toStdString())) {
-            return false;
-        } else {
-            initVideos();
-            initTopicList();
-            initOthers();
-        }
+        initTopicList();
+        initOthers();
     }
     readSettings();
     return true;
@@ -318,6 +282,9 @@ void MainWindow::connections() {
     connect(&m_model->m_rosNode, &QNode::loggingUpdated, this, &MainWindow::updateLoggingView);
     connect(&m_model->m_rosNode, &QNode::rosShutdown, this, &MainWindow::slot_rosShutdown);
     connect(&m_model->m_rosNode, &QNode::Master_shutdown, this, &MainWindow::slot_rosShutdown);
+
+    connect(&m_model->m_rosNode, &QNode::Show_image, this,
+            &MainWindow::slot_show_image);
 
     // Main display screen
 
