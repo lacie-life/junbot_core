@@ -65,21 +65,22 @@ rosrun junbot_gui junbot_gui
 
 ### Main Class
 
-- <b> class AppModel <\b> : App Manager 
+- <b> class AppModel </b> : App Manager 
     
-- <b> class QNode <\b> : Ros Interface
+- <b> class QNode </b> : Ros Interface
     
-- <b> class QDBHandler <\b> : SQLite Interface
+- <b> class QDBHandler </b> : SQLite Interface
     
-- <b> UI Classes <\b> : QRobotItem, MainWindow, QLoginWidget, QUserLoginWidget
+- <b> UI Classes </b> : QRobotItem, MainWindow, QLoginWidget, QUserLoginWidget
 
-- <b> Other classes <\b> : AppConstants, QRobotMission, QRobotUtils, QCustomWidget
+- <b> Other classes </b> : AppConstants, QRobotMission, QRobotUtils, QCustomWidget
     
 ## TODO
-    - [ ] Refactor Code
-    - [ ] Ui for MainWindow, QLoginWidget, QUserLoginWidget
-    - [ ] User Module 
-    - [ ] Robot State Module
-    - [ ] Mission Module
-    - [ ] Total test
+
+   - [ ] Refactor Code
+   - [ ] Ui for MainWindow, QLoginWidget, QUserLoginWidget
+   - [ ] User Module 
+   - [ ] Robot State Module
+   - [ ] Mission Module
+   - [ ] Total test
 
