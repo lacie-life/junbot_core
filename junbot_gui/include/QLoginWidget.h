@@ -32,17 +32,9 @@ private slots:
 
     void on_btnLogin_clicked();
 
-    void SltAnimationFinished();
-
-    void SltEditFinished();
-
-    void on_checkBoxAutoLogin_clicked(bool checked);
-
     void slot_autoLoad();
 
     void slot_ShowWindow();
-
-    void slot_writeSettings();
 
 private:
     Ui::LoginWidget *ui;
@@ -80,10 +72,7 @@ private:
     bool m_bIsConnect = true;
 
 private:
-    void InitWidget();
-
-    void readSettings();
-
+    void initSettings();
     void ConnectMaster();
 
 protected:

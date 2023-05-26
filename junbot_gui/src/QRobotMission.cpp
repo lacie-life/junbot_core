@@ -3,3 +3,14 @@
 //
 
 #include "QRobotMission.h"
+
+QRobotMission::QRobotMission() {
+    mission_id = 0;
+    mission_type = 0;
+    mission_status = AppEnums::QMissionStatus::Idle;
+}
+
+QRobotMission::~QRobotMission() {
+
+}
+
