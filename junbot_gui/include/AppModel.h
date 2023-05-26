@@ -6,8 +6,6 @@
 #include "QRobotItem.h"
 #include "QRobotUltis.h"
 
-#include "QDBHandler.h"
-
 class AppModel : public QObject {
 Q_OBJECT
 public:
@@ -45,9 +43,6 @@ private:
 private:
     QString m_masterUrl;
     QString m_hostUrl;
-
-    // DB interface
-    QDBHandler *m_dbHandler;
 };
 
 #endif // APPMODEL_H

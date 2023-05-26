@@ -16,13 +16,9 @@ QLoginWidget::QLoginWidget(QWidget *parent, AppModel *model)
         : QCustomMoveWidget(parent)
         , ui(new Ui::LoginWidget) {
     ui->setupUi(this);
-    ui->btnWinClose->setIcon(QIcon(":/image/data/images/close.png"));
-    ui->btnWinMin->setIcon(QIcon(":/image/data/images/min.png"));
-    ui->btnWinClose_2->setIcon(QIcon(":/image/data/images/close.png"));
-    ui->btnWinMin_2->setIcon(QIcon(":/image/data/images/min.png"));
+
     this->setAttribute(Qt::WA_TranslucentBackground);
     this->setWindowFlags(Qt::FramelessWindowHint);
-
     this->setWindowFlags(Qt::FramelessWindowHint);
 
     m_model = model;
@@ -39,8 +35,6 @@ QLoginWidget::QLoginWidget(QWidget *parent, AppModel *model)
         if (address.protocol() == QAbstractSocket::IPv4Protocol) {
             QString addre = address.toString();
 
-            CONSOLE << addre;
-
             if (addre.split(".")[0] == "192") {
                 m_qRosIp = addre;
                 m_qMasterIp = "http://" + addre + ":11311";
@@ -54,6 +48,8 @@ QLoginWidget::QLoginWidget(QWidget *parent, AppModel *model)
         }
     }
 
+    ui->stackedWidget->setCurrentIndex(1);
+
     // Set ip for ROS master connection
     connect(ui->pushButton_auto, &QPushButton::clicked, [=]() {
         ui->lineEditMasterIp->setText(m_qMasterIp);
@@ -64,20 +60,6 @@ QLoginWidget::QLoginWidget(QWidget *parent, AppModel *model)
     connect(ui->pushButton_hellp, &QPushButton::clicked, [=]() {
         QDesktopServices::openUrl(
                 QUrl(QString("https://github.com/ScarecrowStraw/JunBotGUI/blob/main/README.md")));
-    });
-
-    // Window size setting
-    connect(ui->btnWinClose, &QPushButton::clicked, [=]() {
-        this->close();
-    });
-    connect(ui->btnWinMin, &QPushButton::clicked, [=]() {
-        this->showMinimized();
-    });
-    connect(ui->btnWinClose_2, &QPushButton::clicked, [=]() {
-        this->close();
-    });
-    connect(ui->btnWinMin_2, &QPushButton::clicked, [=]() {
-        this->showMinimized();
     });
 
     if (ui->checkBoxAutoLogin->isChecked()) {

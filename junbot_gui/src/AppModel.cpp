@@ -3,7 +3,6 @@
 
 AppModel::AppModel(int argc, char **argv, QObject *parent)
     : QObject(parent)
-    , m_dbHandler(QDBHandler::getInstance())
     , m_rosNode(argc, argv)
 {
     readSettings();
@@ -13,7 +12,6 @@ AppModel::AppModel(int argc, char **argv, QObject *parent)
 AppModel::~AppModel()
 {
     writeSettings();
-    QDBHandler::resetInstance();
 }
 
 void AppModel::readSettings() {
