@@ -4,7 +4,11 @@
 AppModel::AppModel(int argc, char **argv, QObject *parent)
     : QObject(parent)
     , m_rosNode(argc, argv)
+    , m_dbManager(QDatabaseManager::instance())
+    , m_currentUser(nullptr)
 {
+    CONSOLE << "App Init";
+
     readSettings();
     connections();
 }
@@ -80,4 +84,43 @@ void AppModel::disConnectMaster() {
 void AppModel::connections() {
 
     // TODO: Refactor MainWindow to use AppModel
+}
+
+bool AppModel::login(QUser &user)
+{
+    bool checkdone = m_dbManager.userDao.isloginUserExits(user);
+
+    m_currentUser = new QUser(user.name(), user.pass(), user.type());
+
+    if(checkdone){
+        m_currentUser->setFullName(user.fullName());
+
+        CONSOLE << m_currentUser->fullName();
+        return true;
+    }
+    else {
+        CONSOLE << "Login Fail";
+        return false;
+    }
+}
+
+void AppModel::signOut()
+{
+    m_currentUser = nullptr;
+
+    emit signalSignOut();
+}
+
+bool AppModel::addUser(QUser &user)
+{
+    bool result = m_dbManager.userDao.addUser(user);
+
+    if(result){
+        CONSOLE << "Add successed";
+        return true;
+    }
+    else{
+        CONSOLE << "User exited";
+        return false;
+    }
 }

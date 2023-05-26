@@ -12,6 +12,7 @@ public:
     explicit QUser();
     QUser(QString name, QString pass, QString fullName, QString type);
     QUser(QString name, QString pass, QString type);
+    QUser(QString name, QString pass);
 
     ~QUser();
 

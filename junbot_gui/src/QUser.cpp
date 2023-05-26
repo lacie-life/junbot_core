@@ -19,6 +19,12 @@ QUser::QUser(QString name, QString pass, QString type)
 {
 }
 
+QUser::QUser(QString name, QString pass)
+    : m_name(name),
+    m_pass(pass)
+{
+}
+
 QUser::~QUser()
 {
 

@@ -23,18 +23,19 @@ public:
     ~QLoginWidget();
 
 signals:
+    void createButtonClicked();
+    void loginSuccess();
+    void loginFail();
+    void LoginUserInit();
+    void closeCreateAccountWidget();
 
-    void signalRotate();
-
-protected:
-    void changeEvent(QEvent *e);
+public slots:
+    void getLogindata();
+    void createUser();
 
 private slots:
-
     void on_btnLogin_clicked();
-
     void slot_autoLoad();
-
     void slot_ShowWindow();
 
 private:
@@ -52,6 +53,7 @@ private:
 
 protected:
     void paintEvent(QPaintEvent *);
+    void changeEvent(QEvent *e);
 };
 
 #endif // QLOGINWIDGET_H

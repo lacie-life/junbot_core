@@ -19,7 +19,7 @@ void QUserDAO::init() const
     if(!m_database.tables().contains("users"))
     {
         QSqlQuery query(m_database);
-        query.exec("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, name text NOT NULL, pass text NOT NULL, fullName text NOT NULL)");
+        query.exec("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, name text NOT NULL, pass text NOT NULL, type text NOT NULL)");
 
         if (query.lastError().type() == QSqlError::ErrorType::NoError) {
             qDebug() << "Query OK:"  << query.lastQuery();
@@ -37,7 +37,7 @@ bool QUserDAO::addUser(QUser& user) const
     if (!isUserExits(user))
     {
         QSqlQuery query(m_database);
-        query.prepare("INSERT INTO users (name, pass, fullName) VALUES (:name, :pass, :fullName)");
+        query.prepare("INSERT INTO users (name, pass, type) VALUES (:name, :pass, :type)");
 
         qDebug() << user.name();
         qDebug() << user.pass();
@@ -45,7 +45,7 @@ bool QUserDAO::addUser(QUser& user) const
 
         query.bindValue(":name", user.name());
         query.bindValue(":pass", user.pass());
-        query.bindValue(":fullName", user.fullName());
+        query.bindValue(":type", user.fullName());
 
         query.exec();
         user.setId(query.lastInsertId().toInt());
@@ -91,7 +91,7 @@ bool QUserDAO::isloginUserExits(QUser &user) const
         if(query.value("pass").toString()==user.pass()){
 
             user.setId(query.value("id").toString().toInt());
-            user.setFullName(query.value("fullName").toString());
+            user.setFullName(query.value("type").toString());
 
             return true;
         }

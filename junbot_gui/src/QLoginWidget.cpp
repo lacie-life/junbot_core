@@ -189,3 +189,46 @@ void QLoginWidget::paintEvent(QPaintEvent *) {
 }
 
 
+
+void QLoginWidget::createUser()
+{
+    QString name = ui->nameInput->toPlainText();
+    QString pass = ui->passInput->text();
+    QString type = ui->fullNameInput->toPlainText();
+
+    QUser u(name, pass, type);
+
+    CONSOLE << name << " " << pass << " " << type;
+
+    bool result = m_model->addUser(u);
+
+    if (result)
+    {
+        QMessageBox msgBox;
+        msgBox.setText("Create user successed");
+        msgBox.exec();
+    }
+    else
+    {
+        QMessageBox msgBox;
+        msgBox.setText("User exited");
+        msgBox.exec();
+    }
+}
+
+void QLoginWidget::getLogindata()
+{
+    QString usrname = ui->username->toPlainText();
+    QString usrpass = ui->lineEdit->text();
+    QUser usrlogin(usrname, usrpass);
+
+    bool checker = m_model->login(usrlogin);
+
+    if(checker){
+        emit loginSuccess();
+        emit LoginUserInit();
+    }
+    else{
+        emit loginFail();
+    }
+}
