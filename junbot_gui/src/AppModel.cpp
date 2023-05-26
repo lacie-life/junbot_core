@@ -10,7 +10,6 @@ AppModel::AppModel(int argc, char **argv, QObject *parent)
     CONSOLE << "App Init";
 
     readSettings();
-    connections();
 }
 
 AppModel::~AppModel()
@@ -55,35 +54,6 @@ void AppModel::initVideos() {
 bool AppModel::connectMaster(QString master_ip, QString ros_ip)
 {
     return m_rosNode.init(master_ip.toStdString(), ros_ip.toStdString());
-}
-
-void AppModel::updateBatteryState(const sensor_msgs::BatteryState_<std::allocator<void>>::ConstPtr &msg) {
-
-}
-
-void AppModel::rosShutdown() {
-
-}
-
-void AppModel::cmdControl() {
-
-}
-
-void AppModel::set2DGoal() {
-
-}
-
-void AppModel::set2DPos() {
-
-}
-
-void AppModel::disConnectMaster() {
-
-}
-
-void AppModel::connections() {
-
-    // TODO: Refactor MainWindow to use AppModel
 }
 
 bool AppModel::login(QUser &user)

@@ -34,12 +34,6 @@ public:
     bool connectMaster(QString master_ip, QString ros_ip);
 
 public slots:
-    void updateBatteryState(const sensor_msgs::BatteryState::ConstPtr &msg);
-    void rosShutdown();
-    void cmdControl();
-    void set2DGoal();
-    void set2DPos();
-    void disConnectMaster();
 
 signals:
     void signalSet2DPose();
@@ -51,9 +45,6 @@ signals:
 public:
     // Ros interface
     QNode m_rosNode;
-
-private:
-    void connections();
 
 private:
     QString m_masterUrl;
