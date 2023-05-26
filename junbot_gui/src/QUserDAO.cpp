@@ -11,7 +11,6 @@
 QUserDAO::QUserDAO(QSqlDatabase& database)
     : m_database(database)
 {
-
 }
 
 void QUserDAO::init() const
@@ -88,17 +87,16 @@ bool QUserDAO::isloginUserExits(QUser &user) const
     QDatabaseManager::debugQuery(query);
 
     if(query.first()){
-        if(query.value("pass").toString()==user.pass()){
+        if(query.value("pass").toString() == user.pass()){
 
             user.setId(query.value("id").toString().toInt());
-            user.setFullName(query.value("type").toString());
+            user.setType(query.value("type").toString());
 
             return true;
         }
         else{
             return false;
         }
-
-            }
+    }
 }
 

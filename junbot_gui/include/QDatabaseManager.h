@@ -10,8 +10,7 @@
 class QSqlDatabase;
 class QSqlQuery;
 
-
-const QString DATABASE_FILENAME = "data/user.db";
+const QString DATABASE_FILENAME = "/home/lacie/3s_ws/src/junbot_planner/junbot_gui/data/user.db";
 
 class QDatabaseManager
 {

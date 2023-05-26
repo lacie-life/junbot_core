@@ -167,4 +167,7 @@
         <file>data/background/background.gif</file>
         <file>data/background/test.jpg</file>
     </qresource>
+    <qresource prefix="/database">
+        <file>data/user.db</file>
+    </qresource>
 </RCC>

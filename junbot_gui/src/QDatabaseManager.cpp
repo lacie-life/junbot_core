@@ -1,4 +1,5 @@
 #include "QDatabaseManager.h"
+#include "AppConstants.h"
 
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -11,17 +12,17 @@ QSqlDatabase* QDatabaseManager::m_database = new QSqlDatabase(QSqlDatabase::addD
 void QDatabaseManager::debugQuery(const QSqlQuery& query)
 {
     if (query.lastError().type() == QSqlError::ErrorType::NoError) {
-        qDebug() << "Query OK:"  << query.lastQuery();
+        CONSOLE << "Query OK:"  << query.lastQuery();
     } else {
-       qWarning() << "Query KO:" << query.lastError().text();
-       qWarning() << "Query text:" << query.lastQuery();
+        CONSOLE << "Query KO:" << query.lastError().text();
+        CONSOLE << "Query text:" << query.lastQuery();
     }
 }
 
 QDatabaseManager& QDatabaseManager::instance()
 {
     static QDatabaseManager instance;
-    qDebug() << "QDatabaseManager Init";
+    CONSOLE << "QDatabaseManager Init";
     return instance;
 }
 
@@ -31,7 +32,7 @@ QDatabaseManager::QDatabaseManager(const QString& path)
     m_database->setDatabaseName(path);
 
     bool openStatus = m_database->open();
-    qDebug() << "Database connection: " << (openStatus ? "OK" : "Error");
+    CONSOLE << "Database connection: " << (openStatus ? "OK" : "Error");
 
     userDao.init();
 }

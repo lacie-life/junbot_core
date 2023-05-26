@@ -90,12 +90,11 @@ bool AppModel::login(QUser &user)
 {
     bool checkdone = m_dbManager.userDao.isloginUserExits(user);
 
-    m_currentUser = new QUser(user.name(), user.pass(), user.type());
+    m_currentUser = new QUser(user.name(), user.pass());
 
     if(checkdone){
-        m_currentUser->setFullName(user.fullName());
-
-        CONSOLE << m_currentUser->fullName();
+        CONSOLE << m_currentUser->name();
+        CONSOLE << "Login Success";
         return true;
     }
     else {

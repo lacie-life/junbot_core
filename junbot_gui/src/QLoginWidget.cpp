@@ -12,7 +12,7 @@
 #include <QPropertyAnimation>
 #include <QStringListModel>
 
-QLoginWidget::QLoginWidget(QWidget *parent, AppModel *model)
+QLoginWidget::QLoginWidget(int argc, char **argv, QWidget *parent)
         : QCustomMoveWidget(parent)
         , ui(new Ui::LoginWidget) {
     ui->setupUi(this);
@@ -21,7 +21,7 @@ QLoginWidget::QLoginWidget(QWidget *parent, AppModel *model)
     this->setWindowFlags(Qt::FramelessWindowHint);
     this->setWindowFlags(Qt::FramelessWindowHint);
 
-    m_model = model;
+    m_model = new AppModel(argc, argv);
 
     initSettings();
 
@@ -49,6 +49,27 @@ QLoginWidget::QLoginWidget(QWidget *parent, AppModel *model)
     }
 
     ui->stackedWidget->setCurrentIndex(1);
+
+    // Create User
+    connect(this, &QLoginWidget::createButtonClicked, this, [this] {
+        ui->stackedWidget->setCurrentIndex(2);
+    });
+    connect(ui->createButton, &QPushButton::clicked, this, &QLoginWidget::createUser);
+    connect(ui->closeButton, &QPushButton::clicked, this, [this] {
+        ui->stackedWidget->setCurrentIndex(1);
+    });
+
+    // Login
+    connect(this, &QLoginWidget::loginSuccess, this, [this] {
+        ui->stackedWidget->setCurrentIndex(0);
+    });
+    connect(this, &QLoginWidget::loginFail, this, [this] {
+        ui->stackedWidget->setCurrentIndex(0);
+    });
+    connect(ui->createButton_2, &QPushButton::clicked, this, [this] {
+        emit createButtonClicked();
+    });
+    connect(ui->loginButton, &QPushButton::clicked, this, &QLoginWidget::getLogindata);
 
     // Set ip for ROS master connection
     connect(ui->pushButton_auto, &QPushButton::clicked, [=]() {

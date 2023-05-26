@@ -18,7 +18,7 @@ namespace Ui {
 class QLoginWidget : public QCustomMoveWidget {
 Q_OBJECT
 public:
-    QLoginWidget(QWidget *parent = nullptr, AppModel *model = nullptr);
+    QLoginWidget(int argc, char **argv, QWidget *parent = nullptr);
 
     ~QLoginWidget();
 

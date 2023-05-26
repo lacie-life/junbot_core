@@ -9,7 +9,7 @@
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    QLoginWidget w;
+    QLoginWidget w(argc, argv);
     w.show();
 
     app.connect(&app, &QApplication::lastWindowClosed, &app, QApplication::quit);

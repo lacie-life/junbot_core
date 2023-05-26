@@ -32,7 +32,7 @@ padding:0;
     </rect>
    </property>
    <property name="currentIndex">
-    <number>2</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="robotConnect">
     <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -678,7 +678,7 @@ background-color:none</string>
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="creaeteAccount">
+   <widget class="QWidget" name="createAccount">
     <widget class="QWidget" name="widget_2" native="true">
      <property name="geometry">
       <rect>
