@@ -12,9 +12,9 @@
 #include <QPropertyAnimation>
 #include <QStringListModel>
 
-QLoginWidget::QLoginWidget(QWidget *parent)
-        : QCustomMoveWidget(parent),
-          ui(new Ui::LoginWidget) {
+QLoginWidget::QLoginWidget(QWidget *parent, AppModel *model)
+        : QCustomMoveWidget(parent)
+        , ui(new Ui::LoginWidget) {
     ui->setupUi(this);
     ui->btnWinClose->setIcon(QIcon(":/image/data/images/close.png"));
     ui->btnWinMin->setIcon(QIcon(":/image/data/images/min.png"));
@@ -24,6 +24,8 @@ QLoginWidget::QLoginWidget(QWidget *parent)
     this->setWindowFlags(Qt::FramelessWindowHint);
 
     this->setWindowFlags(Qt::FramelessWindowHint);
+
+    m_model = model;
 
     initSettings();
 
