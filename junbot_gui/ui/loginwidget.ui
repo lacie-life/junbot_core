@@ -602,9 +602,9 @@ background-color:none</string>
        <widget class="QPushButton" name="loginButton">
         <property name="geometry">
          <rect>
-          <x>370</x>
+          <x>260</x>
           <y>250</y>
-          <width>121</width>
+          <width>111</width>
           <height>31</height>
          </rect>
         </property>
@@ -615,14 +615,14 @@ background-color:none</string>
        <widget class="QPushButton" name="createButton">
         <property name="geometry">
          <rect>
-          <x>220</x>
-          <y>250</y>
-          <width>131</width>
-          <height>31</height>
+          <x>470</x>
+          <y>390</y>
+          <width>111</width>
+          <height>41</height>
          </rect>
         </property>
         <property name="text">
-         <string>Create</string>
+         <string>Sign up</string>
         </property>
        </widget>
        <widget class="QLabel" name="label">
@@ -631,21 +631,11 @@ background-color:none</string>
           <x>60</x>
           <y>110</y>
           <width>91</width>
-          <height>51</height>
+          <height>41</height>
          </rect>
         </property>
         <property name="text">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;Username:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-       </widget>
-       <widget class="QPlainTextEdit" name="username">
-        <property name="geometry">
-         <rect>
-          <x>160</x>
-          <y>120</y>
-          <width>331</width>
-          <height>41</height>
-         </rect>
         </property>
        </widget>
        <widget class="QLineEdit" name="lineEdit">
@@ -672,6 +662,32 @@ background-color:none</string>
         </property>
         <property name="text">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:14pt;&quot;&gt;Password:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="username">
+        <property name="geometry">
+         <rect>
+          <x>160</x>
+          <y>110</y>
+          <width>331</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+       <widget class="QPushButton" name="cancelButton">
+        <property name="geometry">
+         <rect>
+          <x>380</x>
+          <y>250</y>
+          <width>111</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Cancel</string>
         </property>
        </widget>
       </widget>
@@ -720,26 +736,6 @@ background-color:none</string>
        <string>Create new account</string>
       </property>
      </widget>
-     <widget class="QPlainTextEdit" name="nameInput">
-      <property name="geometry">
-       <rect>
-        <x>180</x>
-        <y>80</y>
-        <width>251</width>
-        <height>41</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QPlainTextEdit" name="fullNameInput">
-      <property name="geometry">
-       <rect>
-        <x>180</x>
-        <y>220</y>
-        <width>251</width>
-        <height>41</height>
-       </rect>
-      </property>
-     </widget>
      <widget class="QLabel" name="fullNameLabel">
       <property name="geometry">
        <rect>
@@ -753,26 +749,13 @@ background-color:none</string>
        <string>Type:</string>
       </property>
      </widget>
-     <widget class="QLineEdit" name="passInput">
-      <property name="geometry">
-       <rect>
-        <x>180</x>
-        <y>150</y>
-        <width>251</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="echoMode">
-       <enum>QLineEdit::Password</enum>
-      </property>
-     </widget>
      <widget class="QPushButton" name="createButton_2">
       <property name="geometry">
        <rect>
-        <x>260</x>
-        <y>270</y>
-        <width>89</width>
-        <height>25</height>
+        <x>220</x>
+        <y>290</y>
+        <width>131</width>
+        <height>41</height>
        </rect>
       </property>
       <property name="text">
@@ -782,10 +765,10 @@ background-color:none</string>
      <widget class="QPushButton" name="closeButton">
       <property name="geometry">
        <rect>
-        <x>260</x>
-        <y>320</y>
-        <width>89</width>
-        <height>25</height>
+        <x>380</x>
+        <y>290</y>
+        <width>101</width>
+        <height>41</height>
        </rect>
       </property>
       <property name="text">
@@ -803,6 +786,42 @@ background-color:none</string>
       </property>
       <property name="text">
        <string>Password:</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="nameInput">
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>80</y>
+        <width>311</width>
+        <height>41</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="passInput">
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>150</y>
+        <width>311</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="inputMethodHints">
+       <set>Qt::ImhHiddenText|Qt::ImhNoAutoUppercase|Qt::ImhNoPredictiveText|Qt::ImhSensitiveData</set>
+      </property>
+      <property name="echoMode">
+       <enum>QLineEdit::Password</enum>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="fullNameInput">
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>220</y>
+        <width>311</width>
+        <height>41</height>
+       </rect>
       </property>
      </widget>
     </widget>

@@ -50,28 +50,38 @@ QLoginWidget::QLoginWidget(int argc, char **argv, QWidget *parent)
 
     ui->stackedWidget->setCurrentIndex(1);
 
-    // Create User
-    connect(this, &QLoginWidget::createButtonClicked, this, [this] {
-        ui->stackedWidget->setCurrentIndex(2);
-    });
-    connect(ui->createButton, &QPushButton::clicked, this, &QLoginWidget::createUser);
+    // *****Create User (widget_2)*****
+    // connect(this, &QLoginWidget::createButtonClicked, this, [this] {
+    //     ui->stackedWidget->setCurrentIndex(2);
+    // });
+    connect(ui->createButton_2, &QPushButton::clicked, this, &QLoginWidget::createUser);
+
     connect(ui->closeButton, &QPushButton::clicked, this, [this] {
         ui->stackedWidget->setCurrentIndex(1);
     });
 
-    // Login
-    connect(this, &QLoginWidget::loginSuccess, this, [this] {
-        ui->stackedWidget->setCurrentIndex(0);
+    // *****Login (widget_1)*****
+    // connect(ui->createButton_2, &QPushButton::clicked, this, [this] {
+    //     emit createButtonClicked();
+    // });
+    connect(ui->createButton, &QPushButton::clicked, this, [this]{
+        ui->stackedWidget->setCurrentIndex(2);
     });
-    connect(this, &QLoginWidget::loginFail, this, [this] {
-        ui->stackedWidget->setCurrentIndex(0);
+    connect(ui->loginButton, &QPushButton::clicked, [=]() {
+        QLoginWidget::getLogindata();
     });
-    connect(ui->createButton_2, &QPushButton::clicked, this, [this] {
-        emit createButtonClicked();
+    connect(ui->cancelButton, &QPushButton::clicked, [=]() {
+        this->close();
     });
-    connect(ui->loginButton, &QPushButton::clicked, this, &QLoginWidget::getLogindata);
 
-    // Set ip for ROS master connection
+    // connect(this, &QLoginWidget::loginSuccess, this, [this] {
+    //     ui->stackedWidget->setCurrentIndex(0);
+    // });
+    // connect(this, &QLoginWidget::loginFail, this, [this] {
+    //     ui->stackedWidget->setCurrentIndex(0);
+    // });
+
+    // *****Set ip for ROS master connection*****
     connect(ui->pushButton_auto, &QPushButton::clicked, [=]() {
         ui->lineEditMasterIp->setText(m_qMasterIp);
         ui->lineEditRosIp->setText(m_qRosIp);
@@ -213,9 +223,9 @@ void QLoginWidget::paintEvent(QPaintEvent *) {
 
 void QLoginWidget::createUser()
 {
-    QString name = ui->nameInput->toPlainText();
+    QString name = ui->nameInput->text();
     QString pass = ui->passInput->text();
-    QString type = ui->fullNameInput->toPlainText();
+    QString type = ui->fullNameInput->text();
 
     QUser u(name, pass, type);
 
@@ -239,17 +249,21 @@ void QLoginWidget::createUser()
 
 void QLoginWidget::getLogindata()
 {
-    QString usrname = ui->username->toPlainText();
+    QString usrname = ui->username->text();
     QString usrpass = ui->lineEdit->text();
     QUser usrlogin(usrname, usrpass);
 
     bool checker = m_model->login(usrlogin);
 
     if(checker){
-        emit loginSuccess();
-        emit LoginUserInit();
+        ui->stackedWidget->setCurrentIndex(0);
+        // emit loginSuccess();
+        // emit LoginUserInit();
     }
     else{
-        emit loginFail();
+        QMessageBox::warning(NULL, "Login failed",
+                                 "The username or password you entered is incorrect! Please try again!",
+                                 QMessageBox::Yes);
+        // emit loginFail();
     }
 }
