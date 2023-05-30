@@ -24,9 +24,9 @@ public:
 
 signals:
     void createButtonClicked();
-    void loginSuccess();
-    void loginFail();
-    void LoginUserInit();
+    // void loginSuccess();
+    // void loginFail();
+    // void LoginUserInit();
     void closeCreateAccountWidget();
 
 public slots:

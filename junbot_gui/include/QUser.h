@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QString>
+#include "AppConstants.h"
 
 //TODO: Encode password before add to database
 

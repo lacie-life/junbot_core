@@ -40,11 +40,11 @@ bool QUserDAO::addUser(QUser& user) const
 
         qDebug() << user.name();
         qDebug() << user.pass();
-        qDebug() << user.fullName();
+        qDebug() << user.type();
 
-        query.bindValue(":name", user.name());
-        query.bindValue(":pass", user.pass());
-        query.bindValue(":type", user.fullName());
+        query.bindValue(":name", user.name(), QSql::In);
+        query.bindValue(":pass", user.pass(), QSql::In);
+        query.bindValue(":type", user.type(), QSql::In);
 
         query.exec();
         user.setId(query.lastInsertId().toInt());
@@ -86,17 +86,17 @@ bool QUserDAO::isloginUserExits(QUser &user) const
 
     QDatabaseManager::debugQuery(query);
 
-    if(query.first()){
-        if(query.value("pass").toString() == user.pass()){
-
-            user.setId(query.value("id").toString().toInt());
-            user.setType(query.value("type").toString());
-
-            return true;
-        }
-        else{
-            return false;
+    while(query.next()){
+        if(user.name() == query.value("name").toString()){
+            if(query.value("pass").toString() == user.pass()){
+                user.setId(query.value("id").toString().toInt());
+                user.setType(query.value("type").toString());
+                return true;
+            }
+            else{
+                return false;
+            }
         }
     }
+    return false;
 }
-
