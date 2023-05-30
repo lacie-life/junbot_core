@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 
-project(jun_plotter)
+project(junbot_plotter)
 
 find_package(catkin REQUIRED
     COMPONENTS message_generation rospy tf std_msgs geometry_msgs nav_msgs)
