@@ -94,29 +94,7 @@ bool AppModel::addUser(QUser &user)
     }
 }
 
-void signalRobotStatusChanged(AppEnums::QRobotStatus status){
-    switch (status)
-    {
-    case AppEnums::QRobotStatus::None:
-        // emit robotStatus_None;
-        break;
-    case AppEnums::QRobotStatus::Normal:
-        // emit robotStatus_Normal;
-        break;
-    case AppEnums::QRobotStatus::Warning:
-        // emit robotStatus_Warning;
-        break;
-    case AppEnums::QRobotStatus::Error:
-        // emit robotStatus_Error;
-        break;
-    case AppEnums::QRobotStatus::NotReady:
-        // emit 
-        break;
-    default:
-        break;
-    }
-}
-
+// TODO: Chaneg key to QAppEvents type, see more in AppConstants.h
 void AppModel::keyRecieved(int key)
 {
     CONSOLE << key;
@@ -142,6 +120,7 @@ void AppModel::keyRecieved(int key)
     }
 }
 
+// TODO: Chaneg key to QAppEvents type, see more in AppConstants.h
 void AppModel::keyMissonRecieved(int key)
 {
     switch (key)
@@ -161,4 +140,31 @@ void AppModel::keyMissonRecieved(int key)
     default:
         break;
     }
+}
+
+// TODO: Create Position DB for this (Later, not now)
+void AppModel::addNewPosition(QPoint point)
+{
+
+}
+
+// TODO: Check RoBot Status for set Mission and MissionStatus
+void AppModel::setMission(QRobotMission& mission)
+{
+
+}
+
+void AppModel::startMission()
+{
+
+}
+
+void AppModel::pauseMission()
+{
+
+}
+
+void AppModel::stopMission()
+{
+
 }

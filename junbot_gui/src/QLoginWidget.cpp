@@ -12,6 +12,7 @@
 #include <QPropertyAnimation>
 #include <QStringListModel>
 
+// TODO: Update image for login widget and createUser widget
 QLoginWidget::QLoginWidget(int argc, char **argv, QWidget *parent)
         : QCustomMoveWidget(parent)
         , ui(new Ui::LoginWidget) {
@@ -175,6 +176,7 @@ void QLoginWidget::ConnectMaster() {
     // Init RobotInterface
     robotInterface = new RobotInterface(m_model);
 
+    // TODO: update for using input text
     robotInterface->connectMaster("http://localhost:11311", "127.0.0.1");
     this -> hide();
     robotInterface->show();
@@ -192,6 +194,7 @@ void QLoginWidget::paintEvent(QPaintEvent *) {
     painter.fillRect(this->rect(), Qt::transparent);
 }
 
+//  TODO: Move userCreate button to after login (with admin type, not appear with normal user)
 void QLoginWidget::createUser()
 {
     QString name = ui->nameInput->text();

@@ -8,8 +8,7 @@
 #include <QSpinBox>
 
 #include "QCustomWidget.h"
-#include "mainwindow.h"
-#include "robotinterface.h"
+#include "QRobotInterface.h"
 #include "AppModel.h"
 
 namespace Ui {

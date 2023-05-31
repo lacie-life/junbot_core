@@ -68,7 +68,7 @@ void QRobotItem::paintMaps(QImage map) {
 }
 
 void QRobotItem::paintRoboPos(QRobotPose pos) {
-    //  qDebug()<<"pos:"<<pos.x<<" "<<pos.y<<" "<<pos.theta;
+    //  CONSOLE << "pos:" << pos.x << " " << pos.y << " " << pos.theta;
     RoboPostion = QPointF(pos.x, pos.y);
     m_roboYaw = pos.theta;
     update();

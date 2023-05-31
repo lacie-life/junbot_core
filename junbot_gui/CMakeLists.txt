@@ -53,9 +53,10 @@ file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 source_group("Header Files" FILES ${HEADERS})
 source_group("Source Files" FILES ${SOURCES})
 
-set(UI ${CMAKE_CURRENT_LIST_DIR}/ui/mainwindow.ui
-       ${CMAKE_CURRENT_LIST_DIR}/ui/loginwidget.ui
-       ${CMAKE_CURRENT_LIST_DIR}/ui/robotinterface.ui)
+set(UI 
+    ${CMAKE_CURRENT_LIST_DIR}/ui/loginwidget.ui
+    ${CMAKE_CURRENT_LIST_DIR}/ui/robotinterface.ui
+    )
 
 qt5_wrap_ui(UI_HEADERS ${UI})
 
