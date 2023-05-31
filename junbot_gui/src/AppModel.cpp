@@ -93,3 +93,72 @@ bool AppModel::addUser(QUser &user)
         return false;
     }
 }
+
+void signalRobotStatusChanged(AppEnums::QRobotStatus status){
+    switch (status)
+    {
+    case AppEnums::QRobotStatus::None:
+        // emit robotStatus_None;
+        break;
+    case AppEnums::QRobotStatus::Normal:
+        // emit robotStatus_Normal;
+        break;
+    case AppEnums::QRobotStatus::Warning:
+        // emit robotStatus_Warning;
+        break;
+    case AppEnums::QRobotStatus::Error:
+        // emit robotStatus_Error;
+        break;
+    case AppEnums::QRobotStatus::NotReady:
+        // emit 
+        break;
+    default:
+        break;
+    }
+}
+
+void AppModel::keyRecieved(int key)
+{
+    CONSOLE << key;
+    switch (key)
+    {
+    case 1:
+        emit signalRobotStatusChanged(AppEnums::QRobotStatus::None);
+        break;
+    case 2:
+        emit signalRobotStatusChanged(AppEnums::QRobotStatus::Normal);
+        break;
+    case 3:
+        emit signalRobotStatusChanged(AppEnums::QRobotStatus::Warning);
+        break;
+    case 4:
+        emit signalRobotStatusChanged(AppEnums::QRobotStatus::Error);
+        break;
+    case 5:
+        emit signalRobotStatusChanged(AppEnums::QRobotStatus::NotReady);
+        break;
+    default:
+        break;
+    }
+}
+
+void AppModel::keyMissonRecieved(int key)
+{
+    switch (key)
+    {
+    case 6:
+        emit signalRobotMissionStatusChanged(AppEnums::QMissionStatus::Idle);
+        break;
+    case 7:
+        emit signalRobotMissionStatusChanged(AppEnums::QMissionStatus::Running);
+        break;
+    case 8:
+        emit signalRobotMissionStatusChanged(AppEnums::QMissionStatus::Paused);
+        break;
+    case 9:
+        emit signalRobotMissionStatusChanged(AppEnums::QMissionStatus::Stopped);
+        break;
+    default:
+        break;
+    }
+}

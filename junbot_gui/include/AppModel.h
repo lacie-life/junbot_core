@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QString>
+#include <QKeyEvent>
+
 
 #include <memory.h>
 
@@ -12,6 +14,7 @@
 #include "QNode.h"
 #include "QRobotItem.h"
 #include "QRobotUltis.h"
+#include "QRobotMission.h"
 
 class AppModel : public QObject {
     Q_OBJECT
@@ -33,7 +36,16 @@ public:
     // ROS Connection
     bool connectMaster(QString master_ip, QString ros_ip);
 
+    //Battery Status
+    // void batteryStatus();
+
+    //Robot Status
+
+    //Mission Status
+
 public slots:
+    void keyRecieved(int key);
+    void keyMissonRecieved(int key);
 
 signals:
     void signalSet2DPose();
@@ -41,6 +53,8 @@ signals:
     void signalDisconnect();
     void signalSignOut();
     void signalLogin();
+    void signalRobotStatusChanged(AppEnums::QRobotStatus status);
+    void signalRobotMissionStatusChanged(AppEnums::QMissionStatus status);
 
 public:
     // Ros interface
@@ -52,6 +66,10 @@ private:
 
     QUser* m_currentUser;
     QDatabaseManager& m_dbManager;
+
+    AppEnums::QRobotStatus m_stattus = AppEnums::QRobotStatus::None;
+    AppEnums::QMissionStatus m_misstionStatus = AppEnums::QMissionStatus::Idle;
+    QVector<QRobotMission> m_Missions;
 
 };
 

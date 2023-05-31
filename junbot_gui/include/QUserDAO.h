@@ -2,6 +2,7 @@
 #define QUSERDAO_H
 
 #include <QObject>
+#include "AppConstants.h"
 
 class QSqlDatabase;
 class QUser;
