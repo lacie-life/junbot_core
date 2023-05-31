@@ -463,3 +463,5 @@ void MainWindow::closeEvent(QCloseEvent *event) {
     writeSettings();
     QMainWindow::closeEvent(event);
 }
+
+

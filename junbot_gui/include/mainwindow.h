@@ -92,6 +92,8 @@ signals:
     void signalSet2DGoal();
 
     void signalDisconnect();
+    
+
 
 private:
     void mousePressEvent(QMouseEvent *event);
@@ -103,6 +105,8 @@ private:
     void connections();
 
     void setCurrentMenu(QPushButton *btn);
+
+
 
 private:
     Ui::MainWindow *ui;

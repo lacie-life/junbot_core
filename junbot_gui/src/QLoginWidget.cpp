@@ -30,6 +30,10 @@ QLoginWidget::QLoginWidget(int argc, char **argv, QWidget *parent)
     ui->label_video->setPixmap(QPixmap::fromImage(img).scaled(ui->label_video->size(), Qt::KeepAspectRatioByExpanding,
                                                               Qt::SmoothTransformation));
 
+    ui->btnWinClose_1->setIcon(QIcon(":/image/data/images/close.png"));
+    ui->btnWinClose_2->setIcon(QIcon(":/image/data/images/close.png"));
+    ui->btnWinClose_3->setIcon(QIcon(":/image/data/images/close.png"));
+
     // check IP in local network
     foreach (QHostAddress address, QNetworkInterface::allAddresses()) {
         if (address.protocol() == QAbstractSocket::IPv4Protocol) {
@@ -51,40 +55,36 @@ QLoginWidget::QLoginWidget(int argc, char **argv, QWidget *parent)
     ui->stackedWidget->setCurrentIndex(1);
 
     // *****Create User (widget_2)*****
-    // connect(this, &QLoginWidget::createButtonClicked, this, [this] {
-    //     ui->stackedWidget->setCurrentIndex(2);
-    // });
     connect(ui->createButton_2, &QPushButton::clicked, this, &QLoginWidget::createUser);
 
     connect(ui->closeButton, &QPushButton::clicked, this, [this] {
         ui->stackedWidget->setCurrentIndex(1);
     });
+        connect(ui->btnWinClose_2, &QPushButton::clicked, [=]() {
+        this->close();
+    });
 
     // *****Login (widget_1)*****
-    // connect(ui->createButton_2, &QPushButton::clicked, this, [this] {
-    //     emit createButtonClicked();
-    // });
     connect(ui->createButton, &QPushButton::clicked, this, [this]{
         ui->stackedWidget->setCurrentIndex(2);
     });
     connect(ui->loginButton, &QPushButton::clicked, [=]() {
         QLoginWidget::getLogindata();
     });
-    connect(ui->cancelButton, &QPushButton::clicked, [=]() {
+    connect(ui->btnWinClose_1, &QPushButton::clicked, [=]() {
         this->close();
     });
-
-    // connect(this, &QLoginWidget::loginSuccess, this, [this] {
-    //     ui->stackedWidget->setCurrentIndex(0);
-    // });
-    // connect(this, &QLoginWidget::loginFail, this, [this] {
-    //     ui->stackedWidget->setCurrentIndex(0);
-    // });
 
     // *****Set ip for ROS master connection*****
     connect(ui->pushButton_auto, &QPushButton::clicked, [=]() {
         ui->lineEditMasterIp->setText(m_qMasterIp);
         ui->lineEditRosIp->setText(m_qRosIp);
+    });
+        connect(ui->btnWinClose_3, &QPushButton::clicked, [=]() {
+        this->close();
+    });
+        connect(ui->btnSignOut, &QPushButton::clicked, [=]() {
+        ui->stackedWidget->setCurrentIndex(1);
     });
 
     // Hint
@@ -168,43 +168,16 @@ void QLoginWidget::on_btnLogin_clicked() {
 void QLoginWidget::ConnectMaster() {
     int argc;
     char **argv;
-    if (mainWindow != NULL) {
-        mainWindow->close();
+    if (robotInterface != NULL) {
+        robotInterface->close();
     }
 
-    // Init MainWindow
-    mainWindow = new MainWindow(argc, argv);
+    // Init RobotInterface
+    robotInterface = new RobotInterface(m_model);
 
-    connect(mainWindow, SIGNAL(signalDisconnect()), this,
-            SLOT(slot_ShowWindow()));
-
-    QCoreApplication::processEvents();
-    ui->btnLogin->setText("CANCEL");
-    ui->btnLogin->setStyleSheet(
-            "border:0px;background-color:rgb(211, 215, 207);color:WHITE；");
-
-    bool isConnect = mainWindow->connectMaster(
-            ui->lineEditMasterIp->text(), ui->lineEditRosIp->text());
-
-    if (isConnect) {
-        QSettings connect_info("junbot_gui", "connect_info");
-        connect_info.setValue("master_url", ui->lineEditMasterIp->text());
-        connect_info.setValue("host_url", ui->lineEditRosIp->text());
-        connect_info.setValue("auto_connect", ui->checkBoxAutoLogin->isChecked());
-        ui->btnLogin->setText("CONNECT");
-        ui->btnLogin->setStyleSheet(
-                "border:0px;background-color:#F81243;color:WHITE；");
-        this->hide();
-        mainWindow->show();
-    } else {
-        ui->checkBoxAutoLogin->setChecked(false);
-        ui->btnLogin->setText("CONNECT");
-        ui->btnLogin->setStyleSheet(
-                "border:0px;background-color:#F81243;color:WHITE；");
-        QMessageBox::information(NULL, "Connection failed",
-                                 "Connection failed! Please check your connection configuration or restart and try again!",
-                                 QMessageBox::Yes);
-    }
+    robotInterface->connectMaster("http://localhost:11311", "127.0.0.1");
+    this -> hide();
+    robotInterface->show();
 }
 
 void QLoginWidget::slot_ShowWindow() {
@@ -218,8 +191,6 @@ void QLoginWidget::paintEvent(QPaintEvent *) {
     QPainter painter;
     painter.fillRect(this->rect(), Qt::transparent);
 }
-
-
 
 void QLoginWidget::createUser()
 {
@@ -257,13 +228,10 @@ void QLoginWidget::getLogindata()
 
     if(checker){
         ui->stackedWidget->setCurrentIndex(0);
-        // emit loginSuccess();
-        // emit LoginUserInit();
     }
     else{
         QMessageBox::warning(NULL, "Login failed",
                                  "The username or password you entered is incorrect! Please try again!",
                                  QMessageBox::Yes);
-        // emit loginFail();
     }
 }

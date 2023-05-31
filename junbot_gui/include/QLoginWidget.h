@@ -9,6 +9,7 @@
 
 #include "QCustomWidget.h"
 #include "mainwindow.h"
+#include "robotinterface.h"
 #include "AppModel.h"
 
 namespace Ui {
@@ -41,7 +42,7 @@ private slots:
 private:
     Ui::LoginWidget *ui;
     bool m_bConnected;
-    MainWindow *mainWindow = NULL;
+    RobotInterface* robotInterface = NULL;
     QString m_qRosIp;
     QString m_qMasterIp;
     bool m_bIsConnect = true;
