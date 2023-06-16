@@ -42,7 +42,10 @@ QLoginWidget::QLoginWidget(int argc, char **argv, QWidget *parent)
 
     ui->viettel_logo->setPixmap(QPixmap::fromImage(imgViettel).scaled(ui->viettel_logo->size(), Qt::KeepAspectRatio,
                                                               Qt::SmoothTransformation));
-                                                              
+
+    // slot_disconnect
+
+
     // check IP in local network
     foreach (QHostAddress address, QNetworkInterface::allAddresses()) {
         if (address.protocol() == QAbstractSocket::IPv4Protocol) {
@@ -188,6 +191,10 @@ void QLoginWidget::ConnectMaster() {
     robotInterface->connectMaster("http://localhost:11311", "127.0.0.1");
     this -> hide();
     robotInterface->show();
+
+    connect(robotInterface, &RobotInterface::signalDisconnect, [=]() {
+        this->show();
+    });
 }
 
 void QLoginWidget::slot_ShowWindow() {
