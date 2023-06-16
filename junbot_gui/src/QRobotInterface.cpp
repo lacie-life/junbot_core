@@ -1,4 +1,4 @@
-#include "robotinterface.h"
+#include "QRobotInterface.h"
 #include "ui_robotinterface.h"
 
 RobotInterface::RobotInterface(AppModel *model, QWidget *parent)

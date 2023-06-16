@@ -350,7 +350,7 @@ void QNode::slot_pub2DPos(QRobotPose pose) {
     QPointF tmp = transScenePoint2Word(QPointF(pose.x, pose.y));
     pose.x = tmp.x();
     pose.y = tmp.y();
-    // qDebug() << "init pose:" << pose.x << " " << pose.y << " " << pose.theta;
+    // CONSOLE << "init pose:" << pose.x << " " << pose.y << " " << pose.theta;
     geometry_msgs::PoseWithCovarianceStamped goal;
 
     goal.header.frame_id = "map";
@@ -388,7 +388,7 @@ QPointF QNode::transScenePoint2Word(QPointF pose) {
 }
 
 QPointF QNode::transWordPoint2Scene(QPointF pose) {
-    //    qDebug()<<pose;
+    //    CONSOLE << pose;
     QPointF res;
     res.setX(m_wordOrigin.x() + pose.x() / m_mapResolution);
     res.setY(m_wordOrigin.y() - (pose.y() / m_mapResolution));

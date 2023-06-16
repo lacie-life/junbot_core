@@ -1,5 +1,5 @@
 <package>
-  <name>jun_plotter</name>
+  <name>junbot_plotter</name>
   <version>1.0.0</version>
   <description>
     Generate plots from Odometry data in PDF format file.

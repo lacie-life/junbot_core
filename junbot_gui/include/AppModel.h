@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QString>
 #include <QKeyEvent>
-
+#include <QQueue>
 
 #include <memory.h>
 
@@ -37,11 +37,16 @@ public:
     bool connectMaster(QString master_ip, QString ros_ip);
 
     //Battery Status
-    // void batteryStatus();
+    void batteryStatus();
 
     //Robot Status
 
     //Mission Status
+    void addNewPosition(QPoint point);
+    void setMission(QRobotMission& mission);
+    void startMission();
+    void stopMission();
+    void pauseMission();
 
 public slots:
     void keyRecieved(int key);
@@ -55,6 +60,9 @@ signals:
     void signalLogin();
     void signalRobotStatusChanged(AppEnums::QRobotStatus status);
     void signalRobotMissionStatusChanged(AppEnums::QMissionStatus status);
+    void signalMissionDone();
+    void signalMissionError();
+    void signalMisionStarted();
 
 public:
     // Ros interface
@@ -69,7 +77,11 @@ private:
 
     AppEnums::QRobotStatus m_stattus = AppEnums::QRobotStatus::None;
     AppEnums::QMissionStatus m_misstionStatus = AppEnums::QMissionStatus::Idle;
-    QVector<QRobotMission> m_Missions;
+    
+    // TODO: Multi Mission control
+    // Push to mission Queue if current mission is running
+    QQueue<QRobotMission> m_missions;
+    QRobotMission m_currentMission;
 
 };
 

@@ -18,6 +18,7 @@ Q_OBJECT
     Q_ENUMS(QRobotColor)
     Q_ENUMS(QLogLevel)
     Q_ENUMS(QMissionStatus)
+    Q_ENUMS(QAppEvents)
 
 public:
     enum QRobotStatus {
@@ -47,6 +48,11 @@ public:
         Blue,
         Red,
         Yellow,
+    };
+
+    enum QAppEvents
+    {
+        RobotStatusChanged,
     };
 };
 
