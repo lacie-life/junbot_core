@@ -86,10 +86,13 @@ bool RobotInterface::connectMaster(QString master_ip, QString ros_ip)
   CONSOLE << "Connect ?";
 
   if (!m_model->connectMaster(master_ip, ros_ip)) {
-    return false;
-    } else {
-    readSettings();
-    return true;
+      CONSOLE << "Connect fail";
+      return false;
+  } 
+  else 
+  {
+      readSettings();
+      return true;
   }
 }
 

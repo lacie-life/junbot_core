@@ -1,4 +1,5 @@
 #include "QNode.h"
+#include <QDebug>
 
 QNode::QNode(int argc, char **argv)
         : init_argc(argc), init_argv(argv) {
@@ -58,6 +59,9 @@ bool QNode::init() {
 
 bool QNode::init(const std::string &master_url, const std::string &host_url) {
     std::map<std::string, std::string> remappings;
+
+    CONSOLE << "ROS Node Init";
+
     remappings["__master"] = master_url;
     remappings["__hostname"] = host_url;
     ros::init(remappings, "junbot_gui", ros::init_options::AnonymousName);

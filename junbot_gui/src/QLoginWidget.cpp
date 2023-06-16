@@ -188,9 +188,19 @@ void QLoginWidget::ConnectMaster() {
     robotInterface = new RobotInterface(m_model);
 
     // TODO: update for using input text
-    robotInterface->connectMaster("http://localhost:11311", "127.0.0.1");
-    this -> hide();
-    robotInterface->show();
+    if(robotInterface->connectMaster("http://localhost:11311", "127.0.0.1"))
+    {
+        this -> hide();
+        robotInterface->show();
+    }
+    else 
+    {
+        QMessageBox::warning(NULL, "Error",
+                                 "Can't connect to ROS core",
+                                 QMessageBox::Yes);
+        CONSOLE << "Connect Fail";
+    }
+    
 
     connect(robotInterface, &RobotInterface::signalDisconnect, [=]() {
         this->show();
