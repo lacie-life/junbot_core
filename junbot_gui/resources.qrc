@@ -5,6 +5,7 @@
         <file>data/images/wait3.gif</file>
         <file>data/images/wait2.gif</file>
         <file>data/images/wait1.gif</file>
+        <file>data/images/VMC_Logo.png</file>
         <file>data/images/visibility.svg</file>
         <file>data/images/up_right_2.png</file>
         <file>data/images/up_right.png</file>
@@ -165,6 +166,7 @@
     </qresource>
     <qresource prefix="/background">
         <file>data/background/background.gif</file>
+        <file>data/background/dawn.jpg</file>
         <file>data/background/test.jpg</file>
     </qresource>
     <qresource prefix="/database">

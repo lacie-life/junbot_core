@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>602</width>
-    <height>450</height>
+    <width>852</width>
+    <height>529</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,11 +28,11 @@ padding:0;
      <x>0</x>
      <y>0</y>
      <width>602</width>
-     <height>515</height>
+     <height>451</height>
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>2</number>
    </property>
    <widget class="QWidget" name="robotConnect">
     <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -609,7 +609,7 @@ background-color:none</string>
         <property name="geometry">
          <rect>
           <x>380</x>
-          <y>250</y>
+          <y>320</y>
           <width>111</width>
           <height>41</height>
          </rect>
@@ -622,7 +622,7 @@ background-color:none</string>
         <property name="geometry">
          <rect>
           <x>250</x>
-          <y>250</y>
+          <y>320</y>
           <width>111</width>
           <height>41</height>
          </rect>
@@ -635,7 +635,7 @@ background-color:none</string>
         <property name="geometry">
          <rect>
           <x>60</x>
-          <y>110</y>
+          <y>180</y>
           <width>91</width>
           <height>41</height>
          </rect>
@@ -648,7 +648,7 @@ background-color:none</string>
         <property name="geometry">
          <rect>
           <x>160</x>
-          <y>180</y>
+          <y>250</y>
           <width>331</width>
           <height>41</height>
          </rect>
@@ -661,7 +661,7 @@ background-color:none</string>
         <property name="geometry">
          <rect>
           <x>60</x>
-          <y>170</y>
+          <y>240</y>
           <width>91</width>
           <height>51</height>
          </rect>
@@ -674,7 +674,7 @@ background-color:none</string>
         <property name="geometry">
          <rect>
           <x>160</x>
-          <y>110</y>
+          <y>180</y>
           <width>331</width>
           <height>41</height>
          </rect>
@@ -699,6 +699,19 @@ background-color:none</string>
          <string/>
         </property>
        </widget>
+       <widget class="QLabel" name="viettel_logo">
+        <property name="geometry">
+         <rect>
+          <x>190</x>
+          <y>60</y>
+          <width>241</width>
+          <height>81</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
       </widget>
      </item>
     </layout>
@@ -710,14 +723,14 @@ background-color:none</string>
        <x>0</x>
        <y>0</y>
        <width>601</width>
-       <height>451</height>
+       <height>391</height>
       </rect>
      </property>
      <widget class="QLabel" name="nameLabel">
       <property name="geometry">
        <rect>
         <x>80</x>
-        <y>90</y>
+        <y>120</y>
         <width>67</width>
         <height>17</height>
        </rect>
@@ -730,7 +743,7 @@ background-color:none</string>
       <property name="geometry">
        <rect>
         <x>220</x>
-        <y>10</y>
+        <y>40</y>
         <width>181</width>
         <height>61</height>
        </rect>
@@ -749,7 +762,7 @@ background-color:none</string>
       <property name="geometry">
        <rect>
         <x>80</x>
-        <y>230</y>
+        <y>260</y>
         <width>81</width>
         <height>17</height>
        </rect>
@@ -762,7 +775,7 @@ background-color:none</string>
       <property name="geometry">
        <rect>
         <x>220</x>
-        <y>290</y>
+        <y>320</y>
         <width>131</width>
         <height>41</height>
        </rect>
@@ -775,7 +788,7 @@ background-color:none</string>
       <property name="geometry">
        <rect>
         <x>380</x>
-        <y>290</y>
+        <y>320</y>
         <width>101</width>
         <height>41</height>
        </rect>
@@ -788,7 +801,7 @@ background-color:none</string>
       <property name="geometry">
        <rect>
         <x>80</x>
-        <y>160</y>
+        <y>190</y>
         <width>71</width>
         <height>17</height>
        </rect>
@@ -801,7 +814,7 @@ background-color:none</string>
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>80</y>
+        <y>110</y>
         <width>311</width>
         <height>41</height>
        </rect>
@@ -811,7 +824,7 @@ background-color:none</string>
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>150</y>
+        <y>180</y>
         <width>311</width>
         <height>41</height>
        </rect>
@@ -827,7 +840,7 @@ background-color:none</string>
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>220</y>
+        <y>250</y>
         <width>311</width>
         <height>41</height>
        </rect>

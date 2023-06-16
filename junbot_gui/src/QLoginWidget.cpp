@@ -29,11 +29,19 @@ QLoginWidget::QLoginWidget(int argc, char **argv, QWidget *parent)
 
     ui->label_video->setPixmap(QPixmap::fromImage(img).scaled(ui->label_video->size(), Qt::KeepAspectRatioByExpanding,
                                                               Qt::SmoothTransformation));
+    QImage imgClose(":/image/data/images/close.png");
 
-    ui->btnWinClose_1->setIcon(QIcon(":/image/data/images/close.png"));
-    ui->btnWinClose_2->setIcon(QIcon(":/image/data/images/close.png"));
-    ui->btnWinClose_3->setIcon(QIcon(":/image/data/images/close.png"));
+    QPixmap close_pix = QPixmap::fromImage(imgClose).scaled(ui->btnWinClose_1->size(), Qt::KeepAspectRatio,
+                                                              Qt::SmoothTransformation);
+    ui->btnWinClose_1->setIcon(close_pix);
+    ui->btnWinClose_2->setIcon(close_pix);
+    ui->btnWinClose_3->setIcon(close_pix);
 
+    QImage imgViettel(":/image/data/images/VMC_Logo.png");
+
+    ui->viettel_logo->setPixmap(QPixmap::fromImage(imgViettel).scaled(ui->viettel_logo->size(), Qt::KeepAspectRatio,
+                                                              Qt::SmoothTransformation));
+                                                              
     // check IP in local network
     foreach (QHostAddress address, QNetworkInterface::allAddresses()) {
         if (address.protocol() == QAbstractSocket::IPv4Protocol) {
