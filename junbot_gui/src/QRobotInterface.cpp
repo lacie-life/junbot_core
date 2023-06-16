@@ -17,6 +17,11 @@ RobotInterface::RobotInterface(AppModel *model, QWidget *parent)
 
   // Setting signal and slot
   connections();
+
+  // disconnect button
+  connect(ui->disconnect_button, &QPushButton::clicked, [=]() {
+      RobotInterface::slot_dis_connect();
+  });
 }
 
 RobotInterface::~RobotInterface()
@@ -165,6 +170,7 @@ void RobotInterface::slot_buttonChangeColorC()
 
 void RobotInterface::slot_dis_connect()
 {
+
   ros::shutdown();
   slot_rosShutdown();
   emit signalDisconnect();
