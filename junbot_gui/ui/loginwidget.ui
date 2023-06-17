@@ -32,7 +32,7 @@ padding:0;
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>1</number>
    </property>
    <widget class="QWidget" name="robotConnect">
     <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -628,7 +628,7 @@ background-color:none</string>
         <property name="geometry">
          <rect>
           <x>670</x>
-          <y>540</y>
+          <y>560</y>
           <width>181</width>
           <height>51</height>
          </rect>
@@ -652,7 +652,7 @@ color: white;
         <property name="geometry">
          <rect>
           <x>470</x>
-          <y>540</y>
+          <y>560</y>
           <width>181</width>
           <height>51</height>
          </rect>
@@ -675,7 +675,7 @@ border-radius: 25px;
         <property name="geometry">
          <rect>
           <x>470</x>
-          <y>450</y>
+          <y>470</y>
           <width>381</width>
           <height>51</height>
          </rect>
@@ -697,7 +697,7 @@ padding-left: 12px;</string>
         <property name="geometry">
          <rect>
           <x>470</x>
-          <y>340</y>
+          <y>360</y>
           <width>381</width>
           <height>51</height>
          </rect>
@@ -710,22 +710,6 @@ padding-left: 12px;</string>
         <property name="styleSheet">
          <string notr="true">border-radius: 25px;
 padding-left: 12px;</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="btnWinClose_1">
-        <property name="geometry">
-         <rect>
-          <x>1250</x>
-          <y>0</y>
-          <width>31</width>
-          <height>31</height>
-         </rect>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">background-color:rgba(255,215,149,255)</string>
         </property>
         <property name="text">
          <string/>
@@ -754,7 +738,7 @@ padding-left: 12px;</string>
         <property name="geometry">
          <rect>
           <x>550</x>
-          <y>190</y>
+          <y>210</y>
           <width>231</width>
           <height>91</height>
          </rect>
@@ -797,7 +781,7 @@ padding-left: 12px;</string>
         <property name="geometry">
          <rect>
           <x>510</x>
-          <y>30</y>
+          <y>50</y>
           <width>311</width>
           <height>131</height>
          </rect>
@@ -832,7 +816,7 @@ padding-left: 12px;</string>
         <property name="geometry">
          <rect>
           <x>470</x>
-          <y>290</y>
+          <y>310</y>
           <width>81</width>
           <height>61</height>
          </rect>
@@ -872,7 +856,7 @@ padding-left: 12px;</string>
         <property name="geometry">
          <rect>
           <x>470</x>
-          <y>390</y>
+          <y>410</y>
           <width>111</width>
           <height>61</height>
          </rect>
@@ -908,16 +892,51 @@ padding-left: 12px;</string>
          </property>
         </widget>
        </widget>
+       <widget class="QFrame" name="frame_5">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>1280</width>
+          <height>30</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-color: rgb(239, 41, 41);</string>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <widget class="QPushButton" name="btnWinClose_1">
+         <property name="geometry">
+          <rect>
+           <x>1250</x>
+           <y>0</y>
+           <width>31</width>
+           <height>30</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(211, 215, 207);</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </widget>
        <zorder>logo_background</zorder>
        <zorder>loginButton</zorder>
        <zorder>createButton</zorder>
        <zorder>lineEdit</zorder>
        <zorder>username</zorder>
-       <zorder>btnWinClose_1</zorder>
        <zorder>frame</zorder>
        <zorder>frame_2</zorder>
        <zorder>frame_3</zorder>
        <zorder>frame_4</zorder>
+       <zorder>frame_5</zorder>
       </widget>
      </item>
     </layout>
