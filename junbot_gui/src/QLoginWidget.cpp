@@ -38,13 +38,14 @@ QLoginWidget::QLoginWidget(int argc, char **argv, QWidget *parent)
     ui->btnWinClose_2->setIcon(close_pix);
     ui->btnWinClose_3->setIcon(close_pix);
 
-    QImage imgViettel(":/image/data/images/VMC_Logo.png");
+    // QImage imgViettel(":/image/data/images/VMC_Logo.png");
 
-    ui->viettel_logo->setPixmap(QPixmap::fromImage(imgViettel).scaled(ui->viettel_logo->size(), Qt::KeepAspectRatio,
-                                                              Qt::SmoothTransformation));
+    // ui->viettel_logo->setPixmap(QPixmap::fromImage(imgViettel).scaled(ui->viettel_logo->size(), Qt::KeepAspectRatio,
+    //                                                           Qt::SmoothTransformation));
 
-    // slot_disconnect
-
+    // QImage imgViettelBg(":/background/data/background/viettel_background.jpg");
+    // ui->login_background->setPixmap(QPixmap::fromImage(imgViettelBg).scaled(ui->login_background->size(), Qt::KeepAspectRatioByExpanding,
+    //                                                           Qt::SmoothTransformation));
 
     // check IP in local network
     foreach (QHostAddress address, QNetworkInterface::allAddresses()) {
