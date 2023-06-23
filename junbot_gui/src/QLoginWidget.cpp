@@ -26,15 +26,11 @@ QLoginWidget::QLoginWidget(int argc, char **argv, QWidget *parent)
 
     initSettings();
 
-    QImage img(":/background/data/background/test.jpg");
-
-    ui->label_video->setPixmap(QPixmap::fromImage(img).scaled(ui->label_video->size(), Qt::KeepAspectRatioByExpanding,
-                                                              Qt::SmoothTransformation));
     QImage imgClose(":/image/data/images/close.png");
 
-    QPixmap close_pix = QPixmap::fromImage(imgClose).scaled(ui->btnWinClose_1->size(), Qt::KeepAspectRatio,
+    QPixmap close_pix = QPixmap::fromImage(imgClose).scaled(ui->btnWinClose_4->size(), Qt::KeepAspectRatio,
                                                               Qt::SmoothTransformation);
-    ui->btnWinClose_1->setIcon(close_pix);
+    ui->btnWinClose_4->setIcon(close_pix);
     ui->btnWinClose_2->setIcon(close_pix);
     ui->btnWinClose_3->setIcon(close_pix);
 
@@ -78,13 +74,13 @@ QLoginWidget::QLoginWidget(int argc, char **argv, QWidget *parent)
     });
 
     // *****Login (widget_1)*****
-    connect(ui->createButton, &QPushButton::clicked, this, [this]{
+    connect(ui->createButton_3, &QPushButton::clicked, this, [this]{
         ui->stackedWidget->setCurrentIndex(2);
     });
-    connect(ui->loginButton, &QPushButton::clicked, [=]() {
+    connect(ui->loginButton_2, &QPushButton::clicked, [=]() {
         QLoginWidget::getLogindata();
     });
-    connect(ui->btnWinClose_1, &QPushButton::clicked, [=]() {
+    connect(ui->btnWinClose_4, &QPushButton::clicked, [=]() {
         this->close();
     });
 
@@ -98,12 +94,6 @@ QLoginWidget::QLoginWidget(int argc, char **argv, QWidget *parent)
     });
         connect(ui->btnSignOut, &QPushButton::clicked, [=]() {
         ui->stackedWidget->setCurrentIndex(1);
-    });
-
-    // Hint
-    connect(ui->pushButton_hellp, &QPushButton::clicked, [=]() {
-        QDesktopServices::openUrl(
-                QUrl(QString("https://github.com/ScarecrowStraw/JunBotGUI/blob/main/README.md")));
     });
 
     if (ui->checkBoxAutoLogin->isChecked()) {
@@ -225,11 +215,10 @@ void QLoginWidget::createUser()
 {
     QString name = ui->nameInput->text();
     QString pass = ui->passInput->text();
-    QString type = ui->fullNameInput->text();
 
-    QUser u(name, pass, type);
+    QUser u(name, pass);
 
-    CONSOLE << name << " " << pass << " " << type;
+    CONSOLE << name << " " << pass;
 
     bool result = m_model->addUser(u);
 
