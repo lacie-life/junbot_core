@@ -123,10 +123,10 @@ void RobotInterface::slot_cmd_control()
   char key = btn->text().toStdString()[0];
   QString button_key = btn->objectName();
 
-  float liner = ui->horizontalSlider_linear->value() * 0.001;
+  float liner = ui->horizontalSlider_linear->value() * 0.005;
   QString liner_text = QString::number(liner);
   ui->liner_label->setText(liner_text);
-  float turn = ui->horizontalSlider_turn->value() * 0.001;
+  float turn = ui->horizontalSlider_turn->value() * 0.005;
   QString turner_text = QString::number(turn);
   ui->turner_label->setText(turner_text);
   bool is_all = false;
