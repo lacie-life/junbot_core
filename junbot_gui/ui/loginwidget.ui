@@ -2,12 +2,15 @@
 <ui version="4.0">
  <class>LoginWidget</class>
  <widget class="QWidget" name="LoginWidget">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1322</width>
-    <height>908</height>
+    <width>1283</width>
+    <height>719</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,14 +28,14 @@ padding:0;
   <widget class="QStackedWidget" name="stackedWidget">
    <property name="geometry">
     <rect>
-     <x>30</x>
-     <y>60</y>
+     <x>0</x>
+     <y>0</y>
      <width>1280</width>
      <height>720</height>
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>2</number>
    </property>
    <widget class="QWidget" name="robotConnect">
     <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -120,9 +123,9 @@ padding:0;
         <property name="geometry">
          <rect>
           <x>430</x>
-          <y>200</y>
+          <y>190</y>
           <width>431</width>
-          <height>411</height>
+          <height>431</height>
          </rect>
         </property>
         <property name="styleSheet">
@@ -324,7 +327,7 @@ border-radius: 15px;</string>
            <x>50</x>
            <y>290</y>
            <width>331</width>
-           <height>41</height>
+           <height>51</height>
           </rect>
          </property>
          <property name="minimumSize">
@@ -355,7 +358,8 @@ border-radius: 15px;</string>
          </property>
          <property name="styleSheet">
           <string notr="true">background-color: qlineargradient(spread:reflect, x1:0, y1:0, x2:1, y2:0, stop:0 rgba(68, 107, 213, 255), stop:1 rgba(62, 255, 124, 255));
-color: white;</string>
+color: white;
+border-radius: 25px;</string>
          </property>
          <property name="text">
           <string>CONNECT</string>
@@ -365,9 +369,9 @@ color: white;</string>
          <property name="geometry">
           <rect>
            <x>50</x>
-           <y>343</y>
+           <y>350</y>
            <width>331</width>
-           <height>41</height>
+           <height>51</height>
           </rect>
          </property>
          <property name="minimumSize">
@@ -383,13 +387,35 @@ color: white;</string>
          </property>
          <property name="styleSheet">
           <string notr="true">background-color: rgb(211, 215, 207);
-border-radius: 15px;
+border-radius: 25px;
 </string>
          </property>
          <property name="text">
           <string>Sign out</string>
          </property>
         </widget>
+       </widget>
+       <widget class="QPushButton" name="createUserAsAdmin_btn">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>640</y>
+          <width>221</width>
+          <height>51</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>15</pointsize>
+         </font>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0.3125, stop:0 rgba(245, 121, 0, 255), stop:1 rgba(252, 233, 79, 255));
+border-radius: 25px;</string>
+        </property>
+        <property name="text">
+         <string>Create User as Admin</string>
+        </property>
        </widget>
       </widget>
      </item>
@@ -415,7 +441,7 @@ border-radius: 15px;
       <property name="geometry">
        <rect>
         <x>470</x>
-        <y>530</y>
+        <y>560</y>
         <width>381</width>
         <height>51</height>
        </rect>
@@ -439,7 +465,7 @@ color: white;
       <property name="geometry">
        <rect>
         <x>470</x>
-        <y>600</y>
+        <y>630</y>
         <width>381</width>
         <height>51</height>
        </rect>
@@ -740,7 +766,7 @@ padding-left: 12px;</string>
       <property name="geometry">
        <rect>
         <x>470</x>
-        <y>600</y>
+        <y>630</y>
         <width>381</width>
         <height>51</height>
        </rect>
@@ -767,6 +793,11 @@ border-radius: 25px;</string>
         <height>51</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
       <property name="styleSheet">
        <string notr="true">border-radius: 25px;
 padding-left: 12px;</string>
@@ -783,6 +814,11 @@ padding-left: 12px;</string>
         <width>381</width>
         <height>51</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
       </property>
       <property name="styleSheet">
        <string notr="true">border-radius: 25px;
@@ -803,6 +839,11 @@ padding-left: 12px;</string>
         <width>1280</width>
         <height>720</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
       </property>
       <property name="styleSheet">
        <string notr="true">border-image: url(:/background/data/background/viettel_background.jpg);</string>
@@ -885,7 +926,7 @@ padding-left: 12px;</string>
       <property name="geometry">
        <rect>
         <x>470</x>
-        <y>530</y>
+        <y>560</y>
         <width>381</width>
         <height>51</height>
        </rect>
@@ -1028,6 +1069,77 @@ color: white;
        </property>
       </widget>
      </widget>
+     <widget class="QComboBox" name="comboBox">
+      <property name="geometry">
+       <rect>
+        <x>660</x>
+        <y>500</y>
+        <width>191</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>15</pointsize>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">padding-left: 10px;</string>
+      </property>
+      <property name="maxVisibleItems">
+       <number>15</number>
+      </property>
+      <item>
+       <property name="text">
+        <string>customer</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>admin</string>
+       </property>
+      </item>
+     </widget>
+     <widget class="QFrame" name="frame_16">
+      <property name="geometry">
+       <rect>
+        <x>470</x>
+        <y>490</y>
+        <width>191</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string/>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:1 rgba(0, 0, 0, 0));</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QLabel" name="label_19">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>181</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>15</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Create account as: </string>
+       </property>
+      </widget>
+     </widget>
      <zorder>createUser_background</zorder>
      <zorder>frame_6</zorder>
      <zorder>closeButton</zorder>
@@ -1038,6 +1150,8 @@ color: white;
      <zorder>frame_13</zorder>
      <zorder>frame_14</zorder>
      <zorder>frame_15</zorder>
+     <zorder>comboBox</zorder>
+     <zorder>frame_16</zorder>
     </widget>
    </widget>
    <widget class="QWidget" name="userLogin">

@@ -56,14 +56,20 @@ bool AppModel::connectMaster(QString master_ip, QString ros_ip)
     return m_rosNode.init(master_ip.toStdString(), ros_ip.toStdString());
 }
 
+QString AppModel::getCurrentUserType()
+{
+    return m_currentUser->type();
+}
+
 bool AppModel::login(QUser &user)
 {
     bool checkdone = m_dbManager.userDao.isloginUserExits(user);
 
-    m_currentUser = new QUser(user.name(), user.pass());
+    m_currentUser = new QUser(user.name(), user.pass(), user.type());
 
     if(checkdone){
         CONSOLE << m_currentUser->name();
+        CONSOLE << m_currentUser->type();
         CONSOLE << "Login Success";
         return true;
     }
