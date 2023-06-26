@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>990</width>
-    <height>619</height>
+    <width>1280</width>
+    <height>720</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -160,8 +160,8 @@ margin:0px 0px 0px 0px;
     <property name="geometry">
      <rect>
       <x>70</x>
-      <y>390</y>
-      <width>160</width>
+      <y>420</y>
+      <width>221</width>
       <height>16</height>
      </rect>
     </property>
@@ -173,55 +173,13 @@ margin:0px 0px 0px 0px;
     <property name="geometry">
      <rect>
       <x>70</x>
-      <y>420</y>
-      <width>160</width>
+      <y>470</y>
+      <width>221</width>
       <height>16</height>
      </rect>
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="location_A">
-    <property name="geometry">
-     <rect>
-      <x>780</x>
-      <y>260</y>
-      <width>61</width>
-      <height>61</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true"/>
-    </property>
-    <property name="text">
-     <string>A</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="location_B">
-    <property name="geometry">
-     <rect>
-      <x>450</x>
-      <y>230</y>
-      <width>61</width>
-      <height>61</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>B</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="location_C">
-    <property name="geometry">
-     <rect>
-      <x>630</x>
-      <y>410</y>
-      <width>61</width>
-      <height>61</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>C</string>
     </property>
    </widget>
    <widget class="QPushButton" name="r_right">
@@ -237,13 +195,13 @@ margin:0px 0px 0px 0px;
      <string/>
     </property>
     <property name="icon">
-     <iconset>
-      <normaloff>../../../../../../run/user/1000/doc/f3bbeb11/turnRight_icon.ico</normaloff>../../../../../../run/user/1000/doc/f3bbeb11/turnRight_icon.ico</iconset>
+     <iconset resource="../resources.qrc">
+      <normaloff>:/image/data/images/right_3.png</normaloff>:/image/data/images/right_3.png</iconset>
     </property>
     <property name="iconSize">
      <size>
-      <width>40</width>
-      <height>40</height>
+      <width>60</width>
+      <height>60</height>
      </size>
     </property>
    </widget>
@@ -260,13 +218,13 @@ margin:0px 0px 0px 0px;
      <string/>
     </property>
     <property name="icon">
-     <iconset>
-      <normaloff>../../../../../../run/user/1000/doc/47184283/turnLeft_icon.ico</normaloff>../../../../../../run/user/1000/doc/47184283/turnLeft_icon.ico</iconset>
+     <iconset resource="../resources.qrc">
+      <normaloff>:/image/data/images/left_3.png</normaloff>:/image/data/images/left_3.png</iconset>
     </property>
     <property name="iconSize">
      <size>
-      <width>40</width>
-      <height>40</height>
+      <width>60</width>
+      <height>60</height>
      </size>
     </property>
    </widget>
@@ -283,13 +241,13 @@ margin:0px 0px 0px 0px;
      <string/>
     </property>
     <property name="icon">
-     <iconset>
-      <normaloff>../../../../../../run/user/1000/doc/70e888aa/stopButton_icon.ico</normaloff>../../../../../../run/user/1000/doc/70e888aa/stopButton_icon.ico</iconset>
+     <iconset resource="../resources.qrc">
+      <normaloff>:/image/data/images/stop_2.png</normaloff>:/image/data/images/stop_2.png</iconset>
     </property>
     <property name="iconSize">
      <size>
-      <width>40</width>
-      <height>40</height>
+      <width>60</width>
+      <height>60</height>
      </size>
     </property>
    </widget>
@@ -306,13 +264,13 @@ margin:0px 0px 0px 0px;
      <string/>
     </property>
     <property name="icon">
-     <iconset>
-      <normaloff>../../../../../../run/user/1000/doc/996f826d/forward_icon.ico</normaloff>../../../../../../run/user/1000/doc/996f826d/forward_icon.ico</iconset>
+     <iconset resource="../resources.qrc">
+      <normaloff>:/image/data/images/up_3.png</normaloff>:/image/data/images/up_3.png</iconset>
     </property>
     <property name="iconSize">
      <size>
-      <width>40</width>
-      <height>40</height>
+      <width>60</width>
+      <height>60</height>
      </size>
     </property>
    </widget>
@@ -329,45 +287,14 @@ margin:0px 0px 0px 0px;
      <string/>
     </property>
     <property name="icon">
-     <iconset>
-      <normaloff>../../../../../../run/user/1000/doc/1e5d5ad4/back_icon.ico</normaloff>../../../../../../run/user/1000/doc/1e5d5ad4/back_icon.ico</iconset>
+     <iconset resource="../resources.qrc">
+      <normaloff>:/image/data/images/down_3.png</normaloff>:/image/data/images/down_3.png</iconset>
     </property>
     <property name="iconSize">
      <size>
-      <width>40</width>
-      <height>40</height>
+      <width>60</width>
+      <height>60</height>
      </size>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>380</x>
-      <y>140</y>
-      <width>580</width>
-      <height>390</height>
-     </rect>
-    </property>
-    <property name="minimumSize">
-     <size>
-      <width>580</width>
-      <height>390</height>
-     </size>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>580</width>
-      <height>390</height>
-     </size>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="pixmap">
-     <pixmap>../../../../../../run/user/1000/doc/bf26b586/map_game_2.png</pixmap>
-    </property>
-    <property name="scaledContents">
-     <bool>true</bool>
     </property>
    </widget>
    <widget class="QPushButton" name="slot_robotStatus">
@@ -386,10 +313,10 @@ margin:0px 0px 0px 0px;
    <widget class="QPushButton" name="robotMissonStatus">
     <property name="geometry">
      <rect>
-      <x>650</x>
-      <y>70</y>
-      <width>61</width>
-      <height>61</height>
+      <x>560</x>
+      <y>30</y>
+      <width>31</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
@@ -399,8 +326,8 @@ margin:0px 0px 0px 0px;
    <widget class="QPushButton" name="disconnect_button">
     <property name="geometry">
      <rect>
-      <x>840</x>
-      <y>540</y>
+      <x>1150</x>
+      <y>650</y>
       <width>111</width>
       <height>31</height>
      </rect>
@@ -409,40 +336,84 @@ margin:0px 0px 0px 0px;
      <string>Disconnect</string>
     </property>
    </widget>
-   <zorder>label</zorder>
-   <zorder>label_textStatus</zorder>
-   <zorder>pushButton_status</zorder>
-   <zorder>label_time</zorder>
-   <zorder>progressBar</zorder>
-   <zorder>label_textPower</zorder>
-   <zorder>label_power</zorder>
-   <zorder>label_logo</zorder>
-   <zorder>horizontalSlider_linear</zorder>
-   <zorder>horizontalSlider_turn</zorder>
-   <zorder>location_A</zorder>
-   <zorder>location_B</zorder>
-   <zorder>location_C</zorder>
-   <zorder>r_right</zorder>
-   <zorder>r_left</zorder>
-   <zorder>stop</zorder>
-   <zorder>forward</zorder>
-   <zorder>back</zorder>
-   <zorder>slot_robotStatus</zorder>
-   <zorder>robotMissonStatus</zorder>
-   <zorder>disconnect_button</zorder>
+   <widget class="QWidget" name="gridLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>200</y>
+      <width>621</width>
+      <height>361</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout"/>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>390</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Vận tốc:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>450</y>
+      <width>101</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Vận tốc quay: </string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="liner_label">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>390</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="turner_label">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>450</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>990</width>
+     <width>1280</width>
      <height>22</height>
     </rect>
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <resources/>
+ <resources>
+  <include location="../resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

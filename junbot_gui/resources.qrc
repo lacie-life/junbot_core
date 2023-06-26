@@ -12,6 +12,7 @@
         <file>data/images/up_left_2.png</file>
         <file>data/images/up_left.png</file>
         <file>data/images/up_2.png</file>
+        <file>data/images/up_3.png</file>
         <file>data/images/up.png</file>
         <file>data/images/turnRight_l.png</file>
         <file>data/images/turnRight_hl.png</file>
@@ -24,6 +25,7 @@
         <file>data/images/toolbar_map.png</file>
         <file>data/images/toolbar_dash.png</file>
         <file>data/images/status.png</file>
+        <file>data/images/stop_2.png</file>
         <file>data/images/speed.png</file>
         <file>data/images/show.png</file>
         <file>data/images/setting2.png</file>
@@ -38,6 +40,7 @@
         <file>data/images/robot.png</file>
         <file>data/images/right_dock.svg</file>
         <file>data/images/right_2.png</file>
+        <file>data/images/right_3.png</file>
         <file>data/images/right.png</file>
         <file>data/images/return.png</file>
         <file>data/images/refreash.png</file>
@@ -61,6 +64,7 @@
         <file>data/images/line.png</file>
         <file>data/images/left_dock.svg</file>
         <file>data/images/left_2.png</file>
+        <file>data/images/left_3.png</file>
         <file>data/images/left.png</file>
         <file>data/images/jiqiren-9.png</file>
         <file>data/images/jiqiren-8.png</file>
@@ -77,6 +81,7 @@
         <file>data/images/down_left_2.png</file>
         <file>data/images/down_left.png</file>
         <file>data/images/down_2.png</file>
+        <file>data/images/down_3.png</file>
         <file>data/images/down.png</file>
         <file>data/images/display.png</file>
         <file>data/images/default_package_icon.png</file>
