@@ -32,6 +32,7 @@ public:
     bool login(QUser& user);
     void signOut();
     bool addUser(QUser& user);
+    QString getCurrentUserType();
 
     // ROS Connection
     bool connectMaster(QString master_ip, QString ros_ip);

@@ -75,6 +75,8 @@ QLoginWidget::QLoginWidget(int argc, char **argv, QWidget *parent)
 
     // *****Login (widget_1)*****
     connect(ui->createButton_3, &QPushButton::clicked, this, [this]{
+        ui->comboBox->setVisible(false);
+        ui->label_19->setVisible(false);
         ui->stackedWidget->setCurrentIndex(2);
     });
     connect(ui->loginButton_2, &QPushButton::clicked, [=]() {
@@ -82,6 +84,12 @@ QLoginWidget::QLoginWidget(int argc, char **argv, QWidget *parent)
     });
     connect(ui->btnWinClose_4, &QPushButton::clicked, [=]() {
         this->close();
+    });
+
+    connect(ui->createUserAsAdmin_btn, &QPushButton::clicked, this, [this]{
+        ui->comboBox->setVisible(true);
+        ui->label_19->setVisible(true);
+        ui->stackedWidget->setCurrentIndex(2);
     });
 
     // *****Set ip for ROS master connection*****
@@ -215,8 +223,18 @@ void QLoginWidget::createUser()
 {
     QString name = ui->nameInput->text();
     QString pass = ui->passInput->text();
+    QString type = "customer";
 
-    QUser u(name, pass);
+    if(m_model->getCurrentUserType() == "admin")
+    {
+        type = ui->comboBox->currentText();
+        CONSOLE << "Type: " << type;
+    }
+    else{
+        type = "customer";
+    }
+    
+    QUser u(name, pass, type);
 
     CONSOLE << name << " " << pass;
 
@@ -236,6 +254,32 @@ void QLoginWidget::createUser()
     }
 }
 
+// void QLoginWidget::createUserAsAdmin()
+// {
+//     QString name = ui->nameInput->text();
+//     QString pass = ui->passInput->text();
+//     QString type = ui->typeInput->text();
+
+//     QUser u(name, pass, type);
+
+//     CONSOLE << name << " " << pass;
+
+//     bool result = m_model->addUser(u);
+
+//     if (result)
+//     {
+//         QMessageBox msgBox;
+//         msgBox.setText("Create user successed");
+//         msgBox.exec();
+//     }
+//     else
+//     {
+//         QMessageBox msgBox;
+//         msgBox.setText("User exited");
+//         msgBox.exec();
+//     }
+// }
+
 void QLoginWidget::getLogindata()
 {
     QString usrname = ui->username->text();
@@ -245,7 +289,17 @@ void QLoginWidget::getLogindata()
     bool checker = m_model->login(usrlogin);
 
     if(checker){
-        ui->stackedWidget->setCurrentIndex(0);
+        
+        if(m_model->getCurrentUserType() == "admin")
+        {
+            ui->createUserAsAdmin_btn->setVisible(true);
+            ui->stackedWidget->setCurrentIndex(0);
+        }
+        else 
+        {
+            ui->createUserAsAdmin_btn->setVisible(false);
+            ui->stackedWidget->setCurrentIndex(0);
+        }
     }
     else{
         QMessageBox::warning(NULL, "Login failed",

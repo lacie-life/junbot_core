@@ -36,7 +36,7 @@ bool QUserDAO::addUser(QUser& user) const
     if (!isUserExits(user))
     {
         QSqlQuery query(m_database);
-        query.prepare("INSERT INTO users (name, pass) VALUES (:name, :pass)");
+        query.prepare("INSERT INTO users (name, pass, type) VALUES (:name, :pass, :type)");
 
         qDebug() << user.name();
         qDebug() << user.pass();
@@ -90,7 +90,7 @@ bool QUserDAO::isloginUserExits(QUser &user) const
         if(user.name() == query.value("name").toString()){
             if(query.value("pass").toString() == user.pass()){
                 user.setId(query.value("id").toString().toInt());
-                // user.setType(query.value("type").toString());
+                user.setType(query.value("type").toString());
                 return true;
             }
             else{
