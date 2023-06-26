@@ -40,6 +40,8 @@ public:
   void initUis();
   bool connectMaster(QString master_ip, QString ros_ip);
 
+  void init_location();
+
 public slots:
   /******************************************
      ** Auto-connections (connectSlotsByName())
@@ -47,9 +49,6 @@ public slots:
   void slot_batteryState(sensor_msgs::BatteryState);
   void slot_rosShutdown();
   void slot_cmd_control();
-  void slot_buttonChangeColorA();
-  void slot_buttonChangeColorB();
-  void slot_buttonChangeColorC();
   
   void slot_dis_connect();
   void slot_updateRobotStatus(AppEnums::QRobotStatus);

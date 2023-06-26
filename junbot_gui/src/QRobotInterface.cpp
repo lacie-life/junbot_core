@@ -7,8 +7,6 @@ RobotInterface::RobotInterface(AppModel *model, QWidget *parent)
 {
   ui->setupUi(this);
 
-  ui->location_A->setStyleSheet("background-image: url(:/image/data/images/nocolor_button.png)");
-
   m_model = model;
 
   // read configuration file
@@ -125,8 +123,12 @@ void RobotInterface::slot_cmd_control()
   char key = btn->text().toStdString()[0];
   QString button_key = btn->objectName();
 
-  float liner = ui->horizontalSlider_linear->value() * 0.01;
-  float turn = ui->horizontalSlider_turn->value() * 0.01;
+  float liner = ui->horizontalSlider_linear->value() * 0.001;
+  QString liner_text = QString::number(liner);
+  ui->liner_label->setText(liner_text);
+  float turn = ui->horizontalSlider_turn->value() * 0.001;
+  QString turner_text = QString::number(turn);
+  ui->turner_label->setText(turner_text);
   bool is_all = false;
 
   CONSOLE << "Key: " << key;
@@ -154,21 +156,6 @@ void RobotInterface::slot_cmd_control()
     // stop
     m_model->m_rosNode.move_base(is_all ? 'K' : 'k', liner, turn);
   }
-}
-
-void RobotInterface::slot_buttonChangeColorA()
-{
-//  ui->location_A->setStyleSheet("background-color: red");
-}
-
-void RobotInterface::slot_buttonChangeColorB()
-{
-  ui->location_B->setStyleSheet("background-color: yellow");
-}
-
-void RobotInterface::slot_buttonChangeColorC()
-{
-  ui->location_C->setStyleSheet("background-color: blue");
 }
 
 void RobotInterface::slot_dis_connect()
@@ -260,9 +247,6 @@ void RobotInterface::connections()
   connect(ui->forward, SIGNAL(clicked()), this, SLOT(slot_cmd_control()));
   connect(ui->r_right, SIGNAL(clicked()), this, SLOT(slot_cmd_control()));
 
-  connect(ui->location_A, SIGNAL(clicked()), this, SLOT(slot_buttonChangeColorA()));
-  connect(ui->location_B, SIGNAL(clicked()), this, SLOT(slot_buttonChangeColorB()));
-  connect(ui->location_C, SIGNAL(clicked()), this, SLOT(slot_buttonChangeColorC()));
 }
 
 void RobotInterface::display_rviz()
@@ -352,4 +336,7 @@ void RobotInterface::keyPressEvent(QKeyEvent *event)
     }
 }
 
+void init_location()
+{
 
+}
