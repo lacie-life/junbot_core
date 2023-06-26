@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   sensor_msgs
   diagnostic_msgs
-  turtlebot3_msgs
+  junbot_msgs
 )
 
 ################################################################################
@@ -34,7 +34,7 @@ find_package(catkin REQUIRED COMPONENTS
 # Declare catkin specific configuration to be passed to dependent projects
 ################################################################################
 catkin_package(
-  CATKIN_DEPENDS roscpp std_msgs sensor_msgs diagnostic_msgs turtlebot3_msgs
+  CATKIN_DEPENDS roscpp std_msgs sensor_msgs diagnostic_msgs junbot_msgs
 )
 
 ################################################################################
@@ -44,7 +44,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(junbot_diagnostics src/turtlebot3_diagnostics.cpp)
+add_executable(junbot_diagnostics src/junbot_diagnostics.cpp)
 add_dependencies(junbot_diagnostics ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(junbot_diagnostics ${catkin_LIBRARIES})
 

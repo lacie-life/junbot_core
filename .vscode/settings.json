@@ -81,5 +81,6 @@
     ],
     "python.analysis.extraPaths": [
         "/opt/ros/noetic/lib/python3/dist-packages"
-    ]
+    ],
+    "cmake.sourceDirectory": "/home/lacie/workspace/fusion_ws/src/junbot_planner/junbot_planner"
 }
