@@ -27,6 +27,7 @@ void QUserDAO::init() const
             qWarning() << "Query text:" << query.lastQuery();
         }
     }
+    CONSOLE << "User init sucess";
 }
 
 bool QUserDAO::addUser(QUser& user) const

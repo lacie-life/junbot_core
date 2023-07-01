@@ -9,6 +9,8 @@ AppModel::AppModel(int argc, char **argv, QObject *parent)
 {
     CONSOLE << "App Init";
 
+    m_targets = m_dbManager.deliveryTargetDao.targets();
+
     readSettings();
 }
 

@@ -27,7 +27,9 @@ QDatabaseManager& QDatabaseManager::instance()
 }
 
 QDatabaseManager::QDatabaseManager(const QString& path)
-    : userDao(*m_database)
+    : userDao(*m_database),
+      deliveryTargetDao(*m_database)
+
 {
     m_database->setDatabaseName(path);
 
@@ -35,6 +37,7 @@ QDatabaseManager::QDatabaseManager(const QString& path)
     CONSOLE << "Database connection: " << (openStatus ? "OK" : "Error");
 
     userDao.init();
+    deliveryTargetDao.init();
 }
 
 QDatabaseManager::~QDatabaseManager()

@@ -254,32 +254,6 @@ void QLoginWidget::createUser()
     }
 }
 
-// void QLoginWidget::createUserAsAdmin()
-// {
-//     QString name = ui->nameInput->text();
-//     QString pass = ui->passInput->text();
-//     QString type = ui->typeInput->text();
-
-//     QUser u(name, pass, type);
-
-//     CONSOLE << name << " " << pass;
-
-//     bool result = m_model->addUser(u);
-
-//     if (result)
-//     {
-//         QMessageBox msgBox;
-//         msgBox.setText("Create user successed");
-//         msgBox.exec();
-//     }
-//     else
-//     {
-//         QMessageBox msgBox;
-//         msgBox.setText("User exited");
-//         msgBox.exec();
-//     }
-// }
-
 void QLoginWidget::getLogindata()
 {
     QString usrname = ui->username->text();

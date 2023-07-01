@@ -11,6 +11,11 @@
 #include <QPushButton>
 #include <QMessageBox>
 #include <QSlider>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QLineEdit>
+#include <QLabel>
+#include <QTextEdit>
 
 #include <QImage>
 #include <QPixmap>
@@ -40,7 +45,7 @@ public:
   void initUis();
   bool connectMaster(QString master_ip, QString ros_ip);
 
-  void init_location();
+  void init_gridTarget();
 
 public slots:
   /******************************************

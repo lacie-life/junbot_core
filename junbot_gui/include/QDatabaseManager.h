@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "QUserDAO.h"
+#include "QDeliveryTargetDAO.h"
 
 class QSqlDatabase;
 class QSqlQuery;
@@ -28,6 +29,7 @@ protected:
 
 public:
     const QUserDAO userDao;
+    const QDeliveryTargetDAO deliveryTargetDao;
 
 private:
     static QSqlDatabase* m_database;
