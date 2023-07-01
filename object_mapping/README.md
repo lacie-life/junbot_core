@@ -5,4 +5,4 @@
 - [x] Add ObjectDatabase
 - [x] Convert Object to Map
 - [x] Publish Polygon
-- [ ] Test with ZED 
+- [x] Test with ZED 

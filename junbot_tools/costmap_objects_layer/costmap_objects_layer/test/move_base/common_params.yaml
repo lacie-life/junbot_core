@@ -1,0 +1,22 @@
+robot_radius: 0.25  # circular footprint
+map_type: costmap
+
+inflation_layer:
+  enabled:              true
+  cost_scaling_factor:  5.0  
+  inflation_radius:     0.5 
+
+static_layer:
+  enabled:              true
+  map_topic:            /map
+
+object_layer:
+  enabled:              true
+  zone_topics:          [/object_costmap_layer/zone]
+  obstacle_topics:      [/object_costmap_layer/obstacles]
+  one_zone:             true     
+  forms:    
+     - [0.4, 0.0]
+     - [[0.4, 0.0]]
+     - [[-0.4, 0.0],[0.0, 0.4]]
+     - [[5, 5],[-5, 5],[-5, -5],[5, -5]]

@@ -25,7 +25,7 @@
    	 - [ ] <b> Improve Object tracker </b>
    	 - [ ] <b> Improve Object filter </b>
    	 - [ ] Add object pose optimize ?
-   	 - [ ] Object Map
+   	 - [x] Object Map
    - [x] Add ZED example
    - [x] Add D455 example 
 
@@ -68,7 +68,6 @@
 
 - vision_msgs 
   - sudo apt-get install ros-noetic-vision-msgs
-- [turtlebot3_msgs](https://github.com/ROBOTIS-GIT/turtlebot3_msgs)
 - [octomap_mapping](https://github.com/OctoMap/octomap_mapping)
 - [octomap_rviz_plugins](https://github.com/OctoMap/octomap_rviz_plugins)
 
@@ -131,7 +130,7 @@ sudo make install
 ```
 
 - TensorRT
-- ZED SDK (Option)
+- ZED SDK
 - Realsense SDK (Option)
 
 3. TensorRT with Yolov5 model
