@@ -20,6 +20,29 @@ RobotInterface::RobotInterface(AppModel *model, QWidget *parent)
   connect(ui->disconnect_button, &QPushButton::clicked, [=]() {
       RobotInterface::slot_dis_connect();
   });
+
+  QGroupBox *m_groupBox = new QGroupBox();
+  m_groupBox = ui->groupBox;
+  m_groupBox->setTitle("Delivery Target");
+  int m = m_model->m_targets.size();
+  QPushButton *buttons[m];
+
+  QGridLayout *layout = new QGridLayout();
+  int n = m;
+  while(n > 0){
+    for(int i = m - n; i < m - n + 4 & i < m; i++){
+      buttons[i] = new QPushButton(m_model->m_targets[i].name());
+      buttons[i]->setFixedHeight(50);
+      layout->addWidget(buttons[i], (m-n)/4, i-(m-n));
+    }
+    n = n - 4;
+  }
+
+  m_groupBox->setLayout(layout);
+  CONSOLE << "test2";
+  CONSOLE << m_model->m_targets[1].name();
+  CONSOLE << m_model->m_targets.size();
+  CONSOLE << m;
 }
 
 RobotInterface::~RobotInterface()
@@ -336,7 +359,29 @@ void RobotInterface::keyPressEvent(QKeyEvent *event)
     }
 }
 
-void init_location()
+void RobotInterface::init_gridTarget()
 {
+  QGridLayout *gridTar = new QGridLayout;
+  QPushButton *btn1 = new QPushButton("Click one");
+  QPushButton *btn2 = new QPushButton("Click two");
+  QPushButton *btn3 = new QPushButton("Click three");
+  QPushButton *btn4 = new QPushButton("Click four");
+  QPushButton *btn5 = new QPushButton("Click five");
+  QPushButton *btn6 = new QPushButton("Click six");
+  QPushButton *btn7 = new QPushButton("Click seven");
+  QPushButton *btn8 = new QPushButton("Click eight");
 
+  gridTar->addWidget(btn1, 0, 0);
+  gridTar->addWidget(btn2, 0, 1);
+  gridTar->addWidget(btn3, 0, 2);
+  gridTar->addWidget(btn4, 0, 3);
+  gridTar->addWidget(btn5, 0, 0);
+  gridTar->addWidget(btn6, 0, 1);
+  gridTar->addWidget(btn7, 0, 2);
+  gridTar->addWidget(btn8, 0, 3);
+  CONSOLE << "hello123";
+
+  // ui->label_haha->setLayout(gridTar);
+  CONSOLE << "hello";
+  // ui->gridLayout->addLayout(gridTar,4 ,2, Qt::Alignment());
 }

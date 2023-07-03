@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1200</width>
-    <height>690</height>
+    <width>1280</width>
+    <height>720</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -30,12 +30,12 @@ padding:0;
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1200</width>
-     <height>690</height>
+     <width>1280</width>
+     <height>720</height>
     </rect>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>2</number>
    </property>
    <widget class="QWidget" name="robotConnect">
     <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -73,8 +73,8 @@ padding:0;
          <rect>
           <x>0</x>
           <y>30</y>
-          <width>1200</width>
-          <height>660</height>
+          <width>1280</width>
+          <height>690</height>
          </rect>
         </property>
         <property name="styleSheet">
@@ -89,7 +89,7 @@ padding:0;
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>1200</width>
+          <width>1280</width>
           <height>30</height>
          </rect>
         </property>
@@ -105,7 +105,7 @@ padding:0;
         <widget class="QPushButton" name="btnWinClose_3">
          <property name="geometry">
           <rect>
-           <x>1170</x>
+           <x>1250</x>
            <y>0</y>
            <width>31</width>
            <height>31</height>
@@ -122,8 +122,8 @@ padding:0;
        <widget class="QFrame" name="frame_2">
         <property name="geometry">
          <rect>
-          <x>360</x>
-          <y>160</y>
+          <x>430</x>
+          <y>190</y>
           <width>431</width>
           <height>431</height>
          </rect>
@@ -399,7 +399,7 @@ border-radius: 25px;
         <property name="geometry">
          <rect>
           <x>30</x>
-          <y>610</y>
+          <y>640</y>
           <width>221</width>
           <height>51</height>
          </rect>
@@ -430,8 +430,8 @@ border-radius: 25px;</string>
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>1200</width>
-       <height>690</height>
+       <width>1280</width>
+       <height>720</height>
       </rect>
      </property>
      <property name="styleSheet">
@@ -440,8 +440,8 @@ border-radius: 25px;</string>
      <widget class="QPushButton" name="loginButton_2">
       <property name="geometry">
        <rect>
-        <x>440</x>
-        <y>540</y>
+        <x>470</x>
+        <y>560</y>
         <width>381</width>
         <height>51</height>
        </rect>
@@ -464,8 +464,8 @@ color: white;
      <widget class="QPushButton" name="createButton_3">
       <property name="geometry">
        <rect>
-        <x>440</x>
-        <y>600</y>
+        <x>470</x>
+        <y>630</y>
         <width>381</width>
         <height>51</height>
        </rect>
@@ -487,8 +487,8 @@ border-radius: 25px;
      <widget class="QLineEdit" name="lineEdit">
       <property name="geometry">
        <rect>
-        <x>440</x>
-        <y>420</y>
+        <x>470</x>
+        <y>430</y>
         <width>381</width>
         <height>51</height>
        </rect>
@@ -509,8 +509,8 @@ padding-left: 12px;</string>
      <widget class="QLineEdit" name="username">
       <property name="geometry">
        <rect>
-        <x>440</x>
-        <y>320</y>
+        <x>470</x>
+        <y>330</y>
         <width>381</width>
         <height>51</height>
        </rect>
@@ -533,8 +533,8 @@ padding-left: 12px;</string>
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>1200</width>
-        <height>690</height>
+        <width>1280</width>
+        <height>720</height>
        </rect>
       </property>
       <property name="cursor">
@@ -550,7 +550,7 @@ padding-left: 12px;</string>
      <widget class="QFrame" name="frame_7">
       <property name="geometry">
        <rect>
-        <x>500</x>
+        <x>550</x>
         <y>200</y>
         <width>231</width>
         <height>91</height>
@@ -593,7 +593,7 @@ padding-left: 12px;</string>
      <widget class="QFrame" name="frame_8">
       <property name="geometry">
        <rect>
-        <x>460</x>
+        <x>510</x>
         <y>50</y>
         <width>311</width>
         <height>131</height>
@@ -628,8 +628,8 @@ padding-left: 12px;</string>
      <widget class="QFrame" name="frame_9">
       <property name="geometry">
        <rect>
-        <x>440</x>
-        <y>280</y>
+        <x>470</x>
+        <y>289</y>
         <width>131</width>
         <height>61</height>
        </rect>
@@ -668,8 +668,8 @@ padding-left: 12px;</string>
      <widget class="QFrame" name="frame_10">
       <property name="geometry">
        <rect>
-        <x>440</x>
-        <y>370</y>
+        <x>470</x>
+        <y>380</y>
         <width>111</width>
         <height>61</height>
        </rect>
@@ -710,7 +710,7 @@ padding-left: 12px;</string>
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>1200</width>
+        <width>1280</width>
         <height>30</height>
        </rect>
       </property>
@@ -726,7 +726,7 @@ padding-left: 12px;</string>
       <widget class="QPushButton" name="btnWinClose_4">
        <property name="geometry">
         <rect>
-         <x>1170</x>
+         <x>1250</x>
          <y>0</y>
          <width>30</width>
          <height>30</height>
@@ -758,15 +758,15 @@ padding-left: 12px;</string>
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>1200</width>
-       <height>690</height>
+       <width>1280</width>
+       <height>720</height>
       </rect>
      </property>
      <widget class="QPushButton" name="closeButton">
       <property name="geometry">
        <rect>
-        <x>440</x>
-        <y>600</y>
+        <x>470</x>
+        <y>630</y>
         <width>381</width>
         <height>51</height>
        </rect>
@@ -787,8 +787,8 @@ border-radius: 25px;</string>
      <widget class="QLineEdit" name="nameInput">
       <property name="geometry">
        <rect>
-        <x>440</x>
-        <y>320</y>
+        <x>470</x>
+        <y>330</y>
         <width>381</width>
         <height>51</height>
        </rect>
@@ -809,8 +809,8 @@ padding-left: 12px;</string>
      <widget class="QLineEdit" name="passInput">
       <property name="geometry">
        <rect>
-        <x>440</x>
-        <y>420</y>
+        <x>470</x>
+        <y>430</y>
         <width>381</width>
         <height>51</height>
        </rect>
@@ -836,8 +836,8 @@ padding-left: 12px;</string>
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>1200</width>
-        <height>690</height>
+        <width>1280</width>
+        <height>720</height>
        </rect>
       </property>
       <property name="font">
@@ -857,7 +857,7 @@ padding-left: 12px;</string>
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>1200</width>
+        <width>1280</width>
         <height>30</height>
        </rect>
       </property>
@@ -873,7 +873,7 @@ padding-left: 12px;</string>
       <widget class="QPushButton" name="btnWinClose_2">
        <property name="geometry">
         <rect>
-         <x>1170</x>
+         <x>1250</x>
          <y>0</y>
          <width>30</width>
          <height>30</height>
@@ -890,7 +890,7 @@ padding-left: 12px;</string>
      <widget class="QFrame" name="frame_12">
       <property name="geometry">
        <rect>
-        <x>460</x>
+        <x>510</x>
         <y>50</y>
         <width>311</width>
         <height>131</height>
@@ -925,8 +925,8 @@ padding-left: 12px;</string>
      <widget class="QPushButton" name="createButton_2">
       <property name="geometry">
        <rect>
-        <x>440</x>
-        <y>540</y>
+        <x>470</x>
+        <y>560</y>
         <width>381</width>
         <height>51</height>
        </rect>
@@ -949,7 +949,7 @@ color: white;
      <widget class="QFrame" name="frame_13">
       <property name="geometry">
        <rect>
-        <x>470</x>
+        <x>520</x>
         <y>200</y>
         <width>271</width>
         <height>91</height>
@@ -992,8 +992,8 @@ color: white;
      <widget class="QFrame" name="frame_14">
       <property name="geometry">
        <rect>
-        <x>440</x>
-        <y>280</y>
+        <x>470</x>
+        <y>289</y>
         <width>131</width>
         <height>51</height>
        </rect>
@@ -1032,8 +1032,8 @@ color: white;
      <widget class="QFrame" name="frame_15">
       <property name="geometry">
        <rect>
-        <x>440</x>
-        <y>370</y>
+        <x>470</x>
+        <y>380</y>
         <width>111</width>
         <height>61</height>
        </rect>
@@ -1072,8 +1072,8 @@ color: white;
      <widget class="QComboBox" name="comboBox">
       <property name="geometry">
        <rect>
-        <x>630</x>
-        <y>490</y>
+        <x>660</x>
+        <y>500</y>
         <width>191</width>
         <height>41</height>
        </rect>
@@ -1103,8 +1103,8 @@ color: white;
      <widget class="QFrame" name="frame_16">
       <property name="geometry">
        <rect>
-        <x>450</x>
-        <y>480</y>
+        <x>470</x>
+        <y>490</y>
         <width>191</width>
         <height>61</height>
        </rect>
@@ -1124,7 +1124,7 @@ color: white;
       <widget class="QLabel" name="label_19">
        <property name="geometry">
         <rect>
-         <x>0</x>
+         <x>10</x>
          <y>10</y>
          <width>181</width>
          <height>41</height>

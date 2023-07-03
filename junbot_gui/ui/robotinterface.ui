@@ -326,8 +326,8 @@ margin:0px 0px 0px 0px;
    <widget class="QPushButton" name="disconnect_button">
     <property name="geometry">
      <rect>
-      <x>1150</x>
-      <y>650</y>
+      <x>1160</x>
+      <y>640</y>
       <width>111</width>
       <height>31</height>
      </rect>
@@ -335,17 +335,6 @@ margin:0px 0px 0px 0px;
     <property name="text">
      <string>Disconnect</string>
     </property>
-   </widget>
-   <widget class="QWidget" name="gridLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>430</x>
-      <y>200</y>
-      <width>621</width>
-      <height>361</height>
-     </rect>
-    </property>
-    <layout class="QGridLayout" name="gridLayout"/>
    </widget>
    <widget class="QLabel" name="label">
     <property name="geometry">
@@ -397,6 +386,22 @@ margin:0px 0px 0px 0px;
     </property>
     <property name="text">
      <string/>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="groupBox">
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>180</y>
+      <width>511</width>
+      <height>361</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="title">
+     <string>GroupBox</string>
     </property>
    </widget>
   </widget>

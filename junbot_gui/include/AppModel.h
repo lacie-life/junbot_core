@@ -11,6 +11,7 @@
 #include "AppConstants.h"
 #include "QDatabaseManager.h"
 #include "QUser.h"
+#include "QDeliveryTarget.h"
 #include "QNode.h"
 #include "QRobotItem.h"
 #include "QRobotUltis.h"
@@ -68,6 +69,7 @@ signals:
 public:
     // Ros interface
     QNode m_rosNode;
+    QVector<QDeliveryTarget> m_targets;
 
 private:
     QString m_masterUrl;

@@ -27,6 +27,7 @@ void QUserDAO::init() const
             qWarning() << "Query text:" << query.lastQuery();
         }
     }
+    CONSOLE << "User init sucess";
 }
 
 bool QUserDAO::addUser(QUser& user) const
@@ -69,8 +70,12 @@ bool QUserDAO::isUserExits(QUser &user) const
 
     QDatabaseManager::debugQuery(query);
 
-    if(query.first()){
-        return true;
+    while(query.next()){
+        if(user.name() == query.value("name").toString()){
+            return true;
+        }else{
+            return false;
+        }
     }
     return false;
 }
