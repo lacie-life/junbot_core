@@ -5,10 +5,11 @@ AppModel::AppModel(int argc, char **argv, QObject *parent)
     : QObject(parent)
     , m_rosNode(argc, argv)
     , m_dbManager(QDatabaseManager::instance())
-    , m_currentUser(nullptr)
+    // , m_currentUser(nullptr)
 {
     CONSOLE << "App Init";
 
+    m_currentUser = new QUser("defaut", "default", "default");
     m_targets = m_dbManager.deliveryTargetDao.targets();
 
     readSettings();

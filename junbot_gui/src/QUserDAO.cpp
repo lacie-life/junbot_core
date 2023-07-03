@@ -70,8 +70,12 @@ bool QUserDAO::isUserExits(QUser &user) const
 
     QDatabaseManager::debugQuery(query);
 
-    if(query.first()){
-        return true;
+    while(query.next()){
+        if(user.name() == query.value("name").toString()){
+            return true;
+        }else{
+            return false;
+        }
     }
     return false;
 }
