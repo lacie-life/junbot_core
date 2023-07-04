@@ -404,6 +404,19 @@ margin:0px 0px 0px 0px;
      <string>GroupBox</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="settingTarget_btn">
+    <property name="geometry">
+     <rect>
+      <x>898</x>
+      <y>560</y>
+      <width>161</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Setting Target</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

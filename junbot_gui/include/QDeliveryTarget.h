@@ -20,7 +20,7 @@ public:
     QString z_axis() const;
     int id() const;
 
-    void setID(const int &id);
+    void setId(const int &id);
     void setName(const QString &name);
     void setX(const QString &x_axis);
     void setY(const QString &y_axis);

@@ -23,6 +23,7 @@
 #include "QRobotUltis.h"
 #include "QRobotItem.h"
 #include "AppModel.h"
+#include "QAddTargetDialog.h"
 
 namespace Ui {
 class RobotInterface;
@@ -45,8 +46,6 @@ public:
   void initUis();
   bool connectMaster(QString master_ip, QString ros_ip);
 
-  void init_gridTarget();
-
 public slots:
   /******************************************
      ** Auto-connections (connectSlotsByName())
@@ -58,6 +57,8 @@ public slots:
   void slot_dis_connect();
   void slot_updateRobotStatus(AppEnums::QRobotStatus);
   void slot_updateRobotMissonStatus(AppEnums::QMissionStatus);
+
+  void slot_settingTarget();
 
 signals:
   void signalDisconnect();
@@ -75,18 +76,9 @@ private:
   bool isPressedWidget;
 
   AppModel* m_model;
+  QAddNewTarget* m_addNewTarget;
 
-//  QStandardItemModel *treeView_rviz_model = nullptr;
-
-//  // Store the address of the control currently displayed
-//  // by the rviz treewidget and the parent of the control
-//  QMap<QWidget *, QTreeWidgetItem *> widget_to_parentItem_map;
-
-//  // Store the corresponding relationship of the status bar display name status item
-//  QMap<QString, QTreeWidgetItem *> tree_rviz_stues;
-
-//  // Store the current value of display item name, parameter name and value
-//  QMap<QTreeWidgetItem *, QMap<QString, QString>> tree_rviz_values;
+  QVector<QPushButton*> m_targetButton;
 
   bool m_useEnviorment = false;
   bool m_autoConnect = false;

@@ -52,7 +52,7 @@ int QDeliveryTarget::id() const
     return m_id;
 }
 
-void QDeliveryTarget::setID(const int &id)
+void QDeliveryTarget::setId(const int &id)
 {
     m_id = id;   
 }
