@@ -223,22 +223,17 @@ void QLoginWidget::createUser()
 {
     QString name = ui->nameInput->text();
     QString pass = ui->passInput->text();
-    QString type = m_model->getCurrentUserType();
-    type = "customer";
+    QString type = "customer";
 
-    CONSOLE << "first";
     CONSOLE << m_model->getCurrentUserType();
 
     if(m_model->getCurrentUserType() == "admin")
     {
-        CONSOLE << "huhu";
         type = ui->comboBox->currentText();
         CONSOLE << "Type: " << type;
-        CONSOLE << "second";
     }
     else{
         type = "customer";
-        CONSOLE << "This is false";
     }
     
     QUser u(name, pass, type);
@@ -268,6 +263,8 @@ void QLoginWidget::getLogindata()
     QUser usrlogin(usrname, usrpass);
 
     bool checker = m_model->login(usrlogin);
+
+    CONSOLE << m_model->getCurrentUserType();
 
     if(checker){
         

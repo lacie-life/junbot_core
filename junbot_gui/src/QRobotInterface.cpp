@@ -21,28 +21,50 @@ RobotInterface::RobotInterface(AppModel *model, QWidget *parent)
       RobotInterface::slot_dis_connect();
   });
 
+  connect(ui->settingTarget_btn, &QPushButton::clicked, [=]() {
+      RobotInterface::slot_settingTarget();
+  });
+
   QGroupBox *m_groupBox = new QGroupBox();
   m_groupBox = ui->groupBox;
   m_groupBox->setTitle("Delivery Target");
   int m = m_model->m_targets.size();
-  QPushButton *buttons[m];
+
+  m_targetButton.resize(m);
+
+  // QPushButton *buttons[m];
 
   QGridLayout *layout = new QGridLayout();
   int n = m;
   while(n > 0){
     for(int i = m - n; i < m - n + 4 & i < m; i++){
-      buttons[i] = new QPushButton(m_model->m_targets[i].name());
-      buttons[i]->setFixedHeight(50);
-      layout->addWidget(buttons[i], (m-n)/4, i-(m-n));
+      m_targetButton[i] = new QPushButton(m_model->m_targets[i].name());
+      m_targetButton[i]->setFixedHeight(50);
+      layout->addWidget(m_targetButton[i], (m-n)/4, i-(m-n));
     }
     n = n - 4;
   }
 
   m_groupBox->setLayout(layout);
-  CONSOLE << "test2";
-  CONSOLE << m_model->m_targets[1].name();
-  CONSOLE << m_model->m_targets.size();
-  CONSOLE << m;
+
+  for(int i = 0; i < m_targetButton.size(); i++)
+  {
+        connect(m_targetButton[i], &QPushButton::clicked, [=]{
+            m_model->m_rosNode.set_goal(
+              m_model->m_targets[i].name(),
+              m_model->m_targets[i].x_axis().toDouble(),
+              m_model->m_targets[i].y_axis().toDouble(),
+              m_model->m_targets[i].z_axis().toDouble(),
+              0
+            );
+
+        CONSOLE << m_model->m_targets[i].name() << " " <<
+          m_model->m_targets[i].x_axis().toDouble() << " " <<
+          m_model->m_targets[i].y_axis().toDouble() << " " <<
+          m_model->m_targets[i].z_axis().toDouble() << " " <<
+          0;
+        });
+  }
 }
 
 RobotInterface::~RobotInterface()
@@ -359,29 +381,9 @@ void RobotInterface::keyPressEvent(QKeyEvent *event)
     }
 }
 
-void RobotInterface::init_gridTarget()
+void RobotInterface::slot_settingTarget()
 {
-  QGridLayout *gridTar = new QGridLayout;
-  QPushButton *btn1 = new QPushButton("Click one");
-  QPushButton *btn2 = new QPushButton("Click two");
-  QPushButton *btn3 = new QPushButton("Click three");
-  QPushButton *btn4 = new QPushButton("Click four");
-  QPushButton *btn5 = new QPushButton("Click five");
-  QPushButton *btn6 = new QPushButton("Click six");
-  QPushButton *btn7 = new QPushButton("Click seven");
-  QPushButton *btn8 = new QPushButton("Click eight");
-
-  gridTar->addWidget(btn1, 0, 0);
-  gridTar->addWidget(btn2, 0, 1);
-  gridTar->addWidget(btn3, 0, 2);
-  gridTar->addWidget(btn4, 0, 3);
-  gridTar->addWidget(btn5, 0, 0);
-  gridTar->addWidget(btn6, 0, 1);
-  gridTar->addWidget(btn7, 0, 2);
-  gridTar->addWidget(btn8, 0, 3);
-  CONSOLE << "hello123";
-
-  // ui->label_haha->setLayout(gridTar);
-  CONSOLE << "hello";
-  // ui->gridLayout->addLayout(gridTar,4 ,2, Qt::Alignment());
+  // this->hide();
+  // m_addNewTarget = new QAddNewTarget();
+  // m_addNewTarget->show();
 }

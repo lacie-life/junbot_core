@@ -16,6 +16,7 @@
 #include "QRobotItem.h"
 #include "QRobotUltis.h"
 #include "QRobotMission.h"
+#include "QAddTargetDialog.h"
 
 class AppModel : public QObject {
     Q_OBJECT

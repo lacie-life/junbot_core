@@ -36,12 +36,47 @@ void QDeliveryTargetDAO::init() const
 
 bool QDeliveryTargetDAO::addTarget(QDeliveryTarget& user) const
 {
+    if(!isTargetExits(user))
+    {
+        QSqlQuery query(m_database);
+        query.prepare("INSERT INTO delivery_target (name, x_axis, y_axis, z_axis) VALUES (:name, :x_axis, :y_axis, :z_axis)");
 
+        query.bindValue(":name", user.name(), QSql::In);
+        query.bindValue(":x_axis", user.x_axis(), QSql::In);
+        query.bindValue(":y_axis", user.y_axis(), QSql::In);
+        query.bindValue(":z_axis", user.z_axis(), QSql::In);
+
+        query.exec();
+        user.setId(query.lastInsertId().toInt());
+
+        QDatabaseManager::debugQuery(query);
+
+        return true;
+    }
+    else{
+        return false;
+    }
 }
 
 bool QDeliveryTargetDAO::isTargetExits(QDeliveryTarget& user) const
 {
+    QSqlQuery query(m_database);
+    query.prepare("SELECT * FROM delivery_target WHERE name = :name");
 
+    query.bindValue(":name", user.name());
+
+    query.exec();
+
+    QDatabaseManager::debugQuery(query);
+
+    while(query.next()){
+        if(user.name() == query.value("name").toString()){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    return false;
 }
 
 QVector<QDeliveryTarget> QDeliveryTargetDAO::targets() const
