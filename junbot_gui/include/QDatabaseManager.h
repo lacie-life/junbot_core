@@ -11,7 +11,7 @@
 class QSqlDatabase;
 class QSqlQuery;
 
-const QString DATABASE_FILENAME = "/home/onbat2/junbot_ws/src/junbot_planner/junbot_gui/data/user.db";
+const QString DATABASE_FILENAME = "/home/junbot/junbot_ws/src/JunBot/junbot_gui/data/user.db";
 
 class QDatabaseManager
 {

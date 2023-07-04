@@ -1,5 +1,6 @@
 #include "QNode.h"
 #include <QDebug>
+#include <move_base_msgs/MoveBaseActionGoal.h>
 
 QNode::QNode(int argc, char **argv)
         : init_argc(argc), init_argv(argv) {
@@ -87,8 +88,8 @@ void QNode::SubAndPubTopic() {
 
     map_sub = n.subscribe("map", 1000, &QNode::mapCallback, this);
 
-    goal_pub = n.advertise<geometry_msgs::PoseStamped>(
-            naviGoal_topic.toStdString(), 1000);
+    goal_pub = n.advertise<move_base_msgs::MoveBaseActionGoal>(
+            "/move_base/goal", 1000);
 
     cmd_pub = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
 
@@ -220,15 +221,19 @@ void QNode::myCallback(const std_msgs::Float64 &message_holder) {
 void QNode::set_goal(QString frame, double x, double y, double z, double w) {
     geometry_msgs::PoseStamped goal;
 
-    goal.header.frame_id = frame.toStdString();
+    goal.header.frame_id = "map";
 
     goal.header.stamp = ros::Time::now();
     goal.pose.position.x = x;
     goal.pose.position.y = y;
     goal.pose.position.z = 0;
     goal.pose.orientation.z = z;
-    goal.pose.orientation.w = w;
-    goal_pub.publish(goal);
+    goal.pose.orientation.w = 1.0;
+
+    move_base_msgs::MoveBaseActionGoal tempGoal;
+    tempGoal.goal.target_pose = goal;
+
+    goal_pub.publish(tempGoal);
     ros::spinOnce();
 }
 
