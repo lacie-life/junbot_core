@@ -24,6 +24,7 @@ add_message_files(
   SensorState.msg
   VersionInfo.msg
   Sound.msg
+  RobotState.msg
 )
 
 generate_messages(
