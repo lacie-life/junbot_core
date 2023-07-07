@@ -21,10 +21,6 @@ RobotInterface::RobotInterface(AppModel *model, QWidget *parent)
       RobotInterface::slot_dis_connect();
   });
 
-  connect(ui->settingTarget_btn, &QPushButton::clicked, [=]() {
-      RobotInterface::slot_settingTarget();
-  });
-
   QGroupBox *m_groupBox = new QGroupBox();
   m_groupBox = ui->groupBox;
   m_groupBox->setTitle("Delivery Target");
@@ -39,12 +35,15 @@ RobotInterface::RobotInterface(AppModel *model, QWidget *parent)
   while(n > 0){
     for(int i = m - n; i < m - n + 4 & i < m; i++){
       m_targetButton[i] = new QPushButton(m_model->m_targets[i].name());
-      m_targetButton[i]->setFixedHeight(50);
+      m_targetButton[i]->setFixedHeight(60);
       layout->addWidget(m_targetButton[i], (m-n)/4, i-(m-n));
     }
     n = n - 4;
   }
 
+  // layout->setRowStretch(0, 2);
+  // layout->setRowStretch(1, 2);
+  // layout->setRowStretch(2, 2);
   m_groupBox->setLayout(layout);
 
   for(int i = 0; i < m_targetButton.size(); i++)
@@ -65,6 +64,13 @@ RobotInterface::RobotInterface(AppModel *model, QWidget *parent)
           0;
         });
   }
+
+    connect(ui->settingTarget_btn, &QPushButton::clicked, [=]() {
+      RobotInterface::slot_settingTarget();
+  });
+
+  CONSOLE << "test 1";
+
 }
 
 RobotInterface::~RobotInterface()
@@ -383,7 +389,6 @@ void RobotInterface::keyPressEvent(QKeyEvent *event)
 
 void RobotInterface::slot_settingTarget()
 {
-  // this->hide();
-  // m_addNewTarget = new QAddNewTarget();
-  // m_addNewTarget->show();
+  m_addNewTarget = new QAddNewTarget(m_model);
+  m_addNewTarget->show();
 }

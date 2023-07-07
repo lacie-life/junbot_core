@@ -1,26 +1,27 @@
 #ifndef QADDNEWTARGETDIALOG_H
 #define QADDNEWTARGETDIALOG_H
 
-#include <QDialog>
+#include <QWidget>
 #include <QObject>
-
-#include "AppModel.h"
 
 namespace Ui {
 class AddNewTarget;
 }
 
-class QAddNewTarget : public QDialog 
+class AppModel;
+
+class QAddNewTarget : public QWidget 
 {
     Q_OBJECT
 
-// public:
-//     QAddNewTarget(QWidget *parent = nullptr);
+public:
+    QAddNewTarget(AppModel *model = nullptr, QWidget *parent = nullptr);
 
-//     ~QAddNewTarget();
+    ~QAddNewTarget();
 
-// private:
-//     Ui::AddNewTarget *ui;
+private:
+    Ui::AddNewTarget *ui;
+    AppModel *m_model;
 };
 
 #endif // QADDNEWTARGETDIALOG_H

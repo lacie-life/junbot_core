@@ -56,6 +56,7 @@ source_group("Source Files" FILES ${SOURCES})
 set(UI 
     ${CMAKE_CURRENT_LIST_DIR}/ui/loginwidget.ui
     ${CMAKE_CURRENT_LIST_DIR}/ui/robotinterface.ui
+    ${CMAKE_CURRENT_LIST_DIR}/ui/addNewTarget.ui
     )
 
 qt5_wrap_ui(UI_HEADERS ${UI})

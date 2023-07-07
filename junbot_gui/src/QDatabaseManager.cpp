@@ -9,6 +9,7 @@
 
 QSqlDatabase* QDatabaseManager::m_database = new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE"));
 
+
 void QDatabaseManager::debugQuery(const QSqlQuery& query)
 {
     if (query.lastError().type() == QSqlError::ErrorType::NoError) {
@@ -31,12 +32,12 @@ QDatabaseManager::QDatabaseManager(const QString& path)
       deliveryTargetDao(*m_database)
 
 {
-    m_database->setDatabaseName(path);
+    m_database->setDatabaseName("/home/onbat2/junbot_ws/src/junbot_planner/junbot_gui/data/user.db");
 
     bool openStatus = m_database->open();
     CONSOLE << "Database connection: " << (openStatus ? "OK" : "Error");
 
-    userDao.init();
+    userDao.init(); 
     deliveryTargetDao.init();
 }
 

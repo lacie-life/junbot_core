@@ -1,15 +1,18 @@
-// #include "QAddTargetDialog.h"
-// #include "AppConstants.h"
-// #include "ui_addNewTarget.h"
+#include "QAddTargetDialog.h"
+#include "AppConstants.h"
+#include "AppModel.h"
+#include "ui_addNewTarget.h"
 
-// #include <QCompleter>
+#include <QCompleter>
 
-// QAddTargetDialog::QAddTargetDialog(QWidget *parent)
-//         : QMainWindow(parent)
-//         , ui(new Ui::QAddTargetDialog) {
-//     ui->setupUi(this);
-// }
+QAddNewTarget::QAddNewTarget(AppModel *model, QWidget *parent)
+        : QWidget(parent)
+        , ui(new Ui::AddNewTarget) {
+    ui->setupUi(this);
 
-// QAddTargetDialog::~QAddTargetDialog() {
-//     delete ui;
-// }
+    m_model = model;
+}
+
+QAddNewTarget::~QAddNewTarget() {
+    delete ui;
+}
