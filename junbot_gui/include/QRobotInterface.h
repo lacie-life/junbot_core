@@ -22,8 +22,8 @@
 
 #include "QRobotUltis.h"
 #include "QRobotItem.h"
-#include "AppModel.h"
 #include "QAddTargetDialog.h"
+#include "AppModel.h"
 
 namespace Ui {
 class RobotInterface;
