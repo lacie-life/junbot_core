@@ -7,6 +7,12 @@ RobotInterface::RobotInterface(AppModel *model, QWidget *parent)
 {
   ui->setupUi(this);
 
+  slot_state.resize(3);
+
+  slot_state.append(false); // slot 1
+  slot_state.append(false); // slot 2
+  slot_state.append(false); // slot 3
+
   m_model = model;
 
   // read configuration file
@@ -20,6 +26,8 @@ RobotInterface::RobotInterface(AppModel *model, QWidget *parent)
   connect(ui->disconnect_button, &QPushButton::clicked, [=]() {
       RobotInterface::slot_dis_connect();
   });
+
+  ui->stackedWidget->setCurrentIndex(0);
 
   QGroupBox *m_groupBox = new QGroupBox();
   m_groupBox = ui->groupBox;
@@ -41,9 +49,6 @@ RobotInterface::RobotInterface(AppModel *model, QWidget *parent)
     n = n - 4;
   }
 
-  // layout->setRowStretch(0, 2);
-  // layout->setRowStretch(1, 2);
-  // layout->setRowStretch(2, 2);
   m_groupBox->setLayout(layout);
 
   for(int i = 0; i < m_targetButton.size(); i++)
@@ -65,8 +70,21 @@ RobotInterface::RobotInterface(AppModel *model, QWidget *parent)
         });
   }
 
-    connect(ui->settingTarget_btn, &QPushButton::clicked, [=]() {
-      RobotInterface::slot_settingTarget();
+  connect(ui->addTarget_btn, &QPushButton::clicked, this, [=]()
+  {
+    ui->stackedWidget->setCurrentIndex(1);
+
+    
+  });
+
+  connect(ui->settingTarget_btn, &QPushButton::clicked, [=]() {
+    RobotInterface::slot_settingTarget();
+  });
+
+  
+
+  connect(ui->cancelWidget_btn, &QPushButton::clicked, this, [this] {
+    ui->stackedWidget->setCurrentIndex(0);
   });
 
   CONSOLE << "test 1";
@@ -220,54 +238,54 @@ void RobotInterface::slot_dis_connect()
 
 void RobotInterface::slot_updateRobotStatus(AppEnums::QRobotStatus status)
 {
-  switch (status) {
-  case AppEnums::QRobotStatus::None: {
-    this->ui->slot_robotStatus->setStyleSheet("background-color: red");
-  } 
-  break;
-  case AppEnums::QRobotStatus::Normal: {
-    this->ui->slot_robotStatus->setStyleSheet("background-color: green");
-  }
-  break;
-  case AppEnums::QRobotStatus::Error: {
-    this->ui->slot_robotStatus->setStyleSheet("background-color: blue");
-  }
-  break;
-  case AppEnums::QRobotStatus::Warning: {
-    this->ui->slot_robotStatus->setStyleSheet("background-color: yellow");
-  }
-  break;
-  case AppEnums::QRobotStatus::NotReady: {
-    this->ui->slot_robotStatus->setStyleSheet("background-color: gray");
-  }
-  break;
-  default:
-  break;
-  }
+  // switch (status) {
+  // case AppEnums::QRobotStatus::None: {
+  //   this->ui->slot_robotStatus->setStyleSheet("background-color: red");
+  // } 
+  // break;
+  // case AppEnums::QRobotStatus::Normal: {
+  //   this->ui->slot_robotStatus->setStyleSheet("background-color: green");
+  // }
+  // break;
+  // case AppEnums::QRobotStatus::Error: {
+  //   this->ui->slot_robotStatus->setStyleSheet("background-color: blue");
+  // }
+  // break;
+  // case AppEnums::QRobotStatus::Warning: {
+  //   this->ui->slot_robotStatus->setStyleSheet("background-color: yellow");
+  // }
+  // break;
+  // case AppEnums::QRobotStatus::NotReady: {
+  //   this->ui->slot_robotStatus->setStyleSheet("background-color: gray");
+  // }
+  // break;
+  // default:
+  // break;
+  // }
 }
 
 void RobotInterface::slot_updateRobotMissonStatus(AppEnums::QMissionStatus status)
 {
-switch (status) {
-  case AppEnums::QMissionStatus::Idle: {
-   ui->robotMissonStatus->setStyleSheet("background-color: red");
-  } 
-  break;
-  case AppEnums::QMissionStatus::Running: {
-    ui->robotMissonStatus->setStyleSheet("background-color: green");
-  }
-  break;
-  case AppEnums::QMissionStatus::Paused: {
-    ui->robotMissonStatus->setStyleSheet("background-color: blue");
-  }
-  break;
-  case AppEnums::QMissionStatus::Stopped: {
-    ui->robotMissonStatus->setStyleSheet("background-color: yellow");
-  }
-  break;
-  default:
-  break;
-  }
+// switch (status) {
+//   case AppEnums::QMissionStatus::Idle: {
+//    ui->robotMissonStatus->setStyleSheet("background-color: red");
+//   } 
+//   break;
+//   case AppEnums::QMissionStatus::Running: {
+//     ui->robotMissonStatus->setStyleSheet("background-color: green");
+//   }
+//   break;
+//   case AppEnums::QMissionStatus::Paused: {
+//     ui->robotMissonStatus->setStyleSheet("background-color: blue");
+//   }
+//   break;
+//   case AppEnums::QMissionStatus::Stopped: {
+//     ui->robotMissonStatus->setStyleSheet("background-color: yellow");
+//   }
+//   break;
+//   default:
+//   break;
+//   }
 }
 
 void RobotInterface::connections()
