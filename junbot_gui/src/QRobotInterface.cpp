@@ -8,6 +8,7 @@ RobotInterface::RobotInterface(AppModel *model, QWidget *parent)
   ui->setupUi(this);
 
   slot_state.resize(3);
+  // slot_target.resize(3);
 
   slot_state.append(false); // slot 1
   slot_state.append(false); // slot 2
@@ -51,37 +52,77 @@ RobotInterface::RobotInterface(AppModel *model, QWidget *parent)
 
   m_groupBox->setLayout(layout);
 
-  for(int i = 0; i < m_targetButton.size(); i++)
-  {
-        connect(m_targetButton[i], &QPushButton::clicked, [=]{
-            m_model->m_rosNode.set_goal(
-              m_model->m_targets[i].name(),
-              m_model->m_targets[i].x_axis().toDouble(),
-              m_model->m_targets[i].y_axis().toDouble(),
-              m_model->m_targets[i].z_axis().toDouble(),
-              0
-            );
+  // for(int i = 0; i < m_targetButton.size(); i++)
+  // {
+  //       connect(m_targetButton[i], &QPushButton::clicked, [=]{
+  //           m_model->m_rosNode.set_goal(
+  //             m_model->m_targets[i].name(),
+  //             m_model->m_targets[i].x_axis().toDouble(),
+  //             m_model->m_targets[i].y_axis().toDouble(),
+  //             m_model->m_targets[i].z_axis().toDouble(),
+  //             0
+  //           );
 
-        CONSOLE << m_model->m_targets[i].name() << " " <<
-          m_model->m_targets[i].x_axis().toDouble() << " " <<
-          m_model->m_targets[i].y_axis().toDouble() << " " <<
-          m_model->m_targets[i].z_axis().toDouble() << " " <<
-          0;
-        });
-  }
+  //       CONSOLE << m_model->m_targets[i].name() << " " <<
+  //         m_model->m_targets[i].x_axis().toDouble() << " " <<
+  //         m_model->m_targets[i].y_axis().toDouble() << " " <<
+  //         m_model->m_targets[i].z_axis().toDouble() << " " <<
+  //         0;
+  //       });
+  // }
+for(int i = 0; i < m_targetButton.size(); i++){
+  connect(m_targetButton[i], &QPushButton::clicked, [=]{
+    if(ui->slotTarget_1->text() == "+"){
+      slot_target.append(m_model->m_targets[i]);
+      ui->slotTarget_1->setText(m_model->m_targets[i].name());
+    }
+    else if(ui->slotTarget_2->text() == "+"){
+      slot_target.append(m_model->m_targets[i]);
+      ui->slotTarget_2->setText(m_model->m_targets[i].name());
+    }
+    else if(ui->slotTarget_3->text() == "+"){
+      slot_target.append(m_model->m_targets[i]);
+      ui->slotTarget_3->setText(m_model->m_targets[i].name());
+      CONSOLE << slot_target[1].name();
+    }else{
+      return;
+    }
+  });
+}
+
+  connect(ui->run_btn, &QPushButton::clicked, this, [=](){
+    for(int i = 0; i < slot_target.size(); i++){
+      m_model->m_rosNode.set_goal(
+      slot_target[i].name(),
+      slot_target[i].x_axis().toDouble(),
+      slot_target[i].y_axis().toDouble(),
+      slot_target[i].z_axis().toDouble(),
+      0
+    );
+
+    CONSOLE << slot_target[i].name() << " " <<
+      slot_target[i].x_axis().toDouble() << " " <<
+      slot_target[i].y_axis().toDouble() << " " <<
+      slot_target[i].z_axis().toDouble() << " " <<
+      0;
+    }
+  });
+
+  connect(ui->slotTarget_1, &QPushButton::clicked, this, [=](){
+    connect(ui->remove_btn, &QPushButton::clicked, this, [=](){
+      CONSOLE << slot_target.size();
+      return;
+    });
+  });
 
   connect(ui->addTarget_btn, &QPushButton::clicked, this, [=]()
   {
     ui->stackedWidget->setCurrentIndex(1);
-
-    
   });
 
   connect(ui->settingTarget_btn, &QPushButton::clicked, [=]() {
     RobotInterface::slot_settingTarget();
   });
-
-  
 
   connect(ui->cancelWidget_btn, &QPushButton::clicked, this, [this] {
     ui->stackedWidget->setCurrentIndex(0);
@@ -270,7 +311,7 @@ void RobotInterface::slot_updateRobotMissonStatus(AppEnums::QMissionStatus statu
 //   case AppEnums::QMissionStatus::Idle: {
 //    ui->robotMissonStatus->setStyleSheet("background-color: red");
 //   } 
-//   break;
+//   break;   
 //   case AppEnums::QMissionStatus::Running: {
 //     ui->robotMissonStatus->setStyleSheet("background-color: green");
 //   }
