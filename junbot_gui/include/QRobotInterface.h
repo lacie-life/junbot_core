@@ -80,6 +80,9 @@ private:
 
   QVector<QPushButton*> m_targetButton;
 
+  QVector<bool> slot_state;
+  QVector<QDeliveryTarget> slot_target;
+
   bool m_useEnviorment = false;
   bool m_autoConnect = false;
   QString m_masterUrl;
