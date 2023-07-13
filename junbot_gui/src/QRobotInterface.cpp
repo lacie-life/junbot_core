@@ -64,7 +64,8 @@ for(int i = 0; i < m_targetButton.size(); i++){
   });
 }
 
-  // http://wiki.ros.org/navigation/Tutorials/SendingSimpleGoals
+  // http://wiki.ros.org/navigation/Tutorials/SendingSimpleGoals\
+  // https://automaticaddison.com/how-to-send-goals-to-the-ros-navigation-stack-using-c/
   connect(ui->run_btn, &QPushButton::clicked, this, [=]()
   {
     for(int i = 0; i < slot_target.size(); i++){
