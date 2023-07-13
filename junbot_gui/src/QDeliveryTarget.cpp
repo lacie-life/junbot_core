@@ -5,6 +5,12 @@ QDeliveryTarget::QDeliveryTarget()
 
 }
 
+QDeliveryTarget::QDeliveryTarget(QString name)
+    : m_name(name)
+{
+
+}
+
 QDeliveryTarget::QDeliveryTarget(QString name, QString x_axis, QString y_axis, QString z_axis)
     : m_name(name),
       m_xAxis(x_axis),
