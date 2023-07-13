@@ -8,7 +8,12 @@ RobotInterface::RobotInterface(AppModel *model, QWidget *parent)
   ui->setupUi(this);
 
   slot_state.resize(3);
-  // slot_target.resize(3);
+  slot_target.resize(3);
+
+  for(int i = 0; i < 3; i++)
+  {
+    slot_target[i] = QDeliveryTarget("+");
+  }
 
   slot_state.append(false); // slot 1
   slot_state.append(false); // slot 2
@@ -52,41 +57,10 @@ RobotInterface::RobotInterface(AppModel *model, QWidget *parent)
 
   m_groupBox->setLayout(layout);
 
-  // for(int i = 0; i < m_targetButton.size(); i++)
-  // {
-  //       connect(m_targetButton[i], &QPushButton::clicked, [=]{
-  //           m_model->m_rosNode.set_goal(
-  //             m_model->m_targets[i].name(),
-  //             m_model->m_targets[i].x_axis().toDouble(),
-  //             m_model->m_targets[i].y_axis().toDouble(),
-  //             m_model->m_targets[i].z_axis().toDouble(),
-  //             0
-  //           );
-
-  //       CONSOLE << m_model->m_targets[i].name() << " " <<
-  //         m_model->m_targets[i].x_axis().toDouble() << " " <<
-  //         m_model->m_targets[i].y_axis().toDouble() << " " <<
-  //         m_model->m_targets[i].z_axis().toDouble() << " " <<
-  //         0;
-  //       });
-  // }
 for(int i = 0; i < m_targetButton.size(); i++){
   connect(m_targetButton[i], &QPushButton::clicked, [=]{
-    if(ui->slotTarget_1->text() == "+"){
-      slot_target.append(m_model->m_targets[i]);
-      ui->slotTarget_1->setText(m_model->m_targets[i].name());
-    }
-    else if(ui->slotTarget_2->text() == "+"){
-      slot_target.append(m_model->m_targets[i]);
-      ui->slotTarget_2->setText(m_model->m_targets[i].name());
-    }
-    else if(ui->slotTarget_3->text() == "+"){
-      slot_target.append(m_model->m_targets[i]);
-      ui->slotTarget_3->setText(m_model->m_targets[i].name());
-      CONSOLE << slot_target[1].name();
-    }else{
-      return;
-    }
+      CONSOLE << "add target " << m_model->m_targets[i].name();
+      updateTargetSlot(m_model->m_targets[i]);
   });
 }
 
@@ -108,11 +82,21 @@ for(int i = 0; i < m_targetButton.size(); i++){
     }
   });
 
+  connect(ui->remove_btn, &QPushButton::clicked, this, &RobotInterface::slotRemoveTarget);
+
   connect(ui->slotTarget_1, &QPushButton::clicked, this, [=](){
-    connect(ui->remove_btn, &QPushButton::clicked, this, [=](){
-      CONSOLE << slot_target.size();
-      return;
-    });
+        CONSOLE << "slot 1";
+        m_targetSelected = 1;
+  });
+
+  connect(ui->slotTarget_2, &QPushButton::clicked, this, [=](){
+        CONSOLE << "slot 2";
+        m_targetSelected = 2;
+  });
+
+  connect(ui->slotTarget_3, &QPushButton::clicked, this, [=](){
+        CONSOLE << "slot 3";
+        m_targetSelected = 3;
   });
 
   connect(ui->addTarget_btn, &QPushButton::clicked, this, [=]()
@@ -135,6 +119,98 @@ for(int i = 0; i < m_targetButton.size(); i++){
 RobotInterface::~RobotInterface()
 {
   delete ui;
+}
+
+void RobotInterface::slotRemoveTarget()
+{
+  if(m_targetSelected == NULL)
+  {
+    return;
+  }
+  removeTarget(m_targetSelected);
+}
+
+void RobotInterface::removeTarget(int i)
+{
+  CONSOLE << "Remove " << i;
+  if(i == 1 && (ui->slotTarget_1->text() != "+"))
+  {
+    slot_target[3 - i] = QDeliveryTarget("+"); 
+    updateTagerSlotUI();
+  }
+  else if(i == 2 && (ui->slotTarget_2->text() != "+"))
+  {
+    slot_target[3 - i] = QDeliveryTarget("+");
+    updateTagerSlotUI();
+  }
+  else if(i == 3 && (ui->slotTarget_3->text() != "+"))
+  {
+    CONSOLE << "Bug?";
+    slot_target[3 - i] = QDeliveryTarget("+");
+    CONSOLE << slot_target[i - 1].name();
+    updateTagerSlotUI();
+  }
+
+  m_targetSelected = NULL;
+}
+
+void RobotInterface::updateTagerSlotUI()
+{
+    CONSOLE << "Bug?";
+    QVector<QDeliveryTarget> tmp_slot_target;
+
+    // tmp_slot_target.resize(3);
+
+    for(int i = 0; i < 3; i++)
+    {
+      if(slot_target[i].name() != "+")
+      {
+        tmp_slot_target.append(slot_target[i]);
+        CONSOLE << i << slot_target[i].name();
+      }
+    }
+
+    slot_target.clear();
+    slot_target.resize(3);
+
+    int cnt = 0;
+
+    CONSOLE << tmp_slot_target.size();
+
+    for(int i = 0; i < tmp_slot_target.size(); i++)
+    {
+      if(tmp_slot_target[i].name() != "+")
+      {
+        slot_target[cnt] = tmp_slot_target[i];
+        cnt++;
+      }
+    }
+
+    CONSOLE << cnt;
+
+    for(int i = cnt; i < 3; i++)
+    {
+      slot_target[i] = QDeliveryTarget("+");
+    }
+
+    ui->slotTarget_3->setText(slot_target[0].name());
+    ui->slotTarget_2->setText(slot_target[1].name());
+    ui->slotTarget_1->setText(slot_target[2].name());
+}
+
+void RobotInterface::updateTargetSlot(QDeliveryTarget target)
+{
+  for(int i = 0; i < 3; i++)
+  {
+      if(slot_target[i].name() == "+")
+      {
+        slot_target[i] = target;
+        ui->slotTarget_3->setText(slot_target[0].name());
+        ui->slotTarget_2->setText(slot_target[1].name());
+        ui->slotTarget_1->setText(slot_target[2].name());
+        return;
+      }
+  }
 }
 
 void RobotInterface::readSettings()

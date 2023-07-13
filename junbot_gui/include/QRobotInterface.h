@@ -60,6 +60,10 @@ public slots:
 
   void slot_settingTarget();
 
+  void slotRemoveTarget();
+
+  void updateTargetSlot(QDeliveryTarget target);
+
 signals:
   void signalDisconnect();
   void signalKeyPressed(int key);
@@ -67,6 +71,9 @@ signals:
 private:
   void connections();
   void display_rviz();
+  void removeTarget(int i);
+
+  void updateTagerSlotUI();
 
 protected:
   void keyPressEvent(QKeyEvent *event) override;
@@ -93,6 +100,8 @@ private:
 //  QVariantList m_sendVelList, m_recvVelList, m_timeList;
 
   int line_max = 10;
+
+  int m_targetSelected = NULL;
 
   QTimer *m_timerChart;
   QTimer *m_timerPubImageMap;

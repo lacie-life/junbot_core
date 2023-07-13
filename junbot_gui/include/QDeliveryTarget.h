@@ -9,6 +9,7 @@ class QDeliveryTarget
 {
 public:
     explicit QDeliveryTarget();
+    QDeliveryTarget(QString name);
     QDeliveryTarget(QString name, QString x_axis, QString y_axis, QString z_axis);
     QDeliveryTarget(QString x_axis, QString y_axis, QString z_axis);
     
