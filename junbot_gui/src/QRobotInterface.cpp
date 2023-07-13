@@ -64,21 +64,22 @@ for(int i = 0; i < m_targetButton.size(); i++){
   });
 }
 
-  connect(ui->run_btn, &QPushButton::clicked, this, [=](){
+  connect(ui->run_btn, &QPushButton::clicked, this, [=]()
+  {
     for(int i = 0; i < slot_target.size(); i++){
-      m_model->m_rosNode.set_goal(
-      slot_target[i].name(),
-      slot_target[i].x_axis().toDouble(),
-      slot_target[i].y_axis().toDouble(),
-      slot_target[i].z_axis().toDouble(),
-      0
-    );
+      if(slot_target[i].name() != "+")
+      {
+        m_model->m_rosNode.set_goal(
+          slot_target[i].name(),
+          slot_target[i].x_axis().toDouble(),
+          slot_target[i].y_axis().toDouble(),
+          slot_target[i].z_axis().toDouble(),
+          0
+        );
+        // waiting for goal success
 
-    CONSOLE << slot_target[i].name() << " " <<
-      slot_target[i].x_axis().toDouble() << " " <<
-      slot_target[i].y_axis().toDouble() << " " <<
-      slot_target[i].z_axis().toDouble() << " " <<
-      0;
+        CONSOLE << slot_target[i].name();
+      }
     }
   });
 
