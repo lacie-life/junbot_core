@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
         move_base_msgs
         custom_msgs
         geometry_msgs
+        vision_msgs
         )
 
 ## Declare a catkin package
