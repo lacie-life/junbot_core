@@ -52,6 +52,7 @@ private:
     tf::TransformListener *robotPoselistener;
     nav_msgs::OccupancyGrid grid_map;
     nav_msgs::Path global_plan;
+    custom_msgs::Obstacles m_obstacles;
 
     std::mutex mutex;
 };
