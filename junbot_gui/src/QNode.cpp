@@ -290,9 +290,9 @@ void QNode::mapCallback(nav_msgs::OccupancyGrid::ConstPtr msg) {
 }
 
 void QNode::speedCallback(const nav_msgs::Odometry::ConstPtr &msg) {
-    RobotSpeed speed;
-    speed.speed_x = msg->twist.twist.linear.x;
-    speed.speed_y = msg->twist.twist.angular.y;
+    QRobotSpeed speed;
+    speed.vx = msg->twist.twist.linear.x;
+    speed.vy = msg->twist.twist.angular.y;
 
     emit updateRobotSpeed(speed);
 }
