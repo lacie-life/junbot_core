@@ -23,7 +23,7 @@ SemanticPlanner::~SemanticPlanner()
 void SemanticPlanner::ObstacleCallback(const vision_msgs::Detection3DArray::ConstPtr &msg) {
     ROS_INFO("I received: [%s] objects", msg->detections.size());
 
-    custom_msgs::Obstacles temp;
+    m_obstacles.list.clear();
 
     for (int i = 0; i < msg->detections.size(); i++)
     {
@@ -96,14 +96,23 @@ void SemanticPlanner::ObstacleCallback(const vision_msgs::Detection3DArray::Cons
         obs.id = detect.results.at(0).id;
         obs.score = 1.0;
 
-        temp.list.push_back(obs);
+        m_obstacles.list.push_back(obs);
     }
-    // Publish message msg to topic chatter
-    obstaclePub.publish(temp);
 }
 
 void SemanticPlanner::calculateZone() {
     // Pending
+
+    // 1. Get robot pose
+
+    // 2. Get global plan
+
+    // 3. Get grid map
+
+    // 4. Calculate zone
+
+    // 5. Publish zone
+    obstaclePub.publish(m_obstacles);
 }
 
 void SemanticPlanner::globalPlanCallback(const nav_msgs::Path::ConstPtr &msg) {
