@@ -88,8 +88,8 @@ for(int i = 0; i < m_targetButton.size(); i++){
   connect(ui->remove_btn, &QPushButton::clicked, this, &RobotInterface::slotRemoveTarget);
 
   connect(ui->slotTarget_1, &QPushButton::clicked, this, [=](){
-        CONSOLE << "slot 1";
-        m_targetSelected = 1;
+        CONSOLE << "slot 3";
+        m_targetSelected = 3;
   });
 
   connect(ui->slotTarget_2, &QPushButton::clicked, this, [=](){
@@ -98,8 +98,8 @@ for(int i = 0; i < m_targetButton.size(); i++){
   });
 
   connect(ui->slotTarget_3, &QPushButton::clicked, this, [=](){
-        CONSOLE << "slot 3";
-        m_targetSelected = 3;
+        CONSOLE << "slot 1";
+        m_targetSelected = 1;
   });
 
   connect(ui->addTarget_btn, &QPushButton::clicked, this, [=]()
@@ -114,8 +114,6 @@ for(int i = 0; i < m_targetButton.size(); i++){
   connect(ui->cancelWidget_btn, &QPushButton::clicked, this, [this] {
     ui->stackedWidget->setCurrentIndex(0);
   });
-
-  CONSOLE << "test 1";
 
 }
 
@@ -322,8 +320,6 @@ void RobotInterface::slot_cmd_control()
 
   CONSOLE << "Key: " << key;
   CONSOLE << "Name: " << button_key;
-
-  CONSOLE << "nice";
 
   if(button_key == "forward"){
     // forward
