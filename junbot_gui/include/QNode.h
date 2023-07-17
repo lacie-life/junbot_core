@@ -115,23 +115,30 @@ signals:
 
     void updateRobotStatus(AppEnums::QRobotStatus status);
 
+    void updateBatteryVoltage(double voltage);
+
+    void updateBatteryPercentage(double percentage);
+
 private:
     int init_argc;
     char **init_argv;
 
-    ros::Publisher chatter_publisher;
     ros::Subscriber cmdVel_sub;
     ros::Subscriber chatter_subscriber;
     ros::Subscriber pos_sub;
     ros::Subscriber m_laserSub;
     ros::Subscriber battery_sub;
+    ros::Subscriber m_batteryVoltageSub;
+    ros::Subscriber m_batteryPercentageSub;
     ros::Subscriber m_plannerPathSub;
     ros::Subscriber m_compressedImgSub0;
     ros::Subscriber m_compressedImgSub1;
+
     ros::Publisher goal_pub;
     ros::Publisher cmd_pub;
     ros::Publisher m_initialposePub;
     image_transport::Publisher m_imageMapPub;
+
     MoveBaseClient *movebase_client;
     QStringListModel logging_model;
     QString show_mode = "control";
@@ -142,6 +149,8 @@ private:
 
     QString odom_topic;
     QString batteryState_topic;
+    QString batteryVoltage_topic;
+    QString batteryPercentage_topic;
     QString pose_topic;
     QString laser_topic;
     QString map_topic;
@@ -188,6 +197,10 @@ private:
     void SubAndPubTopic();
 
     void updateRobotPose();
+
+    void batteryVoltageCallback(const std_msgs::Float32 &message);
+
+    void batteryPercentageCallback(const std_msgs::Float32 &message);
 };
 
 #endif // QNODE_H

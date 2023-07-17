@@ -9,6 +9,10 @@ QNode::QNode(int argc, char **argv)
     odom_topic = topic_setting.value("topic/topic_odom", "odom").toString();
     batteryState_topic =
             topic_setting.value("topic/topic_power", "battery_state").toString();
+
+    batteryVoltage_topic = "cmd_vol_fb";
+    batteryPercentage_topic = "cmd_bat_fb";
+    
     initPose_topic =
             topic_setting.value("topic/topic_init_pose", "move_base_simple/goal")
                     .toString();
@@ -17,6 +21,7 @@ QNode::QNode(int argc, char **argv)
     pose_topic = topic_setting.value("topic/topic_amcl", "amcl_pose").toString();
     m_frameRate = topic_setting.value("main/framerate", 40).toInt();
     m_threadNum = topic_setting.value("main/thread_num", 6).toInt();
+
 
     // UI display
     QSettings settings("junbot_gui", "Displays");
@@ -85,6 +90,12 @@ void QNode::SubAndPubTopic() {
 
     battery_sub = n.subscribe(batteryState_topic.toStdString(), 1000,
                               &QNode::batteryCallback, this);
+
+    m_batteryVoltageSub = n.subscribe(batteryVoltage_topic.toStdString(), 1000,
+                                      &QNode::batteryVoltageCallback, this);
+
+    m_batteryPercentageSub = n.subscribe(batteryPercentage_topic.toStdString(), 1000,
+                                         &QNode::batteryPercentageCallback, this);
 
     map_sub = n.subscribe("map", 1000, &QNode::mapCallback, this);
 
@@ -212,6 +223,14 @@ void QNode::updateRobotPose() {
 
 void QNode::batteryCallback(const sensor_msgs::BatteryState &message) {
     emit batteryState(message);
+}
+
+void QNode::batteryVoltageCallback(const std_msgs::Float32 &message) {
+    emit updateBatteryVoltage(message.data);
+}
+
+void QNode::batteryPercentageCallback(const std_msgs::Float32 &message) {
+    emit updateBatteryPercentage(message.data);
 }
 
 void QNode::myCallback(const std_msgs::Float64 &message_holder) {
