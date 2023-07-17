@@ -15,6 +15,7 @@
 #include <geometry_msgs/Twist.h>
 #include <image_transport/image_transport.h>
 #include <move_base_msgs/MoveBaseAction.h>
+#include <move_base_msgs/MoveBaseActionFeedback.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
@@ -36,15 +37,11 @@
 #include <string>
 
 #include "QRobotItem.h"
+#include "QRobotUltis.h"
 #include "AppConstants.h"
 
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
-struct RobotSpeed
-{
-    float speed_x;
-    float speed_y;
-};
 
 class QNode : public QThread {
 Q_OBJECT
@@ -61,6 +58,10 @@ public:
     void move_base(char k, float speed_linear, float speed_trun);
 
     void set_goal(QString frame, double x, double y, double z, double w);
+
+    bool set_goal_once(QString frame, QRobotPose goal);
+
+    bool set_multi_goal(QString frame, std::vector<QRobotPose> goals);
 
     void Sub_Image(QString topic, int frame_id);
 
@@ -101,7 +102,7 @@ signals:
 
     void rosShutdown();
 
-    void updateRobotSpeed(RobotSpeed speed);
+    void updateRobotSpeed(QRobotSpeed speed);
 
     void batteryState(sensor_msgs::BatteryState);
 
@@ -122,6 +123,8 @@ signals:
     void updateBatteryVoltage(double voltage);
 
     void updateBatteryPercentage(double percentage);
+
+    void updateGoalReached(int i);
 
 private:
     int init_argc;
