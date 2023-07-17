@@ -7,6 +7,7 @@
 struct QRobotPose {
     double x;
     double y;
+    double z;
     double theta;
 };
 

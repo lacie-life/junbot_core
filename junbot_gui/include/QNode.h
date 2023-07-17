@@ -59,6 +59,10 @@ public:
 
     void set_goal(QString frame, double x, double y, double z, double w);
 
+    bool set_goal_once(QString frame, QRobotPose goal);
+
+    bool set_multi_goal(QString frame, std::vector<QRobotPose> goals);
+
     void Sub_Image(QString topic, int frame_id);
 
     void pub_imageMap(QImage map);
@@ -119,6 +123,8 @@ signals:
     void updateBatteryVoltage(double voltage);
 
     void updateBatteryPercentage(double percentage);
+
+    void updateGoalReached(int i);
 
 private:
     int init_argc;
