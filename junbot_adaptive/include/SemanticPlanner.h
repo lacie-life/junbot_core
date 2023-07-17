@@ -1,0 +1,14 @@
+//
+// Created by lacie on 17/07/2023.
+//
+
+#ifndef JUNBOT_ADAPTIVE_SEMANTICPLANNER_H
+#define JUNBOT_ADAPTIVE_SEMANTICPLANNER_H
+
+
+class SemanticPlanner {
+
+};
+
+
+#endif //JUNBOT_ADAPTIVE_SEMANTICPLANNER_H
