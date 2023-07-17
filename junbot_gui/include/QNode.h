@@ -40,6 +40,12 @@
 
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
+struct RobotSpeed
+{
+    float speed_x;
+    float speed_y;
+};
+
 class QNode : public QThread {
 Q_OBJECT
 
@@ -95,9 +101,7 @@ signals:
 
     void rosShutdown();
 
-    void speed_x(double x);
-
-    void speed_y(double y);
+    void updateRobotSpeed(RobotSpeed speed);
 
     void batteryState(sensor_msgs::BatteryState);
 
