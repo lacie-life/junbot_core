@@ -21,6 +21,9 @@ SemanticPlanner::~SemanticPlanner()
 }
 
 void SemanticPlanner::ObstacleCallback(const vision_msgs::Detection3DArray::ConstPtr &msg) {
+
+    mutex.lock();
+
     ROS_INFO("I received: [%s] objects", msg->detections.size());
 
     m_obstacles.list.clear();
@@ -98,21 +101,56 @@ void SemanticPlanner::ObstacleCallback(const vision_msgs::Detection3DArray::Cons
 
         m_obstacles.list.push_back(obs);
     }
+
+    mutex.unlock();
 }
 
 void SemanticPlanner::calculateZone() {
     // Pending
+    mutex.lock();
+    // 1. Get global plan
+    double distance = 99;
+    custom_msgs::Obstacles _temp = m_obstacles;
 
-    // 1. Get robot pose
+    for(int i = 0; i < 1; i++)
+    {
+        for(int j = 0; j < 4; j++)
+        {
+            std::vector<geometry_msgs::Point> waypointError;
+            custom_msgs::Form temp;
+            for (int k = 0; k < global_plan.poses.size(); ++k) {
+                distance = calculateDistance(_temp.list[i].form[j].x, _temp.list[i].form[j].y, global_plan.poses[k].pose.position.x, global_plan.poses[k].pose.position.y);
+                if (distance <= 0.03) {
+                    geometry_msgs::Point p;
+                    p.x = global_plan.poses[k].pose.position.x;
+                    p.y = global_plan.poses[k].pose.position.y;
+                    p.z = global_plan.poses[k].pose.position.z;
+                    waypointError.push_back(p);
+                }
+            }
 
-    // 2. Get global plan
-
-    // 3. Get grid map
+            if (waypointError.size()>1)
+            {
+                geometry_msgs::Point _begin = waypointError.at(0);
+                geometry_msgs::Point _end = waypointError.at(waypointError.size() - 1);
+                geometry_msgs::Point coner_;
+//                coner_.x = coner[j][0];
+//                coner_.y = coner[j][1];
+//                coner_.z = coner[j][2];
+                temp.form.push_back(_begin);
+                temp.form.push_back(_end);
+                temp.form.push_back(coner_);
+                temp.id = "zone";
+                _temp.list.push_back(temp);
+            }
+        }
+    }
 
     // 4. Calculate zone
 
     // 5. Publish zone
-    obstaclePub.publish(m_obstacles);
+    obstaclePub.publish(_temp);
+    mutex.unlock();
 }
 
 void SemanticPlanner::globalPlanCallback(const nav_msgs::Path::ConstPtr &msg) {
