@@ -283,9 +283,9 @@ bool RobotInterface::connectMaster(QString master_ip, QString ros_ip)
 
 void RobotInterface::slot_batteryState(sensor_msgs::BatteryState msg)
 {
-  ui->label_power->setText(QString::number(msg.voltage).mid(0, 5) + "V");
+  // ui->label_power->setText(QString::number(msg.voltage).mid(0, 5) + "V");
   double percentage = msg.percentage;
-  ui->progressBar->setValue(percentage > 100 ? 100 : percentage);
+  // ui->progressBar->setValue(percentage > 100 ? 100 : percentage);
 
   if (percentage <= 20) {
     ui->progressBar->setStyleSheet(
@@ -297,6 +297,16 @@ void RobotInterface::slot_batteryState(sensor_msgs::BatteryState msg)
           "QProgressBar {border: 2px solid grey;border-radius: 5px;text-align: "
           "center;}");
   }
+}
+
+void RobotInterface::slot_batteryPercentage(float msg)
+{
+  ui->progressBar->setValue(msg);
+}
+void RobotInterface::slot_batteryVoltage(float msg)
+{
+  QString message = QString::number(msg, 'f', 2);
+  ui->label_power->setText(message + "V");
 }
 
 void RobotInterface::slot_rosShutdown()
@@ -424,6 +434,12 @@ void RobotInterface::connections()
 
   // Robot battery
   connect(&m_model->m_rosNode, &QNode::batteryState, this, &RobotInterface::slot_batteryState);
+
+  //Battery percentage
+  connect(&m_model->m_rosNode, &QNode::updateBatteryPercentage, this, &RobotInterface::slot_batteryPercentage);
+
+  //Battery Voltage
+  connect(&m_model->m_rosNode, &QNode::updateBatteryVoltage, this, &RobotInterface::slot_batteryVoltage);
 
   // Bind the speed control buttons
   connect(ui->back, SIGNAL(clicked()), this, SLOT(slot_cmd_control()));

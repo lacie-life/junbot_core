@@ -272,8 +272,8 @@ bool QNode::set_goal_once(QString frame, QRobotPose goal) {
     _goal.pose.orientation.z = goal.theta;
     _goal.pose.orientation.w = 1.0;
 
-    move_base_msgs::MoveBaseActionGoal tempGoal;
-    tempGoal.goal.target_pose = _goal;
+    move_base_msgs::MoveBaseGoal tempGoal;
+    tempGoal.target_pose = _goal;
     
     movebase_client->sendGoal(tempGoal);
     

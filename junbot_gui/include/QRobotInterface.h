@@ -51,6 +51,8 @@ public slots:
      ** Auto-connections (connectSlotsByName())
      *******************************************/
   void slot_batteryState(sensor_msgs::BatteryState);
+  void slot_batteryPercentage(float msg);
+  void slot_batteryVoltage(float msg);
   void slot_rosShutdown();
   void slot_cmd_control();
   
