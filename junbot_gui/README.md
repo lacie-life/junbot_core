@@ -69,20 +69,23 @@ rosrun junbot_gui junbot_gui
     
 - <b> class QNode </b> : Ros Interface
     
-- <b> class QDatabaseManager, QUserDAO </b> : SQLite Interface
+- <b> class QDatabaseManager, QUserDAO, QDeliveryTargetDAO </b> : SQLite Interface
     
 - <b> UI Classes </b> : QRobotItem, MainWindow, QLoginWidget, QCustomWidget
 
-- <b> Object Classes </b> : QUser, QRobotMission
+- <b> Object Classes </b> : QUser, QRobotMission, QDeliveryTarget
 
 - <b> Other Classes </b> : AppConstants, QRobotMission, QRobotUtils
     
 ## TODO
 
    - [X] Refactor Code
-   - [ ] Ui for MainWindow, QLoginWidget
-   - [ ] Database Module 
+   - [x] Ui for MainWindow, QLoginWidget
+   - [x] Database Module
+         - [x] User
+         - [x] Delivery Target 
+   - [x] Mission Module
    - [ ] Robot State Module
-   - [ ] Mission Module
+   - [ ] User permission
    - [ ] Total test
 
