@@ -82,8 +82,10 @@ rosrun junbot_gui junbot_gui
    - [X] Refactor Code
    - [x] Ui for MainWindow, QLoginWidget
    - [x] Database Module
-         - [x] User
-         - [x] Delivery Target 
+         
+         + User
+         
+         + Delivery Target 
    - [x] Mission Module
    - [ ] Robot State Module
    - [ ] User permission
