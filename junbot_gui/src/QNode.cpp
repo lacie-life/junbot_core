@@ -256,6 +256,56 @@ void QNode::set_goal(QString frame, double x, double y, double z, double w) {
     ros::spinOnce();
 }
 
+bool QNode::set_goal_once(QString frame, QRobotPose goal) {
+    while (!movebase_client->waitForServer(ros::Duration(5.0))) {
+        ROS_INFO("Waiting for the move_base action server to come up");
+    }
+
+    geometry_msgs::PoseStamped _goal;
+
+    _goal.header.frame_id = "map";
+
+    _goal.header.stamp = ros::Time::now();
+    _goal.pose.position.x = goal.x;
+    _goal.pose.position.y = goal.y;
+    _goal.pose.position.z = 0;
+    _goal.pose.orientation.z = goal.theta;
+    _goal.pose.orientation.w = 1.0;
+
+    move_base_msgs::MoveBaseActionGoal tempGoal;
+    tempGoal.goal.target_pose = _goal;
+    
+    movebase_client->sendGoal(tempGoal);
+    
+    movebase_client->waitForResult();
+    
+    if(movebase_client->getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
+      return true;
+    }
+    else{
+      return false;
+    }
+}
+
+bool QNode::set_multi_goal(QString frame, std::vector<QRobotPose> goals)
+{
+    // TODO: Update find optimal path ????
+    int i = 0;
+    for (auto goal : goals)
+    {
+      if(!set_goal_once(frame, goal))
+      {
+        return false;
+      }
+      else{
+        ROS_INFO("Goal %d reached", i);
+        emit updateGoalReached(i);
+        i++;
+      }
+    }
+    return true;
+}
+
 void QNode::mapCallback(nav_msgs::OccupancyGrid::ConstPtr msg) {
     int width = msg->info.width;
     int height = msg->info.height;
@@ -290,9 +340,9 @@ void QNode::mapCallback(nav_msgs::OccupancyGrid::ConstPtr msg) {
 }
 
 void QNode::speedCallback(const nav_msgs::Odometry::ConstPtr &msg) {
-    RobotSpeed speed;
-    speed.speed_x = msg->twist.twist.linear.x;
-    speed.speed_y = msg->twist.twist.angular.y;
+    QRobotSpeed speed;
+    speed.vx = msg->twist.twist.linear.x;
+    speed.vy = msg->twist.twist.angular.y;
 
     emit updateRobotSpeed(speed);
 }
