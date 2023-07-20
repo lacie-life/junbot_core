@@ -2,29 +2,18 @@
 
 # TODO List:
 
-- [x] Create point cloud by ORB-SLAM3 (Pending release code)
 - [x] Publish point cloud to ROS
-- [ ] System calibration
-   - [ ] Multi camera fusion
-   - [x] Robot TF
 - [ ] Explore enviroment
-   
-   - [ ] ~~Replace Yolo with Segmentation net => remove dynamic object (by interest class)~~
-   
+      
    - [x] Yolov5 TensorRT support
-   
    - [x] ~~OctoMap support~~
-   
-   - [ ] Turning object database
+   - [x] Turning object database
       - [x] Segment 3D bounding box
    	    - ~~[ ] Option 1: Segment point cloud by PointNet++ => get 3D bounding box of object (office enviroment) [[Ref](https://github.com/sc19aas/3D-object-detection)]~~
  		    - [x] Option 2: detect 3d cuboid [[Ref](https://github.com/aibo-kit/new_3dbbox_generation_method.git)] [[Ref](https://wym.netlify.app/2019-02-22-cubeslam/)]
    	    - ~~[ ] Darknet-ros-3d + ObjectDatabase test [[Link](https://github.com/IntelligentRoboticsLabs/gb_visual_detection_3d)]~~
    	   
    	 - [x] Object filter (sometime crashed)
-   	 - [ ] <b> Improve Object tracker </b>
-   	 - [ ] <b> Improve Object filter </b>
-   	 - [ ] Add object pose optimize ?
    	 - [x] Object Map
    - [x] Add ZED example
    - [x] Add D455 example 
@@ -53,14 +42,15 @@
           - List coner need to change in coner layer => update costmap => update path planner
    
  - [ ] Evaluate results (MavelMind)
-   - [ ] <b> Trajectory collection by MavelMind </b>
+   - [x] <b> Trajectory collection by MavelMind </b>
    - [ ] Improve GUI
-   - [ ] SLAM
    - [ ] Re-path planning
 
 - [ ] Hardware
-   - [ ] Assembly 
-   - [ ] Testing in farm
+   - [x] Assembly
+   - [ ] System calibration
+      - [ ] Multi-camera fusion
+      - [x] Robot TF
    
 # Install 
 
@@ -99,7 +89,7 @@ sudo apt-get install ros-noetic-joy ros-noetic-teleop-twist-joy \
 
 ```
 
-3. object_slam (Skip CUDA Install if use jetpack in Jetson series)
+3. object_mapping (Skip CUDA Install if use jetpack in Jetson series)
 
 - CUDA 11.6 [[Link](https://developer.nvidia.com/cuda-11-6-0-download-archive)]
   - <i> Choose option and follow instructions </i>
@@ -110,24 +100,6 @@ sudo apt-get install ros-noetic-joy ros-noetic-teleop-twist-joy \
 
 - PCL 1.8 [[Link](https://github.com/PointCloudLibrary/pcl/archive/refs/tags/pcl-1.8.0.zip)]
   - <i> Uncompress and build </i>
-
-- Pangolin
-
-```
-sudo apt-get install -y libglew-dev
-
-git clone --recursive https://github.com/stevenlovegrove/Pangolin.git
-
-cd Pangolin 
-
-./scripts/install_prerequisites.sh --dry-run recommended
-
-mkdir build && cd build
-cmake .. or cmake .. -DPython_EXECUTABLE='/usr/bin/python3'
-cmake --build .
-
-sudo make install
-```
 
 - TensorRT
 - ZED SDK
