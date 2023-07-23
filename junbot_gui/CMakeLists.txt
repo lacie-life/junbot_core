@@ -32,6 +32,7 @@ set(ModuleList
     Network
     Sql
     Svg
+    Mqtt
 )
 
 foreach(QtModule ${ModuleList})
