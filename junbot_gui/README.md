@@ -1,5 +1,29 @@
 # JunBotGUI
 
+## TODO
+
+   - [X] Refactor Code
+   - [x] Ui for MainWindow, QLoginWidget
+   - [x] Database Module
+         
+        - [x] User
+         
+        - [x] Delivery Target 
+        
+   - [x] Mission Module
+   - [ ] Robot State Module
+   - [ ] User permission
+   - [ ] Total test
+
+## Install QtMqtt
+
+```
+- git clone git://code.qt.io/qt/qtmqtt.git
+- git checkout <version of Qt> # version of Qt: v5.12.5
+- sudo apt-get install qtbase5-private-dev
+- qmake => make => make install
+```
+
 ## Config ROS plugin for QtCreator
 
 1. Add Pugin
@@ -77,17 +101,4 @@ rosrun junbot_gui junbot_gui
 
 - <b> Other Classes </b> : AppConstants, QRobotMission, QRobotUtils
     
-## TODO
-
-   - [X] Refactor Code
-   - [x] Ui for MainWindow, QLoginWidget
-   - [x] Database Module
-         
-         + User
-         
-         + Delivery Target 
-   - [x] Mission Module
-   - [ ] Robot State Module
-   - [ ] User permission
-   - [ ] Total test
 
