@@ -1,4 +1,4 @@
-# junbot_planner
+# junbot_core
 
 # TODO List:
 
@@ -52,14 +52,23 @@
       - [ ] Multi-camera fusion
       - [x] Robot TF
    
+
+# Related Project
+
+- [SemanticMapping](https://github.com/lacie-life/SemanticMapping)
+- [junbot_relocalization](https://github.com/lacie-life/junbot_localization)
+- [junbot_odometry_fusion](https://github.com/lacie-life/junbot_odometry_fusion)
+- [junbot_mobile_app](https://github.com/lacie-life/junbot_app)
+
 # Install 
 
 1. ROS Noetic
 
 - vision_msgs 
-  - sudo apt-get install ros-noetic-vision-msgs
-- [octomap_mapping](https://github.com/OctoMap/octomap_mapping)
-- [octomap_rviz_plugins](https://github.com/OctoMap/octomap_rviz_plugins)
+
+```
+sudo apt-get install ros-noetic-vision-msgs
+```
 
 2. Support packages 
 
