@@ -30,7 +30,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="page_5">
      <widget class="QPushButton" name="r_right">
@@ -261,9 +261,9 @@
      <widget class="QFrame" name="frame_3">
       <property name="geometry">
        <rect>
-        <x>20</x>
+        <x>30</x>
         <y>30</y>
-        <width>731</width>
+        <width>721</width>
         <height>481</height>
        </rect>
       </property>
@@ -547,10 +547,10 @@
    <widget class="QPushButton" name="addTarget_btn">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>650</y>
+      <x>20</x>
+      <y>660</y>
       <width>171</width>
-      <height>61</height>
+      <height>51</height>
      </rect>
     </property>
     <property name="font">
@@ -565,10 +565,10 @@
    <widget class="QPushButton" name="remove_btn">
     <property name="geometry">
      <rect>
-      <x>200</x>
-      <y>650</y>
+      <x>210</x>
+      <y>660</y>
       <width>171</width>
-      <height>61</height>
+      <height>51</height>
      </rect>
     </property>
     <property name="font">
@@ -583,10 +583,10 @@
    <widget class="QPushButton" name="run_btn">
     <property name="geometry">
      <rect>
-      <x>390</x>
-      <y>650</y>
+      <x>400</x>
+      <y>660</y>
       <width>171</width>
-      <height>61</height>
+      <height>51</height>
      </rect>
     </property>
     <property name="font">
