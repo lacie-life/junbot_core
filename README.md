@@ -114,9 +114,6 @@ sudo apt-get install ros-noetic-joy ros-noetic-teleop-twist-joy \
 - ZED SDK
 - Realsense SDK (Option)
 
-3. TensorRT with Yolov5 model
-
-3.1. Generate TensorRT model
 ```
 git clone -b v7.0 https://github.com/ultralytics/yolov5.git
 # create conda envs and install requierments.txt for running gen_wts.py
@@ -139,16 +136,6 @@ make
 
 # Generate engine file (engine include 80 class of coco dataset)
 ./yolov5_det -s yolov5s.wts yolov5s.engine s
-```
-
-3.2. Build Detector
-
-```
-cd junbot_planner/object_slam/object_slam/Thirdparty/yolov5
-mkdir build
-cd build
-cmake ..
-make
 ```
 
 # Bug 

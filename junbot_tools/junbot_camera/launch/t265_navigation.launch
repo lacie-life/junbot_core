@@ -25,7 +25,7 @@ https://github.com/IntelRealSense/librealsense/blob/master/third-party/libtm/lib
   <arg name="enable_accel"        default="true"/>
   <arg name="enable_pose"         default="true"/>
 
-  <arg name="enable_sync"           default="true"/>
+  <arg name="enable_sync"           default="false"/>
 
   <arg name="linear_accel_cov"      default="0.01"/>
   <arg name="initial_reset"         default="false"/>
@@ -63,8 +63,14 @@ https://github.com/IntelRealSense/librealsense/blob/master/third-party/libtm/lib
       <arg name="publish_odom_tf"          value="$(arg publish_odom_tf)"/>
     </include>
   </group>
-  <node pkg="tf" type="static_transform_publisher" name="t265_tf_publisher" args="0 0 0 0 0 0  t265_pose_frame base_link 0.1"/>
-  <node pkg="tf" type="static_transform_publisher" name="odom_t265_odom" args="0.0 0.0 0.0 0.0 0.0 0.0 t265_pose_frame base_footprint 0.1" />
-  <node pkg="tf" type="static_transform_publisher" name="map_t265_odom" args="0.0 0.0 0 0 0 0 map t265_odom_frame 0.1" />
+  <rosparam>
+    /t265/tracking_module/enable_relocalization: true
+    /t265/tracking_module/enable_pose_jumping: true
+    /t265/tracking_module/enable_dynamic_calibration: true
+    /t265/tracking_module/enable_auto_exposure: true
+  </rosparam>
+  <node pkg="tf" type="static_transform_publisher" name="t265_tf_publisher" args="0.33 0 0.015 0 0 0 base_link t265_link 10"/>
+  <node pkg="tf" type="static_transform_publisher" name="odom_t265_odom" args="-0.33 0 0.015 0 0 0 t265_pose_frame base_footprint 10" />
+  <!-- <node pkg="tf" type="static_transform_publisher" name="map_t265_odom" args="0 0 0 0 0 0 map t265_odom_frame 500" /> -->
 
 </launch>
