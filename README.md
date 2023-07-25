@@ -51,7 +51,10 @@
    - [ ] System calibration
       - [ ] Multi-camera fusion
       - [x] Robot TF
-   
+
+# Install 
+
+Follow this [link](https://github.com/lacie-life/junbot_core/blob/main/docs/install.md)
 
 # Related Project
 
