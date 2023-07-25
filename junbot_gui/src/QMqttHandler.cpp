@@ -84,5 +84,12 @@ void QMqttHandler::MQTT_Subcrib(RobotNode node)
     m_client->subscribe(filter);
 }
 
+void QMqttHandler::setMqttMessage(QJsonObject &msg)
+{
 
+}
 
+void QMqttHandler::setCurrentRobotNode(RobotNode node)
+{
+    
+}
