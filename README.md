@@ -112,7 +112,8 @@ sudo apt-get install ros-noetic-joy ros-noetic-teleop-twist-joy \
 
 - TensorRT
 - ZED SDK
-- Realsense SDK (Option)
+- Realsense SDK (2.50.0)
+- Realsense ROS (2.3.1)
 
 ```
 git clone -b v7.0 https://github.com/ultralytics/yolov5.git
