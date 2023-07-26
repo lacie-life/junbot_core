@@ -59,7 +59,7 @@ public:
 
     void set_goal(QString frame, double x, double y, double z, double w);
 
-    bool set_goal_once(QString frame, QRobotPose goal);
+    bool set_goal_once(QString frame, QRobotPose goal, int idx);
 
     bool set_multi_goal(QString frame, std::vector<QRobotPose> goals);
 

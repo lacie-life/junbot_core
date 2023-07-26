@@ -66,9 +66,12 @@ public slots:
 
   void updateTargetSlot(QDeliveryTarget target);
 
+  void runMission();
+
 signals:
   void signalDisconnect();
   void signalKeyPressed(int key);
+  void acceptedTarget();
 
 private:
   void connections();

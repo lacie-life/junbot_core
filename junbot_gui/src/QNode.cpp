@@ -256,8 +256,10 @@ void QNode::set_goal(QString frame, double x, double y, double z, double w) {
     ros::spinOnce();
 }
 
-bool QNode::set_goal_once(QString frame, QRobotPose goal) {
-    while (!movebase_client->waitForServer(ros::Duration(5.0))) {
+bool QNode::set_goal_once(QString frame, QRobotPose goal, int idx) {
+    
+    while (!movebase_client->waitForServer(ros::Duration(5.0))) 
+    {
         ROS_INFO("Waiting for the move_base action server to come up");
     }
 
@@ -291,6 +293,9 @@ bool QNode::set_multi_goal(QString frame, std::vector<QRobotPose> goals)
 {
     // TODO: Update find optimal path ????
     int i = 0;
+
+
+
     for (auto goal : goals)
     {
       if(!set_goal_once(frame, goal))

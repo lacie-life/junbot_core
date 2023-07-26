@@ -214,6 +214,12 @@ void RobotInterface::updateTargetSlot(QDeliveryTarget target)
   }
 }
 
+void RobotInterface::runMission()
+{
+  // connection();
+  m_model->m_rosNode.set_multi_goal("map", slot_target);
+}
+
 void RobotInterface::readSettings()
 {
   QSettings settings("junbot_gui", "settings");
