@@ -67,6 +67,8 @@ public:
 
     void pub_imageMap(QImage map);
 
+    void cancel_goal();
+
     double getRealTheta(QPointF start, QPointF end);
 
     QPointF transScenePoint2Word(QPointF pos);
@@ -95,6 +97,8 @@ public slots:
     void slot_pub2DPos(QRobotPose pose);
 
     void slot_pub2DGoal(QRobotPose pose);
+
+    void sendNextTarget();
 
 signals:
 
@@ -125,6 +129,8 @@ signals:
     void updateBatteryPercentage(double percentage);
 
     void updateGoalReached(int i);
+
+    void updateAllGoalDone();
 
 private:
     int init_argc;
@@ -183,6 +189,10 @@ private:
     tf::TransformListener *m_robotPoselistener;
     tf::TransformListener *m_Laserlistener;
     std::string base_frame, laser_frame, map_frame;
+
+    std::vector<QRobotPose> m_goals;
+    int m_current_goals_id;
+    std::string m_goal_frame;
 
 private:
     void speedCallback(const nav_msgs::Odometry::ConstPtr &msg);

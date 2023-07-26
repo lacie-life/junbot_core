@@ -146,7 +146,18 @@ void RobotInterface::slotRun()
     QMessageBox::information(NULL, "Notification",
                                  "Robot has arrived the target!",
                                  QMessageBox::Ok);
+
+    emit acceptedTarget();  
   });
+
+  connect(this, &RobotInterface::acceptedTarget, this, [=](){
+    runNextTarget();
+  });
+}
+
+void RobotInterface::runNextTarget()
+{
+  m_model->m_rosNode.sendNextGoal();
 }
 
 void RobotInterface::slotRemoveTarget()

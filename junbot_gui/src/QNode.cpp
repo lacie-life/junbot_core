@@ -281,34 +281,60 @@ bool QNode::set_goal_once(QString frame, QRobotPose goal, int idx) {
     
     movebase_client->waitForResult();
     
-    if(movebase_client->getState() == actionlib::SimpleClientGoalState::SUCCEEDED){
-      return true;
+    if(movebase_client->getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+    {
+        ROS_INFO("Goal %d reached", i);
+        emit updateGoalReached(i);
+        return true;
     }
-    else{
-      return false;
+    else
+    {
+        return false;
     }
 }
 
 bool QNode::set_multi_goal(QString frame, std::vector<QRobotPose> goals)
 {
     // TODO: Update find optimal path ????
-    int i = 0;
+    m_goals = goals;
+    m_goal_frame = frame;
+    m_current_goals_id = 0;
 
+    bool check = set_goal_once(m_goal_frame, 
+                                m_goals[m_current_goals_id], 
+                                m_current_goals_id);
 
-
-    for (auto goal : goals)
-    {
-      if(!set_goal_once(frame, goal))
-      {
-        return false;
-      }
-      else{
-        ROS_INFO("Goal %d reached", i);
-        emit updateGoalReached(i);
-        i++;
-      }
-    }
+    // for (auto goal : goals)
+    // {
+    //   if(!set_goal_once(frame, goal, i))
+    //   {
+    //     return false;
+    //   }
+    //   else{
+    //     ROS_INFO("Goal %d reached", i);
+    //     emit updateGoalReached(i);
+    //     i++;
+    //   }
+    // }
     return true;
+}
+
+void QNode::sendNextTarget()
+{
+    m_current_goals_id++;
+
+    if(m_current_goals_id >= m_goals.size())
+    {
+        emit updateAllGoalDone();
+        return;
+    }
+    else{
+        bool check = send_goal(m_goal_frame, m_goals[m_current_goals_id], m_current_goals_id);
+    }
+}
+
+void QNode::cancel_goal() {
+    movebase_client->cancelAllGoals();
 }
 
 void QNode::mapCallback(nav_msgs::OccupancyGrid::ConstPtr msg) {
