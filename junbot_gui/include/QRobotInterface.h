@@ -65,8 +65,9 @@ public slots:
   void slotRemoveTarget();
 
   void updateTargetSlot(QDeliveryTarget target);
-
+  
   void runMission();
+  void slotRun();
 
 signals:
   void signalDisconnect();
