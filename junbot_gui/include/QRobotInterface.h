@@ -66,6 +66,8 @@ public slots:
 
   void updateTargetSlot(QDeliveryTarget target);
 
+  void slotRun();
+
 signals:
   void signalDisconnect();
   void signalKeyPressed(int key);

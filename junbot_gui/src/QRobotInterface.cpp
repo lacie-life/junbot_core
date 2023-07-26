@@ -66,29 +66,31 @@ for(int i = 0; i < m_targetButton.size(); i++){
 
   // http://wiki.ros.org/navigation/Tutorials/SendingSimpleGoals\
   // https://automaticaddison.com/how-to-send-goals-to-the-ros-navigation-stack-using-c/
-  connect(ui->run_btn, &QPushButton::clicked, this, [=]()
-  {
-    for(int i = 0; i < slot_target.size(); i++){
-      if(slot_target[i].name() != "+")
-      {
-        m_model->m_rosNode.set_goal(
-          slot_target[i].name(),
-          slot_target[i].x_axis().toDouble(),
-          slot_target[i].y_axis().toDouble(),
-          slot_target[i].z_axis().toDouble(),
-          0
-        );
-        // waiting for goal success
+  // connect(ui->run_btn, &QPushButton::clicked, this, [=]()
+  // {
+  //   for(int i = 0; i < slot_target.size(); i++){
+  //     if(slot_target[i].name() != "+")
+  //     {
+  //       m_model->m_rosNode.set_goal(
+  //         slot_target[i].name(),
+  //         slot_target[i].x_axis().toDouble(),
+  //         slot_target[i].y_axis().toDouble(),
+  //         slot_target[i].z_axis().toDouble(),
+  //         0
+  //       );
+  //       // waiting for goal success
 
-        CONSOLE << slot_target[i].name();
-      }
-    }
-  });
+  //       CONSOLE << slot_target[i].name();
+  //     }
+  //   }
+  // });
+
+  connect(ui->run_btn, &QPushButton::clicked, this, &RobotInterface::slotRun);
 
   connect(ui->remove_btn, &QPushButton::clicked, this, &RobotInterface::slotRemoveTarget);
 
   connect(ui->slotTarget_1, &QPushButton::clicked, this, [=](){
-        CONSOLE << "slot 1";
+        CONSOLE << "slot 3";
         m_targetSelected = 1;
   });
 
@@ -98,7 +100,7 @@ for(int i = 0; i < m_targetButton.size(); i++){
   });
 
   connect(ui->slotTarget_3, &QPushButton::clicked, this, [=](){
-        CONSOLE << "slot 3";
+        CONSOLE << "slot 1";
         m_targetSelected = 3;
   });
 
@@ -120,6 +122,31 @@ for(int i = 0; i < m_targetButton.size(); i++){
 RobotInterface::~RobotInterface()
 {
   delete ui;
+}
+
+void RobotInterface::slotRun()
+{ 
+  std::vector<QRobotPose> goals;
+  for(int i = 0; i < slot_target.size(); i++){
+    QRobotPose goal = {slot_target[i].x_axis().toDouble(),
+      slot_target[i].y_axis().toDouble(),
+      slot_target[i].z_axis().toDouble(),
+      0};
+    goals.push_back(goal);
+  }
+
+  CONSOLE << goals.size();
+
+  bool check;
+
+  check = true;
+  check = m_model->m_rosNode.set_multi_goal("Frame", goals);
+
+  connect(&m_model->m_rosNode, &QNode::updateGoalReached, this, [=](){
+    QMessageBox::information(NULL, "Notification",
+                                 "Robot has arrived the target!",
+                                 QMessageBox::Ok);
+  });
 }
 
 void RobotInterface::slotRemoveTarget()
