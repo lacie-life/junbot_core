@@ -2,7 +2,7 @@
 |-|-|-|
 |Chức năng|Quyền admin|Quyền customer|
 | | | |
-|Lập bản đồ map cập nhật bản đồ thời gian thực|✓|✓|
+|Lập bản đồ bag cập nhật bản đồ thời gian thực|✓|✓|
 |- Định vị - Lập đường đi - Dẫn đường (lập kế hoạch đường đi global và local)|✓|✓|
 |- Xác định vật cản (tĩnh và động) - Xây dựng giải thuật tránh vật cản.|✓|✓|
 |Có giao diện màn hình kết nối (kết nối với ip server, user, password)|✓|✓|
@@ -21,7 +21,7 @@
 |Đăng ký tài khoản với quyền là customer|✓|✓|
 |Thêm đích đến mới cho robot|✓|✗|
 |Xóa một đích đến cũ của robot|✓|✗|
-|Điều khiển robot đến điểm dừng thông qua bảng điều khiển|✓|✗|
+|Điều khiển robot đến điểm dừng thông qua bảng điều khiển|✓|✓|
 | | | |
 |Tốc độ điều khiển robot (nhanh)|✓|✓|
 |Tốc độ robot phản hồi lại (nhanh)|✓|✓|
