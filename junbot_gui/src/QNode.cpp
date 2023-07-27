@@ -262,7 +262,7 @@ bool QNode::set_goal_once(QString frame, QRobotPose goal, int idx) {
     {
         ROS_INFO("Waiting for the move_base action server to come up");
     }
-
+    int i;
     geometry_msgs::PoseStamped _goal;
 
     _goal.header.frame_id = "map";
@@ -329,7 +329,7 @@ void QNode::sendNextTarget()
         return;
     }
     else{
-        bool check = send_goal(m_goal_frame, m_goals[m_current_goals_id], m_current_goals_id);
+        bool check = set_goal_once(m_goal_frame, m_goals[m_current_goals_id], m_current_goals_id);
     }
 }
 

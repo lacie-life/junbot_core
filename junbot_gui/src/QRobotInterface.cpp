@@ -157,7 +157,7 @@ void RobotInterface::slotRun()
 
 void RobotInterface::runNextTarget()
 {
-  m_model->m_rosNode.sendNextGoal();
+  m_model->m_rosNode.sendNextTarget();
 }
 
 void RobotInterface::slotRemoveTarget()
@@ -250,12 +250,6 @@ void RobotInterface::updateTargetSlot(QDeliveryTarget target)
         return;
       }
   }
-}
-
-void RobotInterface::runMission()
-{
-  // connection();
-  m_model->m_rosNode.set_multi_goal("map", slot_target);
 }
 
 void RobotInterface::readSettings()
