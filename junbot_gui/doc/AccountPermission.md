@@ -4,9 +4,7 @@
 | | | |
 |Lập bản đồ bag cập nhật bản đồ thời gian thực|✓|✓|
 |- Định vị 
-
 - Lập đường đi
-
 - Dẫn đường (lập kế hoạch đường đi global và local)|✓|✓|
 |- Xác định vật cản (tĩnh và động)
 
