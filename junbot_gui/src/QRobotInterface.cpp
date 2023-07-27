@@ -106,7 +106,16 @@ for(int i = 0; i < m_targetButton.size(); i++){
 
   connect(ui->addTarget_btn, &QPushButton::clicked, this, [=]()
   {
-    ui->stackedWidget->setCurrentIndex(1);
+    if(m_model->getCurrentUserType() == "admin")
+        {
+            ui->settingTarget_btn->setVisible(true);
+            ui->stackedWidget->setCurrentIndex(1);
+        }
+        else 
+        {
+            ui->settingTarget_btn->setVisible(false);
+            ui->stackedWidget->setCurrentIndex(1);
+        }
   });
 
   connect(ui->settingTarget_btn, &QPushButton::clicked, [=]() {
