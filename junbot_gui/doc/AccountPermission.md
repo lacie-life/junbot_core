@@ -4,7 +4,8 @@
 | | | |
 |Lập bản đồ bag cập nhật bản đồ thời gian thực|✓|✓|
 |- Định vị - Lập đường đi - Dẫn đường (lập kế hoạch đường đi global và local)|✓|✓|
-|- Xác định vật cản (tĩnh và động)\\ -Xây dựng giải thuật tránh vật cản.|✓|✓|
+|- Xác định vật cản (tĩnh và động) \\ 
+-Xây dựng giải thuật tránh vật cản.|✓|✓|
 |Có giao diện màn hình kết nối (kết nối với ip server, user, password)|✓|✓|
 |Có màn hình trạng thái và bảng điều khiển|✓|✓|
 |Ngắt kết nối|✓|✓|
