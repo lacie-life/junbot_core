@@ -1,5 +1,5 @@
 | | | |
-|-|-|-|
+| |-|-|
 |Chức năng|Quyền admin|Quyền customer|
 | | | |
 |Lập bản đồ bag cập nhật bản đồ thời gian thực|✓|✓|
