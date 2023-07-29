@@ -113,15 +113,9 @@ void AppModel::keyRecieved(int key)
         emit signalRobotStatusChanged(AppEnums::QRobotStatus::None);
         break;
     case 2:
-        emit signalRobotStatusChanged(AppEnums::QRobotStatus::Normal);
+        emit signalRobotStatusChanged(AppEnums::QRobotStatus::Ready);
         break;
     case 3:
-        emit signalRobotStatusChanged(AppEnums::QRobotStatus::Warning);
-        break;
-    case 4:
-        emit signalRobotStatusChanged(AppEnums::QRobotStatus::Error);
-        break;
-    case 5:
         emit signalRobotStatusChanged(AppEnums::QRobotStatus::NotReady);
         break;
     default:
@@ -134,21 +128,90 @@ void AppModel::keyMissonRecieved(int key)
 {
     switch (key)
     {
-    case 6:
+    case 4:
         emit signalRobotMissionStatusChanged(AppEnums::QMissionStatus::Idle);
         break;
-    case 7:
+    case 5:
         emit signalRobotMissionStatusChanged(AppEnums::QMissionStatus::Running);
         break;
-    case 8:
+    case 6:
         emit signalRobotMissionStatusChanged(AppEnums::QMissionStatus::Paused);
         break;
-    case 9:
+    case 7:
         emit signalRobotMissionStatusChanged(AppEnums::QMissionStatus::Stopped);
         break;
     default:
         break;
     }
+}
+
+void AppModel::sensorStatus(int key)
+{
+    switch(key)
+    {
+    case 8:
+        sensor_state = AppEnums::QRobotSensor::NoSensor;
+        checkRobotState();
+        break;
+    case 9:
+        sensor_state = AppEnums::QRobotSensor::SensorOk;
+        checkRobotState();
+        break;
+    }
+}
+
+void AppModel::controllingStatus(int key)
+{
+    switch(key)
+    {
+    case 10:
+        is_controlling_state = AppEnums::QRobotControlling::NoControlling;
+        checkRobotState();
+        break;
+    case 11:
+        is_controlling_state = AppEnums::QRobotControlling::HaveControlling;
+        checkRobotState();
+        break;
+    }
+}
+
+void AppModel::havingMissionStatus(int key)
+{
+    switch(key)
+    {
+    case 12:
+        is_mission_state = AppEnums::QRobotMisson::NoMission;
+        checkRobotState();
+        break;
+    case 13:
+        is_mission_state = AppEnums::QRobotMisson::HaveMission;
+        checkRobotState();
+        break;
+    }
+}
+
+void AppModel::batteryStatus(int battery)
+{
+    if(battery > 50){
+        battery_state = AppEnums::QRobotBattery::Normal;
+        checkRobotState();
+    }else{
+        battery_state = AppEnums::QRobotBattery::NeedCharge;
+        checkRobotState();
+    }
+}
+
+void AppModel::checkRobotState()
+{
+    if(AppEnums::QRobotBattery::Normal && AppEnums::QRobotMisson::NoMission 
+        && AppEnums::QRobotControlling::NoControlling && AppEnums::QRobotSensor::SensorOk)
+    {
+        m_robot_status = AppEnums::QRobotStatus::Ready;
+        emit signalRobotStateUpdate(m_robot_status);
+    }else{
+        m_robot_status = AppEnums::QRobotStatus::NotReady;
+        emit signalRobotStateUpdate(m_robot_status);
+    } 
 }
 
 // TODO: Create Position DB for this (Later, not now)
@@ -177,3 +240,4 @@ void AppModel::stopMission()
 {
 
 }
+

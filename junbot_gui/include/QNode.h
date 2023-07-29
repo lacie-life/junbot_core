@@ -192,7 +192,7 @@ private:
 
     std::vector<QRobotPose> m_goals;
     int m_current_goals_id;
-    std::string m_goal_frame;
+    QString m_goal_frame;
 
 private:
     void speedCallback(const nav_msgs::Odometry::ConstPtr &msg);

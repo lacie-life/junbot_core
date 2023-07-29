@@ -106,7 +106,16 @@ for(int i = 0; i < m_targetButton.size(); i++){
 
   connect(ui->addTarget_btn, &QPushButton::clicked, this, [=]()
   {
-    ui->stackedWidget->setCurrentIndex(1);
+    if(m_model->getCurrentUserType() == "admin")
+        {
+            ui->settingTarget_btn->setVisible(true);
+            ui->stackedWidget->setCurrentIndex(1);
+        }
+        else 
+        {
+            ui->settingTarget_btn->setVisible(false);
+            ui->stackedWidget->setCurrentIndex(1);
+        }
   });
 
   connect(ui->settingTarget_btn, &QPushButton::clicked, [=]() {
@@ -157,7 +166,7 @@ void RobotInterface::slotRun()
 
 void RobotInterface::runNextTarget()
 {
-  m_model->m_rosNode.sendNextGoal();
+  m_model->m_rosNode.sendNextTarget();
 }
 
 void RobotInterface::slotRemoveTarget()
@@ -252,12 +261,6 @@ void RobotInterface::updateTargetSlot(QDeliveryTarget target)
   }
 }
 
-void RobotInterface::runMission()
-{
-  // connection();
-  m_model->m_rosNode.set_multi_goal("map", slot_target);
-}
-
 void RobotInterface::readSettings()
 {
   QSettings settings("junbot_gui", "settings");
@@ -346,6 +349,8 @@ void RobotInterface::slot_batteryState(sensor_msgs::BatteryState msg)
 void RobotInterface::slot_batteryPercentage(float msg)
 {
   ui->progressBar->setValue(msg);
+
+  m_model->batteryStatus((int)msg);
 }
 void RobotInterface::slot_batteryVoltage(float msg)
 {
@@ -408,54 +413,46 @@ void RobotInterface::slot_dis_connect()
 
 void RobotInterface::slot_updateRobotStatus(AppEnums::QRobotStatus status)
 {
-  // switch (status) {
-  // case AppEnums::QRobotStatus::None: {
-  //   this->ui->slot_robotStatus->setStyleSheet("background-color: red");
-  // } 
-  // break;
-  // case AppEnums::QRobotStatus::Normal: {
-  //   this->ui->slot_robotStatus->setStyleSheet("background-color: green");
-  // }
-  // break;
-  // case AppEnums::QRobotStatus::Error: {
-  //   this->ui->slot_robotStatus->setStyleSheet("background-color: blue");
-  // }
-  // break;
-  // case AppEnums::QRobotStatus::Warning: {
-  //   this->ui->slot_robotStatus->setStyleSheet("background-color: yellow");
-  // }
-  // break;
-  // case AppEnums::QRobotStatus::NotReady: {
-  //   this->ui->slot_robotStatus->setStyleSheet("background-color: gray");
-  // }
-  // break;
-  // default:
-  // break;
-  // }
+  switch (status) {
+  case AppEnums::QRobotStatus::None: {
+    this->ui->robot_status->setStyleSheet("border-image: url(:/image/data/images/status/status_none.png);");
+  } 
+  break;
+  case AppEnums::QRobotStatus::Ready: {
+    this->ui->robot_status->setStyleSheet("border-image: url(:/image/data/images/status/status_normal.png);");
+  }
+  break;
+  case AppEnums::QRobotStatus::NotReady: {
+    this->ui->robot_status->setStyleSheet("border-image: url(:/image/data/images/status/status_error.png);");
+  }
+  break;
+  default:
+  break;
+  }
 }
 
 void RobotInterface::slot_updateRobotMissonStatus(AppEnums::QMissionStatus status)
 {
-// switch (status) {
-//   case AppEnums::QMissionStatus::Idle: {
-//    ui->robotMissonStatus->setStyleSheet("background-color: red");
-//   } 
-//   break;   
-//   case AppEnums::QMissionStatus::Running: {
-//     ui->robotMissonStatus->setStyleSheet("background-color: green");
-//   }
-//   break;
-//   case AppEnums::QMissionStatus::Paused: {
-//     ui->robotMissonStatus->setStyleSheet("background-color: blue");
-//   }
-//   break;
-//   case AppEnums::QMissionStatus::Stopped: {
-//     ui->robotMissonStatus->setStyleSheet("background-color: yellow");
-//   }
-//   break;
-//   default:
-//   break;
-//   }
+switch (status) {
+  case AppEnums::QMissionStatus::Idle: {
+   ui->mission_status->setStyleSheet("border-image: url(:/image/data/images/robot_color.png);");
+  } 
+  break;   
+  case AppEnums::QMissionStatus::Running: {
+    ui->mission_status->setStyleSheet("border-image: url(:/image/data/images/robot_blue.png);");
+  }
+  break;
+  case AppEnums::QMissionStatus::Paused: {
+    ui->mission_status->setStyleSheet("border-image: url(:/image/data/images/robot_yellow.png);");
+  }
+  break;
+  case AppEnums::QMissionStatus::Stopped: {
+    ui->mission_status->setStyleSheet("border-image: url(:/image/data/images/robot_red.png);");
+  }
+  break;
+  default:
+  break;
+  }
 }
 
 void RobotInterface::connections()
@@ -471,6 +468,7 @@ void RobotInterface::connections()
   // Robot status
   connect(this, &RobotInterface::signalKeyPressed, m_model, &AppModel::keyRecieved);
   connect(m_model, &AppModel::signalRobotStatusChanged, this, &RobotInterface::slot_updateRobotStatus);
+  connect(m_model, &AppModel::signalRobotStateUpdate, this, &RobotInterface::slot_updateRobotStatus);
 
   // Robot Mission status
   connect(this, &RobotInterface::signalKeyPressed, m_model, &AppModel::keyMissonRecieved);
@@ -479,8 +477,17 @@ void RobotInterface::connections()
   // Robot battery
   connect(&m_model->m_rosNode, &QNode::batteryState, this, &RobotInterface::slot_batteryState);
 
-  //Battery percentage
+  // Battery percentage
   connect(&m_model->m_rosNode, &QNode::updateBatteryPercentage, this, &RobotInterface::slot_batteryPercentage);
+
+  // Sensor State
+  connect(this, &RobotInterface::signalKeyPressed, m_model, &AppModel::sensorStatus);
+
+  // Controlling State
+  connect(this, &RobotInterface::signalKeyPressed, m_model, &AppModel::controllingStatus);
+
+  // Having Mission State
+  connect(this, &RobotInterface::signalKeyPressed, m_model, &AppModel::havingMissionStatus);
 
   //Battery Voltage
   connect(&m_model->m_rosNode, &QNode::updateBatteryVoltage, this, &RobotInterface::slot_batteryVoltage);
@@ -554,30 +561,46 @@ void RobotInterface::keyPressEvent(QKeyEvent *event)
     {
         emit signalKeyPressed(3);
     }
-        if(event->key() == Qt::Key_F)
+        if(event->key() == Qt::Key_Z)
     {
         emit signalKeyPressed(4);
     }
-        if(event->key() == Qt::Key_G)
+        if(event->key() == Qt::Key_X)
     {
         emit signalKeyPressed(5);
     }
 
-        if(event->key() == Qt::Key_Z)
+        if(event->key() == Qt::Key_C)
     {
         emit signalKeyPressed(6);
     }
-        if(event->key() == Qt::Key_X)
+        if(event->key() == Qt::Key_V)
     {
         emit signalKeyPressed(7);
     }
-        if(event->key() == Qt::Key_C)
+        if(event->key() == Qt::Key_O)
     {
         emit signalKeyPressed(8);
     }
-        if(event->key() == Qt::Key_V)
+        if(event->key() == Qt::Key_P)
     {
         emit signalKeyPressed(9);
+    }
+        if(event->key() == Qt::Key_K)
+    {
+        emit signalKeyPressed(10);
+    }
+        if(event->key() == Qt::Key_L)
+    {
+        emit signalKeyPressed(11);
+    }
+        if(event->key() == Qt::Key_N)
+    {
+        emit signalKeyPressed(12);
+    }
+        if(event->key() == Qt::Key_M)
+    {
+        emit signalKeyPressed(13);
     }
 }
 
