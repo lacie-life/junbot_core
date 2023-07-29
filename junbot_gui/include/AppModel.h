@@ -39,10 +39,17 @@ public:
     // ROS Connection
     bool connectMaster(QString master_ip, QString ros_ip);
 
-    //Battery Status
-    void batteryStatus();
+    // Battery Status
+    void batteryStatus(int battery);
 
-    //Robot Status
+    // Robot Status
+    void sensorStatus(int key);
+
+    // Is Controlling Status
+    void controllingStatus(int key);
+
+    // Having Mission
+    void havingMissionStatus(int key);
 
     //Mission Status
     void addNewPosition(QPoint point);
@@ -50,6 +57,8 @@ public:
     void startMission();
     void stopMission();
     void pauseMission();
+
+    void checkRobotState();
 
 public slots:
     void keyRecieved(int key);
@@ -66,6 +75,7 @@ signals:
     void signalMissionDone();
     void signalMissionError();
     void signalMisionStarted();
+    void signalRobotStateUpdate(AppEnums::QRobotStatus status);
 
 public:
     // Ros interface
@@ -87,6 +97,12 @@ private:
     QQueue<QRobotMission> m_missions;
     QRobotMission m_currentMission;
 
+    AppEnums::QRobotBattery battery_state = AppEnums::QRobotBattery::Nothing;
+    AppEnums::QRobotSensor sensor_state = AppEnums::QRobotSensor::NoSensor;
+    AppEnums::QRobotControlling is_controlling_state = AppEnums::QRobotControlling::NoControlling;
+    AppEnums::QRobotMisson is_mission_state = AppEnums::QRobotMisson::NoMission;
+
+    AppEnums::QRobotStatus m_robot_status = AppEnums::QRobotStatus::None;
 };
 
 #endif // APPMODEL_H

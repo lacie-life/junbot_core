@@ -385,7 +385,7 @@ void QNode::run() {
 
     while (ros::ok()) {
         updateRobotPose();
-        emit updateRobotStatus(AppEnums::QRobotStatus::Normal);
+        emit updateRobotStatus(AppEnums::QRobotStatus::Ready);
         loop_rate.sleep();
     }
 
@@ -662,12 +662,12 @@ void QNode::log(const AppEnums::QLogLevel &level, const std::string &msg) {
             break;
         }
         case (AppEnums::QLogLevel::Warn): {
-            emit updateRobotStatus(AppEnums::QRobotStatus::Warning);
+            emit updateRobotStatus(AppEnums::QRobotStatus::NotReady);
             logging_model_msg << "[INFO] [" << ros::Time::now() << "]: " << msg;
             break;
         }
         case (AppEnums::QLogLevel::Err): {
-            emit updateRobotStatus(AppEnums::QRobotStatus::Error);
+            emit updateRobotStatus(AppEnums::QRobotStatus::NotReady);
             logging_model_msg << "[ERROR] [" << ros::Time::now() << "]: " << msg;
             break;
         }
