@@ -24,6 +24,12 @@ QMqttHandler::~QMqttHandler()
 
 bool QMqttHandler::loadMQTTSetting(QString path)
 {
+    QFile file(path.toStdString().c_str());
+    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    QString val = file.readAll();
+    file.close();
+    QJsonArray a = QJsonDocument::fromJson(val.toUtf8()).array();
+
     return true;
 }
 
@@ -73,6 +79,8 @@ void QMqttHandler::onMQTT_Received(const QByteArray &message, const QMqttTopicNa
 void QMqttHandler::MQTT_Publish(RobotNode node, QJsonObject message)
 {
     QMqttTopicName topic(node.current_state_topic);
+
+    // this->RobotNodes.at(0).current_state_message = message;
 
     m_client->publish(topic, QJsonDocument(message).toJson());
 }

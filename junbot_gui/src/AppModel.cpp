@@ -13,6 +13,11 @@ AppModel::AppModel(int argc, char **argv, QObject *parent)
     m_targets = m_dbManager.deliveryTargetDao.targets();
 
     readSettings();
+
+    QString robot_state = "";
+
+    m_handler = QMqttHandler::getInstance();
+
 }
 
 AppModel::~AppModel()
@@ -56,7 +61,21 @@ void AppModel::initVideos() {
 
 bool AppModel::connectMaster(QString master_ip, QString ros_ip)
 {
-    return m_rosNode.init(master_ip.toStdString(), ros_ip.toStdString());
+    bool check = m_rosNode.init(master_ip.toStdString(), ros_ip.toStdString());
+
+    if(check)
+    {
+        m_handler->connectMQTT("localhost", 1883);
+        
+        RobotNode node;
+        node.ip = "xx.xx.xx.xx";
+        node.name = "robot1";
+        node.current_state_topic = "robot1/state";
+        node.control_topic = "robot1/control";
+
+        m_handler->RobotNodes.append(node);
+    }
+    return check;
 }
 
 QString AppModel::getCurrentUserType()
@@ -199,19 +218,37 @@ void AppModel::batteryStatus(int battery)
         battery_state = AppEnums::QRobotBattery::NeedCharge;
         checkRobotState();
     }
+
+    m_currentBattery = battery;
 }
 
 void AppModel::checkRobotState()
-{
+{   
     if(AppEnums::QRobotBattery::Normal && AppEnums::QRobotMisson::NoMission 
         && AppEnums::QRobotControlling::NoControlling && AppEnums::QRobotSensor::SensorOk)
     {
         m_robot_status = AppEnums::QRobotStatus::Ready;
+        CONSOLE << is_mission_state;
         emit signalRobotStateUpdate(m_robot_status);
     }else{
         m_robot_status = AppEnums::QRobotStatus::NotReady;
+        CONSOLE << is_mission_state;
         emit signalRobotStateUpdate(m_robot_status);
     } 
+
+    QJsonObject jobj;
+    
+    jobj["battery"] = m_currentBattery;
+    jobj["battery_state"] = battery_state;
+    jobj["sensor_state"] = sensor_state;
+    jobj["is_controlling_state"] = battery_state;
+    jobj["is_mission_state"] = is_mission_state;
+
+    QJsonDocument jSub = QJsonDocument(jobj);
+
+    CONSOLE << jSub;
+
+    m_handler->MQTT_Publish(m_handler->RobotNodes.at(0), jobj);
 }
 
 // TODO: Create Position DB for this (Later, not now)

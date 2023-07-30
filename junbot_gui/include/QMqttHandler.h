@@ -68,6 +68,7 @@ private:
     QMqttClient *m_client;
     RobotNode m_current_robot_node;
     QString m_mqttMessage;
+
 };
 
 #endif // QMQTT_HANDLER_H

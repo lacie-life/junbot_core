@@ -7,6 +7,8 @@ RobotInterface::RobotInterface(AppModel *model, QWidget *parent)
 {
   ui->setupUi(this);
 
+  this->setWindowTitle("VMCBot");
+
   slot_state.resize(3);
   slot_target.resize(3);
 
