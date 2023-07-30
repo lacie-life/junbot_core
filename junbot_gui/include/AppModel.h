@@ -17,6 +17,7 @@
 #include "QRobotUltis.h"
 #include "QRobotMission.h"
 #include "QAddTargetDialog.h"
+#include "QMqttHandler.h"
 
 class AppModel : public QObject {
     Q_OBJECT
@@ -86,8 +87,12 @@ private:
     QString m_masterUrl;
     QString m_hostUrl;
 
+    int m_currentBattery;
+
     QUser* m_currentUser;
     QDatabaseManager& m_dbManager;
+
+    QMqttHandler* m_handler; 
 
     AppEnums::QRobotStatus m_stattus = AppEnums::QRobotStatus::None;
     AppEnums::QMissionStatus m_misstionStatus = AppEnums::QMissionStatus::Idle;
