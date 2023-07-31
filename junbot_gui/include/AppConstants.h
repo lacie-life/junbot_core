@@ -19,13 +19,15 @@ Q_OBJECT
     Q_ENUMS(QLogLevel)
     Q_ENUMS(QMissionStatus)
     Q_ENUMS(QAppEvents)
+    Q_ENUMS(QRobotBattery)
+    Q_ENUMS(QRobotSensor)
+    Q_ENUMS(QRobotControlling)
+    Q_ENUMS(QRobotMission)
 
 public:
     enum QRobotStatus {
         None,
-        Normal,
-        Warning,
-        Error,
+        Ready,
         NotReady,
     };
 
@@ -48,6 +50,27 @@ public:
         Blue,
         Red,
         Yellow,
+    };
+
+    enum QRobotBattery {
+        Nothing,
+        Normal,
+        NeedCharge,
+    };
+
+    enum QRobotSensor {
+        NoSensor,
+        SensorOk,
+    };
+
+    enum QRobotControlling {
+        NoControlling,
+        HaveControlling,
+    };
+
+    enum QRobotMisson {
+        NoMission,
+        HaveMission,
     };
 
     enum QAppEvents

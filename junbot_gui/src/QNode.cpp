@@ -262,7 +262,7 @@ bool QNode::set_goal_once(QString frame, QRobotPose goal, int idx) {
     {
         ROS_INFO("Waiting for the move_base action server to come up");
     }
-
+    int i;
     geometry_msgs::PoseStamped _goal;
 
     _goal.header.frame_id = "map";
@@ -329,7 +329,7 @@ void QNode::sendNextTarget()
         return;
     }
     else{
-        bool check = send_goal(m_goal_frame, m_goals[m_current_goals_id], m_current_goals_id);
+        bool check = set_goal_once(m_goal_frame, m_goals[m_current_goals_id], m_current_goals_id);
     }
 }
 
@@ -385,7 +385,7 @@ void QNode::run() {
 
     while (ros::ok()) {
         updateRobotPose();
-        emit updateRobotStatus(AppEnums::QRobotStatus::Normal);
+        emit updateRobotStatus(AppEnums::QRobotStatus::Ready);
         loop_rate.sleep();
     }
 
@@ -662,12 +662,12 @@ void QNode::log(const AppEnums::QLogLevel &level, const std::string &msg) {
             break;
         }
         case (AppEnums::QLogLevel::Warn): {
-            emit updateRobotStatus(AppEnums::QRobotStatus::Warning);
+            emit updateRobotStatus(AppEnums::QRobotStatus::NotReady);
             logging_model_msg << "[INFO] [" << ros::Time::now() << "]: " << msg;
             break;
         }
         case (AppEnums::QLogLevel::Err): {
-            emit updateRobotStatus(AppEnums::QRobotStatus::Error);
+            emit updateRobotStatus(AppEnums::QRobotStatus::NotReady);
             logging_model_msg << "[ERROR] [" << ros::Time::now() << "]: " << msg;
             break;
         }

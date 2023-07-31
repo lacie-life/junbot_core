@@ -8,7 +8,7 @@
    - [x] Yolov5 TensorRT support
    - [x] ~~OctoMap support~~
    - [x] Turning object database
-      - [x] Segment 3D bounding box
+      - [x] Segment 3D bounding box [link](https://github.com/lacie-life/SemanticMapping)
    	    - ~~[ ] Option 1: Segment point cloud by PointNet++ => get 3D bounding box of object (office enviroment) [[Ref](https://github.com/sc19aas/3D-object-detection)]~~
  		    - [x] Option 2: detect 3d cuboid [[Ref](https://github.com/aibo-kit/new_3dbbox_generation_method.git)] [[Ref](https://wym.netlify.app/2019-02-22-cubeslam/)]
    	    - ~~[ ] Darknet-ros-3d + ObjectDatabase test [[Link](https://github.com/IntelligentRoboticsLabs/gb_visual_detection_3d)]~~
@@ -49,7 +49,7 @@
 - [ ] Hardware
    - [x] Assembly
    - [ ] System calibration
-      - [ ] Multi-camera fusion
+      - [ ] Multi-odometry fusion [link](https://github.com/lacie-life/junbot_odometry_fusion)
       - [x] Robot TF
 
 # Install 
