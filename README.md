@@ -56,9 +56,8 @@
 
 <table>
   <tr>
-    <td> <img src="./docs/front.jpg"  alt="1" width = 360px height = 640px ></td>
-
-    <td><img src="./docs/side.jpg" alt="2" width = 360px height = 640px></td>
+    <td> <img src="./docs/front.jpg"  alt="1" width = 480px height = 640px ></td>
+    <td> <img src="./docs/side.jpg"   alt="2" width = 480px height = 640px> </td>
    </tr> 
 </table>
 
