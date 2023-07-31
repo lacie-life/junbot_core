@@ -18,10 +18,10 @@
 ## Install QtMqtt
 
 ```
-- git clone git://code.qt.io/qt/qtmqtt.git
-- git checkout <version of Qt> # version of Qt: v5.12.5
-- sudo apt-get install qtbase5-private-dev
-- qmake => make => make install
+git clone git://code.qt.io/qt/qtmqtt.git
+git checkout <version of Qt> # version of Qt: v5.12.5
+sudo apt-get install qtbase5-private-dev
+qmake => make => make install
 ```
 
 ## Config ROS plugin for QtCreator
