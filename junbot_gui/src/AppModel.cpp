@@ -14,9 +14,21 @@ AppModel::AppModel(int argc, char **argv, QObject *parent)
 
     readSettings();
 
-    QString robot_state = "";
-
     m_handler = QMqttHandler::getInstance();
+
+    QJsonObject jobj;
+    
+    jobj["battery"] = m_currentBattery;
+    jobj["battery_state"] = battery_state;
+    jobj["sensor_state"] = sensor_state;
+    jobj["is_controlling_state"] = battery_state;
+    jobj["is_mission_state"] = is_mission_state;
+
+    QJsonDocument jSub = QJsonDocument(jobj);
+
+    CONSOLE << jSub;
+
+    // m_handler->MQTT_Publish(m_handler->RobotNodes.at(0), jobj);
 
 }
 
@@ -237,20 +249,26 @@ void AppModel::checkRobotState()
     } 
 
     QJsonObject jobj;
+    m_dateTime = QDateTime::currentDateTime();
     
     jobj["battery"] = m_currentBattery;
     jobj["battery_state"] = battery_state;
     jobj["sensor_state"] = sensor_state;
     jobj["is_controlling_state"] = battery_state;
     jobj["is_mission_state"] = is_mission_state;
+    jobj["time"] = m_dateTime.toString("dd.MM.yyyy hh:mm:ss");
 
     QJsonDocument jSub = QJsonDocument(jobj);
+
+    QString jString = QJsonDocument(jobj).toJson(QJsonDocument::Compact);
+
+    bool result = m_dbManager.deliveryTargetDao.addJsonString(jString);
 
     CONSOLE << jSub;
 
     m_handler->MQTT_Publish(m_handler->RobotNodes.at(0), jobj);
 }
-
+ 
 // TODO: Create Position DB for this (Later, not now)
 void AppModel::addNewPosition(QPoint point)
 {

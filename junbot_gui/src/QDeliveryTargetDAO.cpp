@@ -58,6 +58,19 @@ bool QDeliveryTargetDAO::addTarget(QDeliveryTarget& user) const
     }
 }
 
+bool QDeliveryTargetDAO::addJsonString(QString str) const{
+    QSqlQuery query(m_database);
+    query.prepare("INSERT INTO json_state (jState) VALUES (:jState)");
+
+    query.bindValue(":jState", str, QSql::In);
+
+    query.exec();
+
+    QDatabaseManager::debugQuery(query);
+
+    return true;
+}
+
 bool QDeliveryTargetDAO::isTargetExits(QDeliveryTarget& user) const
 {
     QSqlQuery query(m_database);
