@@ -16,6 +16,7 @@ public:
 
     bool addTarget(QDeliveryTarget& user) const;
     bool isTargetExits(QDeliveryTarget& user) const;
+    bool addJsonString(QString str) const;
 
     //TODO: Add CRUD function
     void updateTarget(const QDeliveryTarget& user) const;

@@ -5,6 +5,7 @@
 #include <QString>
 #include <QKeyEvent>
 #include <QQueue>
+#include <QDateTime>
 
 #include <memory.h>
 
@@ -18,6 +19,8 @@
 #include "QRobotMission.h"
 #include "QAddTargetDialog.h"
 #include "QMqttHandler.h"
+
+#include "QDeliveryTargetDAO.h"
 
 class AppModel : public QObject {
     Q_OBJECT
@@ -86,6 +89,8 @@ public:
 private:
     QString m_masterUrl;
     QString m_hostUrl;
+
+    QDateTime m_dateTime;
 
     int m_currentBattery;
 
