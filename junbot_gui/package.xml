@@ -20,6 +20,7 @@
   <depend>cv_bridge</depend>
   <depend>image_transport</depend>
   <depend>move_base_msgs</depend>
+  <depend>diagnostic_msgs</depend> 
   <build_depend>qtbase5-dev</build_depend>
   <exec_depend>libqt5-core</exec_depend>
   <exec_depend>libqt5-gui</exec_depend>

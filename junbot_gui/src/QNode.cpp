@@ -12,6 +12,8 @@ QNode::QNode(int argc, char **argv)
 
     batteryVoltage_topic = "cmd_vol_fb";
     batteryPercentage_topic = "cmd_bat_fb";
+
+    robotState_topic = "junbot_diagnostics"
     
     initPose_topic =
             topic_setting.value("topic/topic_init_pose", "move_base_simple/goal")
@@ -96,6 +98,9 @@ void QNode::SubAndPubTopic() {
 
     m_batteryPercentageSub = n.subscribe(batteryPercentage_topic.toStdString(), 1000,
                                          &QNode::batteryPercentageCallback, this);
+
+    robotState_sub = n.subscribe(robotState_topic.toStdString(), 1000, 
+                                         &QNode::robotStateCallback, this);
 
     map_sub = n.subscribe("map", 1000, &QNode::mapCallback, this);
 
@@ -233,8 +238,21 @@ void QNode::batteryPercentageCallback(const std_msgs::Float32 &message) {
     emit updateBatteryPercentage(message.data);
 }
 
-void QNode::myCallback(const std_msgs::Float64 &message_holder) {
-    qDebug() << message_holder.data;
+void QNode::robotStateCallback(const diagnostic_msgs::DiagnosticArray &message_holder) {
+
+    CONSOLE << "robot state callback";
+    
+    for (int i = 0; i < message_holder.status.size(); i++) {
+        if (message_holder.status[i].name == "Teensy") {
+            CONSOLE << "Teesy : " << message_holder.status[i].message;
+        }
+        if(message_holder.status[i].name == "Lidar") {
+            CONSOLE << "Lidar : " << message_holder.status[i].message;
+        }
+        if(message_holder.status[i].name == "Camera") {
+            CONSOLE << "Camera : " << message_holder.status[i].message;
+        }
+    }
 }
 
 void QNode::set_goal(QString frame, double x, double y, double z, double w) {

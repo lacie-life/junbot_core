@@ -25,6 +25,7 @@
 #include <std_msgs/Float32.h>
 #include <std_msgs/Float64.h>
 #include <tf/transform_listener.h>
+#include <diagnostic_msgs/DiagnosticArray.h>
 
 #include <QDebug>
 #include <QImage>
@@ -146,6 +147,7 @@ private:
     ros::Subscriber m_plannerPathSub;
     ros::Subscriber m_compressedImgSub0;
     ros::Subscriber m_compressedImgSub1;
+    ros::Subscriber m_robotStateSub;
 
     ros::Publisher goal_pub;
     ros::Publisher cmd_pub;
@@ -169,6 +171,7 @@ private:
     QString map_topic;
     QString initPose_topic;
     QString naviGoal_topic;
+    QString robotState_topic;
     std::string path_topic;
     QPolygon mapPonits;
     QPolygonF plannerPoints;
@@ -203,8 +206,6 @@ private:
 
     void imageCallback1(const sensor_msgs::CompressedImageConstPtr &msg);
 
-    void myCallback(const std_msgs::Float64 &message_holder);
-
     void mapCallback(nav_msgs::OccupancyGrid::ConstPtr map);
 
     void laserScanCallback(sensor_msgs::LaserScanConstPtr scan);
@@ -218,6 +219,8 @@ private:
     void batteryVoltageCallback(const std_msgs::Float32 &message);
 
     void batteryPercentageCallback(const std_msgs::Float32 &message);
+
+    void robotStateCallback(const diagnostic_msgs::DiagnosticArray &message);
 };
 
 #endif // QNODE_H
