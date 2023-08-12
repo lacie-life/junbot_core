@@ -75,6 +75,9 @@ make
 
 # Generate engine file (engine include 80 class of coco dataset)
 ./yolov5_det -s yolov5s.wts yolov5s.engine s
+
+# Build and serialize TensorRT engine
+./yolov5_seg -s yolov5s-seg.wts yolov5s-seg.engine s
 ```
 
 # Bug 

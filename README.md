@@ -52,6 +52,15 @@
       - [ ] Multi-odometry fusion [link](https://github.com/lacie-life/junbot_odometry_fusion)
       - [x] Robot TF
 
+# Overview
+
+<table>
+  <tr>
+    <td> <img src="./docs/front.jpg"  alt="1" width = 480px height = 640px ></td>
+    <td> <img src="./docs/side.jpg"   alt="2" width = 480px height = 640px> </td>
+   </tr> 
+</table>
+
 # Install 
 
 Follow this [link](https://github.com/lacie-life/junbot_core/blob/main/docs/install.md)

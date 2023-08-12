@@ -18,7 +18,8 @@ set(ROS_DEPENDS
     std_msgs
     sensor_msgs
     cv_bridge
-    image_transport)
+    image_transport
+    diagnostic_msgs)
 
 find_package(catkin REQUIRED COMPONENTS ${ROS_DEPENDS})
 

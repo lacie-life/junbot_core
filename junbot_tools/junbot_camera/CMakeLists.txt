@@ -61,7 +61,7 @@ include_directories(
         # ${CMAKE_CURRENT_SOURCE_DIR}/lib
         ${CMAKE_CURRENT_SOURCE_DIR}/Model
         ${CMAKE_CURRENT_SOURCE_DIR}/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/D455
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/junbot_camera
 )
 include_directories(${realsense2_INCLUDE_DIR})
 
@@ -91,7 +91,7 @@ FILE(GLOB_RECURSE HDR_FILES
 
 cuda_add_library(yolov5-detector SHARED ${HDR_FILES} ${SRC_FILES})
 
-add_definitions(-std=c++14 -g -h -O3 -D_MWAITXINTRIN_H_INCLUDED -Wno-deprecated-declarations)
+add_definitions(-std=c++14 -g -O3 -D_MWAITXINTRIN_H_INCLUDED -Wno-deprecated-declarations)
 
 SET(TRT_LIBS nvinfer)
 
@@ -106,18 +106,17 @@ target_link_libraries(yolov5-detector
                         ${CUDA_CUDART_LIBRARY}
         )
 
-add_executable(${PROJECT_NAME}_test test/D455_test.cpp)
+add_executable(${PROJECT_NAME}_segmentation test/segmentation_node.cpp)
 add_executable(${PROJECT_NAME}_rgp2depth test/bbRGB2Depth.cpp)
-add_executable(${PROJECT_NAME}_2view  test/D455_2view.cpp)
 add_executable(${PROJECT_NAME}_cancel test/cancel_mission.cpp)
+add_executable(${PROJECT_NAME}_detector test/detector_test.cpp)
 
-target_link_libraries(${PROJECT_NAME}_test
+target_link_libraries(${PROJECT_NAME}_segmentation
    ${realsense2_LIBRARY}
    ${Boost_LIBRARIES}
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
    yolov5-detector
-#
 )
 
 target_link_libraries(${PROJECT_NAME}_rgp2depth
@@ -126,7 +125,6 @@ target_link_libraries(${PROJECT_NAME}_rgp2depth
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
    yolov5-detector
-#
 )
 
 target_link_libraries(${PROJECT_NAME}_cancel
@@ -135,16 +133,17 @@ target_link_libraries(${PROJECT_NAME}_cancel
    ${catkin_LIBRARIES}
    ${OpenCV_LIBRARIES}
    yolov5-detector
-#
 )
 
-target_link_libraries(${PROJECT_NAME}_2view
+target_link_libraries(${PROJECT_NAME}_detector
         ${realsense2_LIBRARY}
-        ${OpenCV_LIBRARIES}
+        ${Boost_LIBRARIES}
         ${catkin_LIBRARIES}
+        ${OpenCV_LIBRARIES}
+        yolov5-detector
 )
 
-install(TARGETS ${PROJECT_NAME}_test 
+install(TARGETS ${PROJECT_NAME}_segmentation
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
@@ -156,10 +155,6 @@ install(TARGETS yolov5-detector
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-
-install(TARGETS ${PROJECT_NAME}_2view
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
 
 install(TARGETS ${PROJECT_NAME}_rgp2depth
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

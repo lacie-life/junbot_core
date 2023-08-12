@@ -2,40 +2,53 @@
 #include "preprocess.h"
 #include "postprocess.h"
 
-const static int kOutputSize = kMaxNumOutputBbox * sizeof(Detection) / sizeof(float) + 1;
-static Logger gLogger;
-
 using namespace nvinfer1;
 
-YoLoObjectDetection::YoLoObjectDetection(const std::string _model_path)
-{   
+static Logger gLogger;
+
+const static int kOutputSize1 = kMaxNumOutputBbox * sizeof(Detection) / sizeof(float) + 1;
+const static int kOutputSize2 = 32 * (kInputH / 4) * (kInputW / 4);
+
+YoLoObjectDetection::YoLoObjectDetection(const std::string _model_path) {
+
     cudaSetDevice(kGpuId);
 
-    // Init Cuda Engine
     runtime = nullptr;
     engine = nullptr;
     context = nullptr;
 
+    cpu_output_buffer1 = nullptr;
+    cpu_output_buffer2 = nullptr;
+
     // Deserialize the engine from file
     deserialize_engine(const_cast<std::string &>(_model_path), &runtime, &engine, &context);
 
-    std::cout << "Deserializa engine done \n";
+    std::cout << "Deserialize engine done \n";
 
     CUDA_CHECK(cudaStreamCreate(&stream));
+
+    std::cout << "Create stream done \n";
 
     // Init CUDA preprocessing
     cuda_preprocess_init(kMaxInputImageSize);
 
     // Prepare cpu and gpu buffers
-    prepare_buffers(engine, &gpu_buffers[0], &gpu_buffers[1], &cpu_output_buffer);
+    prepare_buffers(engine, &gpu_buffers[0], &gpu_buffers[1],
+                    &gpu_buffers[2], &cpu_output_buffer1,
+                    &cpu_output_buffer2);
 }
 
-YoLoObjectDetection::~YoLoObjectDetection()
-{
+YoLoObjectDetection::~YoLoObjectDetection() {
     // Release stream and buffers
     cudaStreamDestroy(stream);
     CUDA_CHECK(cudaFree(gpu_buffers[0]));
     CUDA_CHECK(cudaFree(gpu_buffers[1]));
+    CUDA_CHECK(cudaFree(gpu_buffers[2]));
+
+    delete[] cpu_output_buffer1;
+    delete[] cpu_output_buffer2;
+
+    cuda_preprocess_destroy();
 
     // Destroy the engine
     context->destroy();
@@ -43,77 +56,89 @@ YoLoObjectDetection::~YoLoObjectDetection()
     runtime->destroy();
 }
 
-void YoLoObjectDetection::doInference(IExecutionContext& context, cudaStream_t& stream, void** gpu_buffers, float* output, int batchsize) {
-  context.enqueue(batchsize, gpu_buffers, stream, nullptr);
-  CUDA_CHECK(cudaMemcpyAsync(output, gpu_buffers[1], batchsize * kOutputSize * sizeof(float), cudaMemcpyDeviceToHost, stream));
-  cudaStreamSynchronize(stream);
+void YoLoObjectDetection::infer(IExecutionContext& context, cudaStream_t& stream, void **buffers, float* output1, float* output2, int batchSize) {
+    context.enqueue(batchSize, buffers, stream, nullptr);
+    CUDA_CHECK(cudaMemcpyAsync(output1, buffers[1], batchSize * kOutputSize1 * sizeof(float), cudaMemcpyDeviceToHost, stream));
+    CUDA_CHECK(cudaMemcpyAsync(output2, buffers[2], batchSize * kOutputSize2 * sizeof(float), cudaMemcpyDeviceToHost, stream));
+    cudaStreamSynchronize(stream);
 }
 
-void YoLoObjectDetection::detectObject(const cv::Mat& _frame, std::vector<Detection>& objects)
-{
+void YoLoObjectDetection::detectObject(const cv::Mat &_frame, std::vector<Detection> &objects) {
     cv::Mat img = _frame.clone();
 
     std::vector<cv::Mat> img_batch;
+    std::vector<std::string> image_name_batch;
 
     // TODO: Can improve infer speed with batch size
     img_batch.push_back(img);
+    image_name_batch.push_back("0");
+
+    std::cout << "Batch size: " << img_batch.size() << std::endl;
 
     cuda_batch_preprocess(img_batch, gpu_buffers[0], kInputW, kInputH, stream);
 
     // Time check
-//     auto start = std::chrono::system_clock::now();
-    doInference(*context, stream, (void**)gpu_buffers, cpu_output_buffer, kBatchSize);
-//     auto end = std::chrono::system_clock::now();
-//     std::cout << "inference time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
+    auto start = std::chrono::system_clock::now();
+
+    infer(*context, stream, (void **) gpu_buffers, cpu_output_buffer1, cpu_output_buffer2, kBatchSize);
+
+    auto end = std::chrono::system_clock::now();
+    std::cout << "inference time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
 
     // NMS
     std::vector<std::vector<Detection>> res_batch;
-    batch_nms(res_batch, cpu_output_buffer, img_batch.size(), kOutputSize, kConfThresh, kNmsThresh);
+    batch_nms(res_batch, cpu_output_buffer1, img_batch.size(), kOutputSize1, kConfThresh, kNmsThresh);
 
-    if(res_batch.size() > 0)
+    std::cout << "Batch size: " << res_batch.size() << std::endl;
+
+    for(size_t b = 0; b < image_name_batch.size(); b++)
     {
-//        std::cout << res_batch.size() << std::endl;
-        auto& res = res_batch[0];
+        auto& res = res_batch[b];
+        cv::Mat img = img_batch[b];
+
         std::cout << "[YoLoObjectDetection] " << res.size() << std::endl;
-        for(int i = 0; i < res.size(); i++)
-        {
+
+        for (int i = 0; i < res.size(); i++) {
             Detection det;
             det = res[i];
             objects.push_back(det);
         }
     }
-
-//    std::cout << "Size: " << objects.size() << std::endl;
+    std::cout << "Size: " << objects.size() << std::endl;
 }
 
-void YoLoObjectDetection::prepare_buffers(ICudaEngine* engine, float** gpu_input_buffer, float** gpu_output_buffer, float** cpu_output_buffer)
-{
-    assert(engine->getNbBindings() == 2);
+void YoLoObjectDetection::prepare_buffers(ICudaEngine* engine, float** gpu_input_buffer, float** gpu_output_buffer1, float** gpu_output_buffer2, float** cpu_output_buffer1, float** cpu_output_buffer2) {
+    assert(engine->getNbBindings() == 3);
     // In order to bind the buffers, we need to know the names of the input and output tensors.
     // Note that indices are guaranteed to be less than IEngine::getNbBindings()
     const int inputIndex = engine->getBindingIndex(kInputTensorName);
-    const int outputIndex = engine->getBindingIndex(kOutputTensorName);
+    const int outputIndex1 = engine->getBindingIndex(kOutputTensorName);
+    const int outputIndex2 = engine->getBindingIndex("proto");
+
     assert(inputIndex == 0);
-    assert(outputIndex == 1);
+    assert(outputIndex1 == 1);
+    assert(outputIndex2 == 2);
+
     // Create GPU buffers on device
     CUDA_CHECK(cudaMalloc((void**)gpu_input_buffer, kBatchSize * 3 * kInputH * kInputW * sizeof(float)));
-    CUDA_CHECK(cudaMalloc((void**)gpu_output_buffer, kBatchSize * kOutputSize * sizeof(float)));
+    CUDA_CHECK(cudaMalloc((void**)gpu_output_buffer1, kBatchSize * kOutputSize1 * sizeof(float)));
+    CUDA_CHECK(cudaMalloc((void**)gpu_output_buffer2, kBatchSize * kOutputSize2 * sizeof(float)));
 
-    *cpu_output_buffer = new float[kBatchSize * kOutputSize];
+    // Alloc CPU buffers
+    *cpu_output_buffer1 = new float[kBatchSize * kOutputSize1];
+    *cpu_output_buffer2 = new float[kBatchSize * kOutputSize2];
 }
 
-void YoLoObjectDetection::serialize_engine(unsigned int max_batchsize, bool& is_p6, float& gd, float& gw, std::string& wts_name, std::string& engine_name) {
+void YoLoObjectDetection::serialize_engine(unsigned int max_batchsize, float& gd, float& gw, std::string& wts_name, std::string& engine_name) {
     // Create builder
     IBuilder* builder = createInferBuilder(gLogger);
     IBuilderConfig* config = builder->createBuilderConfig();
 
     // Create model to populate the network, then set the outputs and create an engine
     ICudaEngine *engine = nullptr;
-    if (is_p6) {
-        engine = build_det_p6_engine(max_batchsize, builder, config, DataType::kFLOAT, gd, gw, wts_name);
-    } else {
-        engine = build_det_engine(max_batchsize, builder, config, DataType::kFLOAT, gd, gw, wts_name);
-    }
+
+    engine = build_seg_engine(max_batchsize, builder, config, DataType::kFLOAT, gd, gw, wts_name);
+
     assert(engine != nullptr);
 
     // Serialize the engine
@@ -137,9 +162,6 @@ void YoLoObjectDetection::serialize_engine(unsigned int max_batchsize, bool& is_
 
 void YoLoObjectDetection::deserialize_engine(std::string& engine_name, IRuntime** runtime, ICudaEngine** engine, IExecutionContext** context) {
     std::ifstream file(engine_name, std::ios::binary);
-
-    std::cout << "Model path: " << engine_name << "\n";
-
     if (!file.good()) {
         std::cerr << "read " << engine_name << " error!" << std::endl;
         assert(false);
@@ -162,7 +184,7 @@ void YoLoObjectDetection::deserialize_engine(std::string& engine_name, IRuntime*
     delete[] serialized_engine;
 }
 
-cv::Rect YoLoObjectDetection::get_rect(cv::Mat& img, float bbox[4]) {
+cv::Rect YoLoObjectDetection::get_rect(cv::Mat &img, float bbox[4]) {
     float l, r, t, b;
     float r_w = kInputW / (img.cols * 1.0);
     float r_h = kInputH / (img.rows * 1.0);
@@ -186,6 +208,14 @@ cv::Rect YoLoObjectDetection::get_rect(cv::Mat& img, float bbox[4]) {
         b = b / r_h;
     }
     return cv::Rect(round(l), round(t), round(r - l), round(b - t));
+}
+
+cv::Mat YoLoObjectDetection::get_mask(cv::Mat &img, Detection &det) {
+    cv::Mat mask = getObjectMask(&cpu_output_buffer2[0 * kOutputSize2], kOutputSize2, det);
+
+    cv::Mat img_mask = scale_mask(mask, img);
+
+    return img_mask;
 }
 
 
