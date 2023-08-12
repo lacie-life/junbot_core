@@ -87,6 +87,7 @@ void QMqttHandler::MQTT_Publish(RobotNode node, QJsonObject message)
 
 void QMqttHandler::MQTT_Subcrib(RobotNode node)
 {
+    CONSOLE << node.control_topic;
     QMqttTopicFilter filter(node.control_topic);
 
     m_client->subscribe(filter);

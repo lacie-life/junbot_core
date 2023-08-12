@@ -67,6 +67,7 @@ public:
 public slots:
     void keyRecieved(int key);
     void keyMissonRecieved(int key);
+    void setRobotMess(QString msg);
 
 signals:
     void signalSet2DPose();
