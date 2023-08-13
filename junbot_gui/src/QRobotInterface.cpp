@@ -426,6 +426,7 @@ void RobotInterface::slot_updateRobotStatus(AppEnums::QRobotStatus status)
   break;
   case AppEnums::QRobotStatus::NotReady: {
     this->ui->robot_status->setStyleSheet("border-image: url(:/image/data/images/status/status_error.png);");
+    QMessageBox::information(this, "Notification", "Not ready to run", QMessageBox::Ok);
   }
   break;
   default:
@@ -493,6 +494,9 @@ void RobotInterface::connections()
 
   //Battery Voltage
   connect(&m_model->m_rosNode, &QNode::updateBatteryVoltage, this, &RobotInterface::slot_batteryVoltage);
+  connect(m_model, &AppModel::signalNeedCharge, this, [=](){
+    QMessageBox::information(this, "Notification", "Battery Low. Need Charge.", QMessageBox::Ok);
+}); 
 
   // Bind the speed control buttons
   connect(ui->back, SIGNAL(clicked()), this, SLOT(slot_cmd_control()));

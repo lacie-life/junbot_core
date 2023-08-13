@@ -77,6 +77,16 @@ public:
     {
         RobotStatusChanged,
     };
+    enum QObstacle
+    {
+        NoObstacle,
+        Human,
+        Stuff,
+    };
+    enum QNotification
+    {
+        NeedCharge
+    };
 };
 
 #endif // APPCONSTANTS_H
