@@ -57,7 +57,8 @@ void QMqttHandler::connectMQTT(QString brokerName, qint16 port)
 void QMqttHandler::onMQTT_Connected()
 {
     CONSOLE << "Connected to MQTT Broker";
-    MQTT_Subcrib(m_current_robot_node);
+
+    MQTT_Subcrib(RobotNodes.at(0));
 }
 
 void QMqttHandler::onMQTT_disconnected()
@@ -88,6 +89,7 @@ void QMqttHandler::MQTT_Publish(RobotNode node, QJsonObject message)
 void QMqttHandler::MQTT_Subcrib(RobotNode node)
 {
     CONSOLE << node.control_topic;
+    
     QMqttTopicFilter filter(node.control_topic);
 
     m_client->subscribe(filter);

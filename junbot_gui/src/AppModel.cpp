@@ -80,8 +80,6 @@ bool AppModel::connectMaster(QString master_ip, QString ros_ip)
 
     if(check)
     {
-        m_handler->connectMQTT("localhost", 1883);
-        
         RobotNode node;
         node.ip = "xx.xx.xx.xx";
         node.name = "robot1";
@@ -90,7 +88,9 @@ bool AppModel::connectMaster(QString master_ip, QString ros_ip)
 
         m_handler->RobotNodes.append(node);
 
-        m_handler->MQTT_Subcrib(m_handler->RobotNodes.at(0));
+        m_handler->connectMQTT("localhost", 1883);
+        
+        // m_handler->MQTT_Subcrib(m_handler->RobotNodes.at(0));
     }
     return check;
 }
@@ -114,7 +114,7 @@ bool AppModel::login(QUser &user)
     }
     else {
         CONSOLE << "Login Fail";
-        return false;
+        return false;           
     }
 }
 
