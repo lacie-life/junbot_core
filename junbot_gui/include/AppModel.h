@@ -79,6 +79,7 @@ signals:
     void signalLogin();
     void signalRobotStatusChanged(AppEnums::QRobotStatus status);
     void signalRobotMissionStatusChanged(AppEnums::QMissionStatus status);
+    void signalObstacle(AppEnums::QObstacle status);
     void signalMissionDone();
     void signalMissionError();
     void signalMisionStarted();

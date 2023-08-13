@@ -59,6 +59,7 @@ public slots:
   void slot_dis_connect();
   void slot_updateRobotStatus(AppEnums::QRobotStatus);
   void slot_updateRobotMissonStatus(AppEnums::QMissionStatus);
+  void slot_obstacle(AppEnums::QObstacle);
 
   void slot_settingTarget();
 

@@ -85,7 +85,7 @@ public:
     };
     enum QNotification
     {
-        NeedCharge
+        BatteryLow
     };
 };
 
