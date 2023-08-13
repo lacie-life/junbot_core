@@ -28,6 +28,9 @@ AppModel::AppModel(int argc, char **argv, QObject *parent)
 
     CONSOLE << jSub;
 
+    connect(m_handler, &QMqttHandler::MQTT_Received, this, &AppModel::setRobotMess);
+
+
     // m_handler->MQTT_Publish(m_handler->RobotNodes.at(0), jobj);
 
 }
@@ -77,8 +80,6 @@ bool AppModel::connectMaster(QString master_ip, QString ros_ip)
 
     if(check)
     {
-        m_handler->connectMQTT("localhost", 1883);
-        
         RobotNode node;
         node.ip = "xx.xx.xx.xx";
         node.name = "robot1";
@@ -86,6 +87,10 @@ bool AppModel::connectMaster(QString master_ip, QString ros_ip)
         node.control_topic = "robot1/control";
 
         m_handler->RobotNodes.append(node);
+
+        m_handler->connectMQTT("localhost", 1883);
+        
+        // m_handler->MQTT_Subcrib(m_handler->RobotNodes.at(0));
     }
     return check;
 }
@@ -109,7 +114,7 @@ bool AppModel::login(QUser &user)
     }
     else {
         CONSOLE << "Login Fail";
-        return false;
+        return false;           
     }
 }
 
@@ -267,6 +272,11 @@ void AppModel::checkRobotState()
     CONSOLE << jSub;
 
     m_handler->MQTT_Publish(m_handler->RobotNodes.at(0), jobj);
+}
+
+void AppModel::setRobotMess(QString msg)
+{
+    CONSOLE << msg;
 }
  
 // TODO: Create Position DB for this (Later, not now)
