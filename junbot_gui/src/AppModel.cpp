@@ -272,6 +272,8 @@ void AppModel::checkRobotState()
     CONSOLE << jSub;
 
     m_handler->MQTT_Publish(m_handler->RobotNodes.at(0), jobj);
+
+    m_rosNode.publishRobotStatus(jString);
 }
 
 void AppModel::setRobotMess(QString msg)

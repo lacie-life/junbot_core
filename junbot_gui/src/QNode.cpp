@@ -1,6 +1,7 @@
 #include "QNode.h"
 #include <QDebug>
 #include <move_base_msgs/MoveBaseActionGoal.h>
+#include <std_msgs/String.h>
 
 QNode::QNode(int argc, char **argv)
         : init_argc(argc), init_argv(argv) {
@@ -13,7 +14,9 @@ QNode::QNode(int argc, char **argv)
     batteryVoltage_topic = "cmd_vol_fb";
     batteryPercentage_topic = "cmd_bat_fb";
 
-    robotState_topic = "junbot_diagnostics";
+    robotDiagnostics_topic = "junbot_diagnostics";
+
+    robotState_topic = "robot_status";
     
     initPose_topic =
             topic_setting.value("topic/topic_init_pose", "move_base_simple/goal")
@@ -99,8 +102,8 @@ void QNode::SubAndPubTopic() {
     m_batteryPercentageSub = n.subscribe(batteryPercentage_topic.toStdString(), 1000,
                                          &QNode::batteryPercentageCallback, this);
 
-    m_robotStateSub = n.subscribe(robotState_topic.toStdString(), 1000, 
-                                         &QNode::robotStateCallback, this);
+    m_robotDiagnosticsSub = n.subscribe(robotDiagnostics_topic.toStdString(), 1000, 
+                                         &QNode::robotDiagnosticsCallback, this);
 
     map_sub = n.subscribe("map", 1000, &QNode::mapCallback, this);
 
@@ -119,7 +122,10 @@ void QNode::SubAndPubTopic() {
             initPose_topic.toStdString(), 10);
 
     image_transport::ImageTransport it(n);
+
     m_imageMapPub = it.advertise("image/map", 10);
+
+    m_robotStatePub = n.advertise<std_msgs::String>(robotState_topic.toStdString(), 10);
 
     m_robotPoselistener = new tf::TransformListener;
     m_Laserlistener = new tf::TransformListener;
@@ -226,6 +232,13 @@ void QNode::updateRobotPose() {
     }
 }
 
+void QNode::publishRobotStatus(QString state)
+{
+    std_msgs::String msg;
+    msg.data = state.toStdString();
+    m_robotStatePub.publish(msg);
+}
+
 void QNode::batteryCallback(const sensor_msgs::BatteryState &message) {
     emit batteryState(message);
 }
@@ -238,7 +251,7 @@ void QNode::batteryPercentageCallback(const std_msgs::Float32 &message) {
     emit updateBatteryPercentage(message.data);
 }
 
-void QNode::robotStateCallback(const diagnostic_msgs::DiagnosticArray &message_holder) {
+void QNode::robotDiagnosticsCallback(const diagnostic_msgs::DiagnosticArray &message_holder) {
 
     CONSOLE << "robot state callback";
     

@@ -101,6 +101,8 @@ public slots:
 
     void sendNextTarget();
 
+    void publishRobotStatus(QString state);
+
 signals:
 
     void loggingUpdated();
@@ -147,11 +149,12 @@ private:
     ros::Subscriber m_plannerPathSub;
     ros::Subscriber m_compressedImgSub0;
     ros::Subscriber m_compressedImgSub1;
-    ros::Subscriber m_robotStateSub;
+    ros::Subscriber m_robotDiagnosticsSub;
 
     ros::Publisher goal_pub;
     ros::Publisher cmd_pub;
     ros::Publisher m_initialposePub;
+    ros::Publisher m_robotStatePub;
     image_transport::Publisher m_imageMapPub;
 
     MoveBaseClient *movebase_client;
@@ -171,6 +174,7 @@ private:
     QString map_topic;
     QString initPose_topic;
     QString naviGoal_topic;
+    QString robotDiagnostics_topic;
     QString robotState_topic;
     std::string path_topic;
     QPolygon mapPonits;
@@ -220,7 +224,7 @@ private:
 
     void batteryPercentageCallback(const std_msgs::Float32 &message);
 
-    void robotStateCallback(const diagnostic_msgs::DiagnosticArray &message);
+    void robotDiagnosticsCallback(const diagnostic_msgs::DiagnosticArray &message);
 };
 
 #endif // QNODE_H
