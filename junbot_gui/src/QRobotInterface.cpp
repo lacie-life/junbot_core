@@ -138,12 +138,16 @@ RobotInterface::~RobotInterface()
 void RobotInterface::slotRun()
 { 
   std::vector<QRobotPose> goals;
+  std::vector<int> goals_Id;
   for(int i = 0; i < slot_target.size(); i++){
     QRobotPose goal = {slot_target[i].x_axis().toDouble(),
       slot_target[i].y_axis().toDouble(),
       slot_target[i].z_axis().toDouble(),
       0};
     goals.push_back(goal);
+
+    // TODO: add id to goals
+    goals_Id.push_back(i);
   }
 
   CONSOLE << goals.size();
@@ -151,7 +155,7 @@ void RobotInterface::slotRun()
   bool check;
 
   check = true;
-  check = m_model->m_rosNode.set_multi_goal("Frame", goals);
+  check = m_model->m_rosNode.set_multi_goal("Frame", goals, goals_Id);
 
   connect(&m_model->m_rosNode, &QNode::updateGoalReached, this, [=](){
     QMessageBox::information(NULL, "Notification",

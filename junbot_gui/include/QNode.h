@@ -60,9 +60,9 @@ public:
 
     void set_goal(QString frame, double x, double y, double z, double w);
 
-    bool set_goal_once(QString frame, QRobotPose goal, int idx);
+    bool set_goal_once(QString frame, QRobotPose goal, int idx, int targetId);
 
-    bool set_multi_goal(QString frame, std::vector<QRobotPose> goals);
+    bool set_multi_goal(QString frame, std::vector<QRobotPose> goals, std::vector<int> targetId);
 
     void Sub_Image(QString topic, int frame_id);
 
@@ -155,6 +155,7 @@ private:
     ros::Publisher cmd_pub;
     ros::Publisher m_initialposePub;
     ros::Publisher m_robotStatePub;
+    ros::Publisher m_robotTargetIdPub;
     image_transport::Publisher m_imageMapPub;
 
     MoveBaseClient *movebase_client;
@@ -176,6 +177,7 @@ private:
     QString naviGoal_topic;
     QString robotDiagnostics_topic;
     QString robotState_topic;
+    QString targetId_topic;
     std::string path_topic;
     QPolygon mapPonits;
     QPolygonF plannerPoints;
@@ -198,6 +200,7 @@ private:
     std::string base_frame, laser_frame, map_frame;
 
     std::vector<QRobotPose> m_goals;
+    std::vector<int> m_targetIds;
     int m_current_goals_id;
     QString m_goal_frame;
 

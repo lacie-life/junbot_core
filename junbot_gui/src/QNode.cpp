@@ -2,6 +2,7 @@
 #include <QDebug>
 #include <move_base_msgs/MoveBaseActionGoal.h>
 #include <std_msgs/String.h>
+#include <std_msgs/Int32.h>
 
 QNode::QNode(int argc, char **argv)
         : init_argc(argc), init_argv(argv) {
@@ -17,6 +18,8 @@ QNode::QNode(int argc, char **argv)
     robotDiagnostics_topic = "junbot_diagnostics";
 
     robotState_topic = "robot_status";
+
+    targetId_topic = "robot_target_id";
     
     initPose_topic =
             topic_setting.value("topic/topic_init_pose", "move_base_simple/goal")
@@ -126,6 +129,8 @@ void QNode::SubAndPubTopic() {
     m_imageMapPub = it.advertise("image/map", 10);
 
     m_robotStatePub = n.advertise<std_msgs::String>(robotState_topic.toStdString(), 10);
+
+    m_robotTargetIdPub = n.advertise<std_msgs::Int32>(targetId_topic.toStdString(), 10);
 
     m_robotPoselistener = new tf::TransformListener;
     m_Laserlistener = new tf::TransformListener;
@@ -287,7 +292,8 @@ void QNode::set_goal(QString frame, double x, double y, double z, double w) {
     ros::spinOnce();
 }
 
-bool QNode::set_goal_once(QString frame, QRobotPose goal, int idx) {
+// TODO: Update ArUcO pose and Id
+bool QNode::set_goal_once(QString frame, QRobotPose goal, int idx, int target_id) {
     
     while (!movebase_client->waitForServer(ros::Duration(5.0))) 
     {
@@ -309,6 +315,11 @@ bool QNode::set_goal_once(QString frame, QRobotPose goal, int idx) {
     tempGoal.target_pose = _goal;
     
     movebase_client->sendGoal(tempGoal);
+
+    // TODO: Publish goal marker information
+    std_msgs::Int32 tmp;
+    tmp.data = target_id;
+    m_robotTargetIdPub.publish(tmp);
     
     movebase_client->waitForResult();
     
@@ -324,16 +335,17 @@ bool QNode::set_goal_once(QString frame, QRobotPose goal, int idx) {
     }
 }
 
-bool QNode::set_multi_goal(QString frame, std::vector<QRobotPose> goals)
+bool QNode::set_multi_goal(QString frame, std::vector<QRobotPose> goals, std::vector<int> target_id)
 {
     // TODO: Update find optimal path ????
     m_goals = goals;
+    m_targetIds = target_id;
     m_goal_frame = frame;
     m_current_goals_id = 0;
 
     bool check = set_goal_once(m_goal_frame, 
                                 m_goals[m_current_goals_id], 
-                                m_current_goals_id);
+                                m_current_goals_id, m_targetIds[m_current_goals_id]);
 
     // for (auto goal : goals)
     // {
@@ -360,7 +372,7 @@ void QNode::sendNextTarget()
         return;
     }
     else{
-        bool check = set_goal_once(m_goal_frame, m_goals[m_current_goals_id], m_current_goals_id);
+        bool check = set_goal_once(m_goal_frame, m_goals[m_current_goals_id], m_current_goals_id,  m_targetIds[m_current_goals_id]);
     }
 }
 
