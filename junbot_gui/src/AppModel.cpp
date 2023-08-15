@@ -226,6 +226,21 @@ void AppModel::havingMissionStatus(int key)
     }
 }
 
+void AppModel::havingObstacle(int key)
+{
+    switch(key)
+    {
+    case 14:
+        is_obstacle = AppEnums::QObstacle::Human;
+        emit signalObstacle(AppEnums::QObstacle::Human);
+        break;
+    case 15:
+        is_obstacle = AppEnums::QObstacle::Stuff;
+        emit signalObstacle(AppEnums::QObstacle::Stuff);
+        break;
+    }
+}
+
 void AppModel::batteryStatus(int battery)
 {
     if(battery > 50){
@@ -234,6 +249,7 @@ void AppModel::batteryStatus(int battery)
     }else{
         battery_state = AppEnums::QRobotBattery::NeedCharge;
         checkRobotState();
+        emit signalNeedCharge();
     }
 
     m_currentBattery = battery;

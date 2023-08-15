@@ -55,6 +55,8 @@ public:
     // Having Mission
     void havingMissionStatus(int key);
 
+    void havingObstacle(int key);
+
     //Mission Status
     void addNewPosition(QPoint point);
     void setMission(QRobotMission& mission);
@@ -77,10 +79,12 @@ signals:
     void signalLogin();
     void signalRobotStatusChanged(AppEnums::QRobotStatus status);
     void signalRobotMissionStatusChanged(AppEnums::QMissionStatus status);
+    void signalObstacle(AppEnums::QObstacle status);
     void signalMissionDone();
     void signalMissionError();
     void signalMisionStarted();
     void signalRobotStateUpdate(AppEnums::QRobotStatus status);
+    void signalNeedCharge();
 
 public:
     // Ros interface
@@ -112,6 +116,7 @@ private:
     AppEnums::QRobotSensor sensor_state = AppEnums::QRobotSensor::NoSensor;
     AppEnums::QRobotControlling is_controlling_state = AppEnums::QRobotControlling::NoControlling;
     AppEnums::QRobotMisson is_mission_state = AppEnums::QRobotMisson::NoMission;
+    AppEnums::QObstacle is_obstacle = AppEnums::QObstacle::NoObstacle;
 
     AppEnums::QRobotStatus m_robot_status = AppEnums::QRobotStatus::None;
 };

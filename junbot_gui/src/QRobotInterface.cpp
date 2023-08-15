@@ -430,6 +430,7 @@ void RobotInterface::slot_updateRobotStatus(AppEnums::QRobotStatus status)
   break;
   case AppEnums::QRobotStatus::NotReady: {
     this->ui->robot_status->setStyleSheet("border-image: url(:/image/data/images/status/status_error.png);");
+    QMessageBox::information(this, "Notification", "Not ready to run", QMessageBox::Ok);
   }
   break;
   default:
@@ -461,6 +462,22 @@ switch (status) {
   }
 }
 
+void RobotInterface::slot_obstacle(AppEnums::QObstacle status)
+{
+  switch (status){
+    case AppEnums::QObstacle::Human: {
+      QMessageBox::information(this, "Notification", "There is Human ahead", QMessageBox::Ok);
+    }
+    break;
+    case AppEnums::QObstacle::Stuff: {
+      QMessageBox::information(this, "Notification", "There is Stuff ahead", QMessageBox::Ok);
+    }
+    break;
+    default:
+    break;
+  }
+}
+
 void RobotInterface::connections()
 {
   connect(&m_model->m_rosNode, &QNode::rosShutdown, this, &RobotInterface::slot_rosShutdown);
@@ -480,6 +497,10 @@ void RobotInterface::connections()
   connect(this, &RobotInterface::signalKeyPressed, m_model, &AppModel::keyMissonRecieved);
   connect(m_model, &AppModel::signalRobotMissionStatusChanged, this, &RobotInterface::slot_updateRobotMissonStatus);
 
+  // Obstacle status
+  connect(this, &RobotInterface::signalKeyPressed, m_model, &AppModel::havingObstacle);
+  connect(m_model, &AppModel::signalObstacle, this, &RobotInterface::slot_obstacle);
+
   // Robot battery
   connect(&m_model->m_rosNode, &QNode::batteryState, this, &RobotInterface::slot_batteryState);
 
@@ -497,6 +518,9 @@ void RobotInterface::connections()
 
   //Battery Voltage
   connect(&m_model->m_rosNode, &QNode::updateBatteryVoltage, this, &RobotInterface::slot_batteryVoltage);
+  connect(m_model, &AppModel::signalNeedCharge, this, [=](){
+    QMessageBox::information(this, "Notification", "Battery Low. Need Charge.", QMessageBox::Ok);
+}); 
 
   // Bind the speed control buttons
   connect(ui->back, SIGNAL(clicked()), this, SLOT(slot_cmd_control()));
@@ -607,6 +631,14 @@ void RobotInterface::keyPressEvent(QKeyEvent *event)
         if(event->key() == Qt::Key_M)
     {
         emit signalKeyPressed(13);
+    }
+      if(event->key() == Qt::Key_H)
+    {
+        emit signalKeyPressed(14);
+    }
+      if(event->key() == Qt::Key_G)
+    {
+        emit signalKeyPressed(15);
     }
 }
 
