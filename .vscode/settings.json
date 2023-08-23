@@ -73,7 +73,15 @@
         "valarray": "cpp",
         "variant": "cpp",
         "*.ipp": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "qpropertyanimation": "cpp",
+        "qstringlistmodel": "cpp",
+        "qtimer": "cpp",
+        "qgroupbox": "cpp",
+        "qlabel": "cpp",
+        "qlineedit": "cpp",
+        "qgridlayout": "cpp",
+        "qtextedit": "cpp"
     },
     "python.autoComplete.extraPaths": [
         "/home/hn/junbot_ws/devel/lib/python3/dist-packages",
