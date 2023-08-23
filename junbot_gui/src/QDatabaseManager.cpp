@@ -32,7 +32,7 @@ QDatabaseManager::QDatabaseManager(const QString& path)
       deliveryTargetDao(*m_database)
 
 {
-    m_database->setDatabaseName("/home/onbat2/junbot_ws/src/junbot_planner/junbot_gui/data/user.db");
+    m_database->setDatabaseName("/home/junbot/junbot_ws/src/JunBot/junbot_gui/data/user.db");
 
     bool openStatus = m_database->open();
     CONSOLE << "Database connection: " << (openStatus ? "OK" : "Error");

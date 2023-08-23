@@ -3,6 +3,8 @@
 #include <move_base_msgs/MoveBaseActionGoal.h>
 #include <std_msgs/String.h>
 #include <std_msgs/Int32.h>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 QNode::QNode(int argc, char **argv)
         : init_argc(argc), init_argv(argv) {
@@ -12,14 +14,13 @@ QNode::QNode(int argc, char **argv)
     batteryState_topic =
             topic_setting.value("topic/topic_power", "battery_state").toString();
 
+    // Robot state
     batteryVoltage_topic = "cmd_vol_fb";
     batteryPercentage_topic = "cmd_bat_fb";
-
     robotDiagnostics_topic = "junbot_diagnostics";
-
     robotState_topic = "robot_status";
-
     targetId_topic = "robot_target_id";
+    obstacles_topic = "object_detected";
     
     initPose_topic =
             topic_setting.value("topic/topic_init_pose", "move_base_simple/goal")
@@ -107,6 +108,9 @@ void QNode::SubAndPubTopic() {
 
     m_robotDiagnosticsSub = n.subscribe(robotDiagnostics_topic.toStdString(), 1000, 
                                          &QNode::robotDiagnosticsCallback, this);
+
+    m_obstaclesSub = n.subscribe(obstacles_topic.toStdString(), 1000,
+                                         &QNode::obstacleCallback, this);
 
     map_sub = n.subscribe("map", 1000, &QNode::mapCallback, this);
 
@@ -271,6 +275,23 @@ void QNode::robotDiagnosticsCallback(const diagnostic_msgs::DiagnosticArray &mes
             CONSOLE << "Camera : " << message_holder.status[i].message.c_str();
         }
     }
+    // TODO: Update status to UI
+    emit updateSensorStatus(1);
+}
+
+void QNode::obstacleCallback(const std_msgs::String &message_holder) {
+    CONSOLE << "obstacles callback";
+    CONSOLE << message_holder.data.c_str();
+
+    // TODO: Add emit signal to GUI
+    QJsonDocument tmp;
+    tmp = QJsonDocument::fromJson(message_holder.data.c_str());
+
+    QJsonObject jobj = tmp.object();
+
+    QString id = jobj["id"].toString();
+
+    emit obstacleUpdate(id);
 }
 
 void QNode::set_goal(QString frame, double x, double y, double z, double w) {

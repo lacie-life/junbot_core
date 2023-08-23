@@ -24,6 +24,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/Float64.h>
+#include <std_msgs/String.h>
 #include <tf/transform_listener.h>
 #include <diagnostic_msgs/DiagnosticArray.h>
 
@@ -135,6 +136,10 @@ signals:
 
     void updateAllGoalDone();
 
+    void obstacleUpdate(QString id);
+
+    void updateSensorStatus(int i);
+
 private:
     int init_argc;
     char **init_argv;
@@ -150,6 +155,7 @@ private:
     ros::Subscriber m_compressedImgSub0;
     ros::Subscriber m_compressedImgSub1;
     ros::Subscriber m_robotDiagnosticsSub;
+    ros::Subscriber m_obstaclesSub;
 
     ros::Publisher goal_pub;
     ros::Publisher cmd_pub;
@@ -178,6 +184,8 @@ private:
     QString robotDiagnostics_topic;
     QString robotState_topic;
     QString targetId_topic;
+    QString obstacles_topic;
+
     std::string path_topic;
     QPolygon mapPonits;
     QPolygonF plannerPoints;
@@ -228,6 +236,8 @@ private:
     void batteryPercentageCallback(const std_msgs::Float32 &message);
 
     void robotDiagnosticsCallback(const diagnostic_msgs::DiagnosticArray &message);
+
+    void obstacleCallback(const std_msgs::String &message);
 };
 
 #endif // QNODE_H
