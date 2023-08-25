@@ -1,21 +1,3 @@
-/*******************************************************************************
-* Copyright 2016 ROBOTIS CO., LTD.
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*     http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*******************************************************************************/
-
-/* Authors: Taehoon Lim (Darby) */
-
 #include <ros/ros.h>
 #include <sensor_msgs/BatteryState.h>
 #include <sensor_msgs/Imu.h>
@@ -25,52 +7,23 @@
 #include <junbot_msgs/SensorState.h>
 #include <junbot_msgs/VersionInfo.h>
 #include <string>
+#include <librealsense2/rs.hpp>
 
-#define SOFTWARE_VERSION "1.2.5"
-#define HARDWARE_VERSION "2020.03.16"
-#define FIRMWARE_VERSION_MAJOR_NUMBER 1
-#define FIRMWARE_VERSION_MINOR_NUMBER 2
+ros::Publisher jun_diagnostics_pub;
 
-ros::Publisher tb3_version_info_pub;
-ros::Publisher tb3_diagnostics_pub;
+diagnostic_msgs::DiagnosticStatus camera_state;
+diagnostic_msgs::DiagnosticStatus teensy_state;
+diagnostic_msgs::DiagnosticStatus lidar_state;
 
-diagnostic_msgs::DiagnosticStatus imu_state;
-diagnostic_msgs::DiagnosticStatus motor_state;
-diagnostic_msgs::DiagnosticStatus LDS_state;
-diagnostic_msgs::DiagnosticStatus battery_state;
-diagnostic_msgs::DiagnosticStatus button_state;
+rs2::context ctx;
 
-typedef struct
-{
-  int major_number;
-  int minor_number;
-  int patch_number;
-}VERSION;
+bool isTeensyConnected = false;
+bool isLidarConnected = false;
 
-void split(std::string data, std::string separator, std::string* temp)
-{
-	int cnt = 0;
-  std::string copy = data;
-  
-	while(true)
-	{
-		std::size_t index = copy.find(separator);
+std::string t265_serial_number = "908412110411";
+std::string d455_1_serial_number = "117122250794";
+std::string d455_2_serial_number = "117122250006";
 
-    if (index != std::string::npos)
-    {
-      temp[cnt] = copy.substr(0, index);
-
-      copy = copy.substr(index+1, copy.length());
-    }
-    else
-    {
-      temp[cnt] = copy.substr(0, copy.length());
-      break;
-    }
-    
-		++cnt;
-	}
-}
 
 void setDiagnosisMsg(diagnostic_msgs::DiagnosticStatus *diag, uint8_t level, std::string name, std::string message, std::string hardware_id)
 {
@@ -80,134 +33,106 @@ void setDiagnosisMsg(diagnostic_msgs::DiagnosticStatus *diag, uint8_t level, std
   diag->hardware_id = hardware_id;
 }
 
-void setIMUDiagnosis(uint8_t level, std::string message)
+void setLidarDiagnosis(uint8_t level, std::string message)
 {
-  setDiagnosisMsg(&imu_state, level, "IMU Sensor", message, "MPU9250");
+  setDiagnosisMsg(&lidar_state, level, "Lidar Sensor", message, "Sick TiM 781");
 }
 
-void setMotorDiagnosis(uint8_t level, std::string message)
+void LidarMsgCallback(const sensor_msgs::LaserScan::ConstPtr &msg)
 {
-  setDiagnosisMsg(&motor_state, level, "Actuator", message, "DYNAMIXEL X");
+  setLidarDiagnosis(diagnostic_msgs::DiagnosticStatus::OK, "Good Condition");
 }
 
-void setBatteryDiagnosis(uint8_t level, std::string message)
+void setTeensyDiagnosis(uint8_t level, std::string message)
 {
-  setDiagnosisMsg(&battery_state, level, "Power System", message, "Battery");
+  setDiagnosisMsg(&teensy_state, level, "Teensy", message, "Teensy");
 }
 
-void setLDSDiagnosis(uint8_t level, std::string message)
+void setCameraDiagnosis(uint8_t level, std::string message)
 {
-  setDiagnosisMsg(&LDS_state, level, "Lidar Sensor", message, "HLS-LFCD-LDS");
+  setDiagnosisMsg(&camera_state, level, "Camera", message, "Intel Realsense");
 }
 
-void setButtonDiagnosis(uint8_t level, std::string message)
-{
-  setDiagnosisMsg(&button_state, level, "Analog Button", message, "OpenCR Button");
-}
-
-void imuMsgCallback(const sensor_msgs::Imu::ConstPtr &msg)
-{
-  setIMUDiagnosis(diagnostic_msgs::DiagnosticStatus::OK, "Good Condition");
-}
-
-void LDSMsgCallback(const sensor_msgs::LaserScan::ConstPtr &msg)
-{
-  setLDSDiagnosis(diagnostic_msgs::DiagnosticStatus::OK, "Good Condition");
-}
-
-void sensorStateMsgCallback(const junbot_msgs::SensorState::ConstPtr &msg)
-{
-  if (msg->battery > 11.0)
-    setBatteryDiagnosis(diagnostic_msgs::DiagnosticStatus::OK, "Good Condition");
-  else
-    setBatteryDiagnosis(diagnostic_msgs::DiagnosticStatus::WARN, "Charge!!! Charge!!!");
-
-  if (msg->button == junbot_msgs::SensorState::BUTTON0)
-    setButtonDiagnosis(diagnostic_msgs::DiagnosticStatus::OK, "BUTTON 0 IS PUSHED");
-  else if (msg->button == junbot_msgs::SensorState::BUTTON1)
-    setButtonDiagnosis(diagnostic_msgs::DiagnosticStatus::OK, "BUTTON 1 IS PUSHED");
-  else
-    setButtonDiagnosis(diagnostic_msgs::DiagnosticStatus::OK, "Pushed Nothing");
-
-  if (msg->torque == true)
-    setMotorDiagnosis(diagnostic_msgs::DiagnosticStatus::OK, "Torque ON");
-  else
-    setMotorDiagnosis(diagnostic_msgs::DiagnosticStatus::WARN, "Torque OFF");
-}
-
-void firmwareVersionMsgCallback(const junbot_msgs::VersionInfo::ConstPtr &msg)
-{
-  static bool check_version = false;
-  std::string get_version[3];
-
-  split(msg->firmware, ".", get_version);
-
-  VERSION firmware_version; 
-  firmware_version.major_number = std::stoi(get_version[0]);
-  firmware_version.minor_number = std::stoi(get_version[1]);
-  firmware_version.patch_number = std::stoi(get_version[2]);
-
-  if (check_version == false)
-  {
-    if (firmware_version.major_number == FIRMWARE_VERSION_MAJOR_NUMBER)
-    {
-      if (firmware_version.minor_number > FIRMWARE_VERSION_MINOR_NUMBER)
-      {
-        ROS_WARN("This firmware(v%s) may not compatible with this software (v%s)", msg->firmware.data(), SOFTWARE_VERSION);
-        ROS_WARN("You can find how to update its in `FAQ` section(turtlebot3.robotis.com)");
-      }
-    }
-    else
-    {
-      ROS_WARN("This firmware(v%s) may not compatible with this software (v%s)", msg->firmware.data(), SOFTWARE_VERSION);
-      ROS_WARN("You can find how to update its in `FAQ` section(turtlebot3.robotis.com)");
-    }
-
-    check_version = true;
+void sensorStateMsgCallback(const std_msgs::Float32::ConstPtr &msg)
+{  
+  if(msg->data != 0.0){
+    setTeensyDiagnosis(diagnostic_msgs::DiagnosticStatus::OK, "Good Condition");
   }
-  
-  junbot_msgs::VersionInfo version;
-
-  version.software = SOFTWARE_VERSION;
-  version.hardware = HARDWARE_VERSION;
-  version.firmware = msg->firmware;
-
-  tb3_version_info_pub.publish(version);
+  else if(msg->data == 0.0)
+  {
+    setTeensyDiagnosis(diagnostic_msgs::DiagnosticStatus::ERROR, "Bad Condition");
+  }
 }
 
+void checkCameraConnection()
+{
+  rs2::device_list devices = ctx.query_devices();
+
+  bool isD455_1_Connected = false;
+  bool isD455_2_Connected = false;
+  bool isT265Connected = false;
+
+  for (rs2::device device : devices)
+  {
+    std::string serial_number = device.get_info(RS2_CAMERA_INFO_SERIAL_NUMBER);
+    
+    if (serial_number == t265_serial_number)
+    {
+      isT265Connected = true;
+    }
+    else if (serial_number == d455_1_serial_number)
+    {
+      isD455_1_Connected = true;
+    }
+    else if (serial_number == d455_2_serial_number)
+    {
+      isD455_2_Connected = true;
+    }
+  }
+
+  bool isCameraConnected = isT265Connected && isD455_1_Connected && isD455_2_Connected;
+
+  if(isCameraConnected)
+  {
+    setCameraDiagnosis(diagnostic_msgs::DiagnosticStatus::OK, "Good Condition");
+  }
+  else if(!isCameraConnected)
+  {
+    setCameraDiagnosis(diagnostic_msgs::DiagnosticStatus::ERROR, "Bad Condition");
+  }
+}
+  
 void msgPub()
 {
-  diagnostic_msgs::DiagnosticArray tb3_diagnostics;
+  diagnostic_msgs::DiagnosticArray j_diagnostics;
 
-  tb3_diagnostics.header.stamp = ros::Time::now();
+  j_diagnostics.header.stamp = ros::Time::now();
 
-  tb3_diagnostics.status.clear();
-  tb3_diagnostics.status.push_back(imu_state);
-  tb3_diagnostics.status.push_back(motor_state);
-  tb3_diagnostics.status.push_back(LDS_state);
-  tb3_diagnostics.status.push_back(battery_state);
-  tb3_diagnostics.status.push_back(button_state);
+  j_diagnostics.status.clear();
+  j_diagnostics.status.push_back(camera_state);
+  j_diagnostics.status.push_back(teensy_state);
+  j_diagnostics.status.push_back(lidar_state);
 
-  tb3_diagnostics_pub.publish(tb3_diagnostics);
+  jun_diagnostics_pub.publish(j_diagnostics);
 }
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "turtlebot3_diagnostic");
+  ros::init(argc, argv, "junbot_diagnostic");
   ros::NodeHandle nh;
 
-  tb3_diagnostics_pub  = nh.advertise<diagnostic_msgs::DiagnosticArray>("diagnostics", 10);
-  tb3_version_info_pub = nh.advertise<junbot_msgs::VersionInfo>("version_info", 10);
+  jun_diagnostics_pub  = nh.advertise<diagnostic_msgs::DiagnosticArray>("/junbot_diagnostics", 10);
+  jun_version_info_pub = nh.advertise<junbot_msgs::VersionInfo>("version_info", 10);
 
-  ros::Subscriber imu         = nh.subscribe("imu", 10, imuMsgCallback);
-  ros::Subscriber lds         = nh.subscribe("scan", 10, LDSMsgCallback);
-  ros::Subscriber tb3_sensor  = nh.subscribe("sensor_state", 10, sensorStateMsgCallback);
-  ros::Subscriber version     = nh.subscribe("firmware_version", 10, firmwareVersionMsgCallback);
+  ros::Subscriber lidar         = nh.subscribe("scan", 10, LidarMsgCallback);
+  ros::Subscriber teensy  = nh.subscribe("/cmd_vol_fb", 10, sensorStateMsgCallback);
 
   ros::Rate loop_rate(1);
 
   while (ros::ok())
   {
+    checkCameraConnection();
+
     msgPub();
     ros::spinOnce();
     loop_rate.sleep();

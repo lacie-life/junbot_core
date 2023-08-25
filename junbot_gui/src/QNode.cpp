@@ -1,6 +1,10 @@
 #include "QNode.h"
 #include <QDebug>
 #include <move_base_msgs/MoveBaseActionGoal.h>
+#include <std_msgs/String.h>
+#include <std_msgs/Int32.h>
+#include <QJsonDocument>
+#include <QJsonObject>
 
 QNode::QNode(int argc, char **argv)
         : init_argc(argc), init_argv(argv) {
@@ -10,10 +14,13 @@ QNode::QNode(int argc, char **argv)
     batteryState_topic =
             topic_setting.value("topic/topic_power", "battery_state").toString();
 
+    // Robot state
     batteryVoltage_topic = "cmd_vol_fb";
     batteryPercentage_topic = "cmd_bat_fb";
-
-    robotState_topic = "junbot_diagnostics";
+    robotDiagnostics_topic = "junbot_diagnostics";
+    robotState_topic = "robot_status";
+    targetId_topic = "robot_target_id";
+    obstacles_topic = "object_detected";
     
     initPose_topic =
             topic_setting.value("topic/topic_init_pose", "move_base_simple/goal")
@@ -99,8 +106,11 @@ void QNode::SubAndPubTopic() {
     m_batteryPercentageSub = n.subscribe(batteryPercentage_topic.toStdString(), 1000,
                                          &QNode::batteryPercentageCallback, this);
 
-    m_robotStateSub = n.subscribe(robotState_topic.toStdString(), 1000, 
-                                         &QNode::robotStateCallback, this);
+    m_robotDiagnosticsSub = n.subscribe(robotDiagnostics_topic.toStdString(), 1000, 
+                                         &QNode::robotDiagnosticsCallback, this);
+
+    m_obstaclesSub = n.subscribe(obstacles_topic.toStdString(), 1000,
+                                         &QNode::obstacleCallback, this);
 
     map_sub = n.subscribe("map", 1000, &QNode::mapCallback, this);
 
@@ -119,7 +129,12 @@ void QNode::SubAndPubTopic() {
             initPose_topic.toStdString(), 10);
 
     image_transport::ImageTransport it(n);
+
     m_imageMapPub = it.advertise("image/map", 10);
+
+    m_robotStatePub = n.advertise<std_msgs::String>(robotState_topic.toStdString(), 10);
+
+    m_robotTargetIdPub = n.advertise<std_msgs::Int32>(targetId_topic.toStdString(), 10);
 
     m_robotPoselistener = new tf::TransformListener;
     m_Laserlistener = new tf::TransformListener;
@@ -226,6 +241,13 @@ void QNode::updateRobotPose() {
     }
 }
 
+void QNode::publishRobotStatus(QString state)
+{
+    std_msgs::String msg;
+    msg.data = state.toStdString();
+    m_robotStatePub.publish(msg);
+}
+
 void QNode::batteryCallback(const sensor_msgs::BatteryState &message) {
     emit batteryState(message);
 }
@@ -238,7 +260,7 @@ void QNode::batteryPercentageCallback(const std_msgs::Float32 &message) {
     emit updateBatteryPercentage(message.data);
 }
 
-void QNode::robotStateCallback(const diagnostic_msgs::DiagnosticArray &message_holder) {
+void QNode::robotDiagnosticsCallback(const diagnostic_msgs::DiagnosticArray &message_holder) {
 
     CONSOLE << "robot state callback";
     
@@ -253,6 +275,23 @@ void QNode::robotStateCallback(const diagnostic_msgs::DiagnosticArray &message_h
             CONSOLE << "Camera : " << message_holder.status[i].message.c_str();
         }
     }
+    // TODO: Update status to UI
+    emit updateSensorStatus(1);
+}
+
+void QNode::obstacleCallback(const std_msgs::String &message_holder) {
+    CONSOLE << "obstacles callback";
+    CONSOLE << message_holder.data.c_str();
+
+    // TODO: Add emit signal to GUI
+    QJsonDocument tmp;
+    tmp = QJsonDocument::fromJson(message_holder.data.c_str());
+
+    QJsonObject jobj = tmp.object();
+
+    QString id = jobj["id"].toString();
+
+    emit obstacleUpdate(id);
 }
 
 void QNode::set_goal(QString frame, double x, double y, double z, double w) {
@@ -274,7 +313,8 @@ void QNode::set_goal(QString frame, double x, double y, double z, double w) {
     ros::spinOnce();
 }
 
-bool QNode::set_goal_once(QString frame, QRobotPose goal, int idx) {
+// TODO: Update ArUcO pose and Id
+bool QNode::set_goal_once(QString frame, QRobotPose goal, int idx, int target_id) {
     
     while (!movebase_client->waitForServer(ros::Duration(5.0))) 
     {
@@ -296,6 +336,11 @@ bool QNode::set_goal_once(QString frame, QRobotPose goal, int idx) {
     tempGoal.target_pose = _goal;
     
     movebase_client->sendGoal(tempGoal);
+
+    // TODO: Publish goal marker information
+    std_msgs::Int32 tmp;
+    tmp.data = target_id;
+    m_robotTargetIdPub.publish(tmp);
     
     movebase_client->waitForResult();
     
@@ -311,16 +356,17 @@ bool QNode::set_goal_once(QString frame, QRobotPose goal, int idx) {
     }
 }
 
-bool QNode::set_multi_goal(QString frame, std::vector<QRobotPose> goals)
+bool QNode::set_multi_goal(QString frame, std::vector<QRobotPose> goals, std::vector<int> target_id)
 {
     // TODO: Update find optimal path ????
     m_goals = goals;
+    m_targetIds = target_id;
     m_goal_frame = frame;
     m_current_goals_id = 0;
 
     bool check = set_goal_once(m_goal_frame, 
                                 m_goals[m_current_goals_id], 
-                                m_current_goals_id);
+                                m_current_goals_id, m_targetIds[m_current_goals_id]);
 
     // for (auto goal : goals)
     // {
@@ -347,7 +393,7 @@ void QNode::sendNextTarget()
         return;
     }
     else{
-        bool check = set_goal_once(m_goal_frame, m_goals[m_current_goals_id], m_current_goals_id);
+        bool check = set_goal_once(m_goal_frame, m_goals[m_current_goals_id], m_current_goals_id,  m_targetIds[m_current_goals_id]);
     }
 }
 

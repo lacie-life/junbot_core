@@ -74,6 +74,8 @@ signals:
   void signalDisconnect();
   void signalKeyPressed(int key);
   void acceptedTarget();
+  void updateControllingStatus(int i);
+  void updateMissionStatus(int i);
 
 private:
   void connections();

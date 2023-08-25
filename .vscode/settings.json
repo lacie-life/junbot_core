@@ -74,6 +74,7 @@
         "variant": "cpp",
         "*.ipp": "cpp",
         "filesystem": "cpp",
+<<<<<<< HEAD
         "qpropertyanimation": "cpp",
         "qstringlistmodel": "cpp",
         "qtimer": "cpp",
@@ -82,6 +83,9 @@
         "qlineedit": "cpp",
         "qgridlayout": "cpp",
         "qtextedit": "cpp"
+=======
+        "locale": "cpp"
+>>>>>>> 1f2f99d9d3e5b590386a0272b0c2346b8bcb4c0e
     },
     "python.autoComplete.extraPaths": [
         "/home/hn/junbot_ws/devel/lib/python3/dist-packages",

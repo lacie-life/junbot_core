@@ -30,7 +30,6 @@ AppModel::AppModel(int argc, char **argv, QObject *parent)
 
     connect(m_handler, &QMqttHandler::MQTT_Received, this, &AppModel::setRobotMess);
 
-
     // m_handler->MQTT_Publish(m_handler->RobotNodes.at(0), jobj);
 
 }
@@ -185,11 +184,11 @@ void AppModel::sensorStatus(int key)
 {
     switch(key)
     {
-    case 8:
+    case 0:
         sensor_state = AppEnums::QRobotSensor::NoSensor;
         checkRobotState();
         break;
-    case 9:
+    case 1:
         sensor_state = AppEnums::QRobotSensor::SensorOk;
         checkRobotState();
         break;
@@ -200,11 +199,11 @@ void AppModel::controllingStatus(int key)
 {
     switch(key)
     {
-    case 10:
+    case 0:
         is_controlling_state = AppEnums::QRobotControlling::NoControlling;
         checkRobotState();
         break;
-    case 11:
+    case 1:
         is_controlling_state = AppEnums::QRobotControlling::HaveControlling;
         checkRobotState();
         break;
@@ -215,28 +214,13 @@ void AppModel::havingMissionStatus(int key)
 {
     switch(key)
     {
-    case 12:
+    case 0:
         is_mission_state = AppEnums::QRobotMisson::NoMission;
         checkRobotState();
         break;
-    case 13:
+    case 1:
         is_mission_state = AppEnums::QRobotMisson::HaveMission;
         checkRobotState();
-        break;
-    }
-}
-
-void AppModel::havingObstacle(int key)
-{
-    switch(key)
-    {
-    case 14:
-        is_obstacle = AppEnums::QObstacle::Human;
-        emit signalObstacle(AppEnums::QObstacle::Human);
-        break;
-    case 15:
-        is_obstacle = AppEnums::QObstacle::Stuff;
-        emit signalObstacle(AppEnums::QObstacle::Stuff);
         break;
     }
 }
@@ -253,6 +237,20 @@ void AppModel::batteryStatus(int battery)
     }
 
     m_currentBattery = battery;
+}
+
+void AppModel::checkObstacle(QString id)
+{
+    if(id == "0")
+    {
+        is_obstacle = AppEnums::QObstacle::Human;
+        emit obstacleUpdateUi(AppEnums::QObstacle::Human);
+    }
+    else 
+    {
+        is_obstacle = AppEnums::QObstacle::Stuff;
+        emit obstacleUpdateUi(AppEnums::QObstacle::Stuff);
+    }
 }
 
 void AppModel::checkRobotState()
@@ -288,6 +286,10 @@ void AppModel::checkRobotState()
     CONSOLE << jSub;
 
     m_handler->MQTT_Publish(m_handler->RobotNodes.at(0), jobj);
+
+    m_rosNode. publishRobotStatus(jString);
+
+    CONSOLE << "Checking"; 
 }
 
 void AppModel::setRobotMess(QString msg)

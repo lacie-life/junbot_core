@@ -24,6 +24,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/Float64.h>
+#include <std_msgs/String.h>
 #include <tf/transform_listener.h>
 #include <diagnostic_msgs/DiagnosticArray.h>
 
@@ -60,9 +61,9 @@ public:
 
     void set_goal(QString frame, double x, double y, double z, double w);
 
-    bool set_goal_once(QString frame, QRobotPose goal, int idx);
+    bool set_goal_once(QString frame, QRobotPose goal, int idx, int targetId);
 
-    bool set_multi_goal(QString frame, std::vector<QRobotPose> goals);
+    bool set_multi_goal(QString frame, std::vector<QRobotPose> goals, std::vector<int> targetId);
 
     void Sub_Image(QString topic, int frame_id);
 
@@ -101,6 +102,8 @@ public slots:
 
     void sendNextTarget();
 
+    void publishRobotStatus(QString state);
+
 signals:
 
     void loggingUpdated();
@@ -133,6 +136,10 @@ signals:
 
     void updateAllGoalDone();
 
+    void obstacleUpdate(QString id);
+
+    void updateSensorStatus(int i);
+
 private:
     int init_argc;
     char **init_argv;
@@ -147,11 +154,14 @@ private:
     ros::Subscriber m_plannerPathSub;
     ros::Subscriber m_compressedImgSub0;
     ros::Subscriber m_compressedImgSub1;
-    ros::Subscriber m_robotStateSub;
+    ros::Subscriber m_robotDiagnosticsSub;
+    ros::Subscriber m_obstaclesSub;
 
     ros::Publisher goal_pub;
     ros::Publisher cmd_pub;
     ros::Publisher m_initialposePub;
+    ros::Publisher m_robotStatePub;
+    ros::Publisher m_robotTargetIdPub;
     image_transport::Publisher m_imageMapPub;
 
     MoveBaseClient *movebase_client;
@@ -171,7 +181,11 @@ private:
     QString map_topic;
     QString initPose_topic;
     QString naviGoal_topic;
+    QString robotDiagnostics_topic;
     QString robotState_topic;
+    QString targetId_topic;
+    QString obstacles_topic;
+
     std::string path_topic;
     QPolygon mapPonits;
     QPolygonF plannerPoints;
@@ -194,6 +208,7 @@ private:
     std::string base_frame, laser_frame, map_frame;
 
     std::vector<QRobotPose> m_goals;
+    std::vector<int> m_targetIds;
     int m_current_goals_id;
     QString m_goal_frame;
 
@@ -220,7 +235,9 @@ private:
 
     void batteryPercentageCallback(const std_msgs::Float32 &message);
 
-    void robotStateCallback(const diagnostic_msgs::DiagnosticArray &message);
+    void robotDiagnosticsCallback(const diagnostic_msgs::DiagnosticArray &message);
+
+    void obstacleCallback(const std_msgs::String &message);
 };
 
 #endif // QNODE_H

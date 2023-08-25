@@ -66,27 +66,6 @@ for(int i = 0; i < m_targetButton.size(); i++){
   });
 }
 
-  // http://wiki.ros.org/navigation/Tutorials/SendingSimpleGoals\
-  // https://automaticaddison.com/how-to-send-goals-to-the-ros-navigation-stack-using-c/
-  // connect(ui->run_btn, &QPushButton::clicked, this, [=]()
-  // {
-  //   for(int i = 0; i < slot_target.size(); i++){
-  //     if(slot_target[i].name() != "+")
-  //     {
-  //       m_model->m_rosNode.set_goal(
-  //         slot_target[i].name(),
-  //         slot_target[i].x_axis().toDouble(),
-  //         slot_target[i].y_axis().toDouble(),
-  //         slot_target[i].z_axis().toDouble(),
-  //         0
-  //       );
-  //       // waiting for goal success
-
-  //       CONSOLE << slot_target[i].name();
-  //     }
-  //   }
-  // });
-
   connect(ui->run_btn, &QPushButton::clicked, this, &RobotInterface::slotRun);
 
   connect(ui->remove_btn, &QPushButton::clicked, this, &RobotInterface::slotRemoveTarget);
@@ -112,11 +91,17 @@ for(int i = 0; i < m_targetButton.size(); i++){
         {
             ui->settingTarget_btn->setVisible(true);
             ui->stackedWidget->setCurrentIndex(1);
+            emit updateControllingStatus(0);
+            emit updateMissionStatus(1);
+
         }
         else 
         {
             ui->settingTarget_btn->setVisible(false);
             ui->stackedWidget->setCurrentIndex(1);
+            emit updateControllingStatus(0);
+            emit updateMissionStatus(1);
+
         }
   });
 
@@ -126,7 +111,13 @@ for(int i = 0; i < m_targetButton.size(); i++){
 
   connect(ui->cancelWidget_btn, &QPushButton::clicked, this, [this] {
     ui->stackedWidget->setCurrentIndex(0);
+    emit updateControllingStatus(1);
+    emit updateMissionStatus(0);
+
   });
+
+  emit updateControllingStatus(1);
+  emit updateMissionStatus(0);
 
 }
 
@@ -138,12 +129,16 @@ RobotInterface::~RobotInterface()
 void RobotInterface::slotRun()
 { 
   std::vector<QRobotPose> goals;
+  std::vector<int> goals_Id;
   for(int i = 0; i < slot_target.size(); i++){
     QRobotPose goal = {slot_target[i].x_axis().toDouble(),
       slot_target[i].y_axis().toDouble(),
       slot_target[i].z_axis().toDouble(),
       0};
     goals.push_back(goal);
+
+    // TODO: add id to goals
+    goals_Id.push_back(i);
   }
 
   CONSOLE << goals.size();
@@ -151,7 +146,7 @@ void RobotInterface::slotRun()
   bool check;
 
   check = true;
-  check = m_model->m_rosNode.set_multi_goal("Frame", goals);
+  check = m_model->m_rosNode.set_multi_goal("Frame", goals, goals_Id);
 
   connect(&m_model->m_rosNode, &QNode::updateGoalReached, this, [=](){
     QMessageBox::information(NULL, "Notification",
@@ -494,8 +489,8 @@ void RobotInterface::connections()
   connect(m_model, &AppModel::signalRobotMissionStatusChanged, this, &RobotInterface::slot_updateRobotMissonStatus);
 
   // Obstacle status
-  connect(this, &RobotInterface::signalKeyPressed, m_model, &AppModel::havingObstacle);
-  connect(m_model, &AppModel::signalObstacle, this, &RobotInterface::slot_obstacle);
+  connect(&m_model->m_rosNode, &QNode::obstacleUpdate, m_model, &AppModel::checkObstacle);
+  connect(m_model, &AppModel::obstacleUpdateUi, this, &RobotInterface::slot_obstacle);
 
   // Robot battery
   connect(&m_model->m_rosNode, &QNode::batteryState, this, &RobotInterface::slot_batteryState);
@@ -504,13 +499,13 @@ void RobotInterface::connections()
   connect(&m_model->m_rosNode, &QNode::updateBatteryPercentage, this, &RobotInterface::slot_batteryPercentage);
 
   // Sensor State
-  connect(this, &RobotInterface::signalKeyPressed, m_model, &AppModel::sensorStatus);
+  connect(&m_model->m_rosNode, &QNode::updateSensorStatus, m_model, &AppModel::sensorStatus);
 
   // Controlling State
-  connect(this, &RobotInterface::signalKeyPressed, m_model, &AppModel::controllingStatus);
+  connect(this, &RobotInterface::updateControllingStatus, m_model, &AppModel::controllingStatus);
 
   // Having Mission State
-  connect(this, &RobotInterface::signalKeyPressed, m_model, &AppModel::havingMissionStatus);
+  connect(this, &RobotInterface::updateMissionStatus, m_model, &AppModel::havingMissionStatus);
 
   //Battery Voltage
   connect(&m_model->m_rosNode, &QNode::updateBatteryVoltage, this, &RobotInterface::slot_batteryVoltage);

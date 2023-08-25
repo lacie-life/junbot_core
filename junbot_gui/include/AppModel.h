@@ -55,8 +55,6 @@ public:
     // Having Mission
     void havingMissionStatus(int key);
 
-    void havingObstacle(int key);
-
     //Mission Status
     void addNewPosition(QPoint point);
     void setMission(QRobotMission& mission);
@@ -70,6 +68,7 @@ public slots:
     void keyRecieved(int key);
     void keyMissonRecieved(int key);
     void setRobotMess(QString msg);
+    void checkObstacle(QString id);
 
 signals:
     void signalSet2DPose();
@@ -85,6 +84,7 @@ signals:
     void signalMisionStarted();
     void signalRobotStateUpdate(AppEnums::QRobotStatus status);
     void signalNeedCharge();
+    void obstacleUpdateUi(AppEnums::QObstacle type);
 
 public:
     // Ros interface

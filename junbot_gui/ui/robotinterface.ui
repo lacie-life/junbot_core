@@ -26,11 +26,11 @@
       <x>490</x>
       <y>110</y>
       <width>771</width>
-      <height>521</height>
+      <height>581</height>
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="page_5">
      <widget class="QPushButton" name="r_right">
@@ -152,15 +152,37 @@
       <property name="geometry">
        <rect>
         <x>240</x>
-        <y>470</y>
-        <width>311</width>
-        <height>21</height>
+        <y>490</y>
+        <width>321</width>
+        <height>35</height>
        </rect>
       </property>
       <property name="font">
        <font>
         <pointsize>11</pointsize>
        </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">.QSlider{
+	color: rgb(136, 138, 133);
+	min-height: 35px;
+	max-height: 25px;
+}
+
+.QSlider::groove::horizontal{
+	border: 1px solid #262626;
+	background: rgb(233, 185, 110);
+	height: 10px;
+	margin: 0 10px;
+}
+
+.QSlider::handle::horizontal{
+	background:  rgb(52, 101, 164);
+	border: 5px solid rgb(115, 210, 22);;
+	width: 20px;
+	height: 20px;
+	margin: -10px -10px;
+}</string>
       </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
@@ -170,7 +192,7 @@
       <property name="geometry">
        <rect>
         <x>240</x>
-        <y>450</y>
+        <y>470</y>
         <width>101</width>
         <height>21</height>
        </rect>
@@ -189,14 +211,36 @@
        <rect>
         <x>240</x>
         <y>420</y>
-        <width>311</width>
-        <height>21</height>
+        <width>321</width>
+        <height>35</height>
        </rect>
       </property>
       <property name="font">
        <font>
         <pointsize>11</pointsize>
        </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">.QSlider{
+	color: rgb(136, 138, 133);
+	min-height: 35px;
+	max-height: 25px;
+}
+
+.QSlider::groove::horizontal{
+	border: 1px solid #262626;
+	background: rgb(233, 185, 110);
+	height: 10px;
+	margin: 0 10px;
+}
+
+.QSlider::handle::horizontal{
+	background:  rgb(52, 101, 164);
+	border: 5px solid rgb(115, 210, 22);;
+	width: 20px;
+	height: 20px;
+	margin: -10px -10px;
+}</string>
       </property>
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
