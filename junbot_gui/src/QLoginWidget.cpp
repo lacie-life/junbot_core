@@ -180,7 +180,8 @@ void QLoginWidget::ConnectMaster() {
     // TODO: update for using input text
     if(robotInterface->connectMaster("http://localhost:11311", "127.0.0.1"))
     {
-        this -> hide();
+        this->hide();
+        CONSOLE << "Something";
         robotInterface->show();
     }
     else 

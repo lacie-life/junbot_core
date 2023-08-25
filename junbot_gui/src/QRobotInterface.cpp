@@ -119,6 +119,7 @@ for(int i = 0; i < m_targetButton.size(); i++){
   emit updateControllingStatus(1);
   emit updateMissionStatus(0);
 
+  CONSOLE << "Robot Interface inited";
 }
 
 RobotInterface::~RobotInterface()
@@ -126,11 +127,15 @@ RobotInterface::~RobotInterface()
   delete ui;
 }
 
+// TODO: Update enable and disable in Mission UI
 void RobotInterface::slotRun()
 { 
   std::vector<QRobotPose> goals;
   std::vector<int> goals_Id;
   for(int i = 0; i < slot_target.size(); i++){
+    
+    if(slot_target[i].name() == "+") continue;
+
     QRobotPose goal = {slot_target[i].x_axis().toDouble(),
       slot_target[i].y_axis().toDouble(),
       slot_target[i].z_axis().toDouble(),
@@ -138,7 +143,7 @@ void RobotInterface::slotRun()
     goals.push_back(goal);
 
     // TODO: add id to goals
-    goals_Id.push_back(i);
+    goals_Id.push_back(i + 1);
   }
 
   CONSOLE << goals.size();
@@ -320,7 +325,8 @@ bool RobotInterface::connectMaster(QString master_ip, QString ros_ip)
   } 
   else 
   {
-      readSettings();
+      // readSettings();
+      CONSOLE << "ROS Master Connected";
       return true;
   }
 }
@@ -345,10 +351,10 @@ void RobotInterface::slot_batteryState(sensor_msgs::BatteryState msg)
 
 void RobotInterface::slot_batteryPercentage(float msg)
 {
+  CONSOLE << msg;
   ui->progressBar->setValue(msg);
-
-  m_model->batteryStatus((int)msg);
 }
+
 void RobotInterface::slot_batteryVoltage(float msg)
 {
   QString message = QString::number(msg, 'f', 2);
@@ -480,38 +486,38 @@ void RobotInterface::connections()
   });
 
   // Robot status
-  connect(this, &RobotInterface::signalKeyPressed, m_model, &AppModel::keyRecieved);
-  connect(m_model, &AppModel::signalRobotStatusChanged, this, &RobotInterface::slot_updateRobotStatus);
-  connect(m_model, &AppModel::signalRobotStateUpdate, this, &RobotInterface::slot_updateRobotStatus);
+  // connect(this, &RobotInterface::signalKeyPressed, m_model, &AppModel::keyRecieved);
+  // connect(m_model, &AppModel::signalRobotStatusChanged, this, &RobotInterface::slot_updateRobotStatus);
+  
+  // connect(m_model, &AppModel::signalRobotStateUpdate, this, &RobotInterface::slot_updateRobotStatus);
 
   // Robot Mission status
-  connect(this, &RobotInterface::signalKeyPressed, m_model, &AppModel::keyMissonRecieved);
+  // connect(this, &RobotInterface::signalKeyPressed, m_model, &AppModel::keyMissonRecieved);
+
   connect(m_model, &AppModel::signalRobotMissionStatusChanged, this, &RobotInterface::slot_updateRobotMissonStatus);
 
   // Obstacle status
-  connect(&m_model->m_rosNode, &QNode::obstacleUpdate, m_model, &AppModel::checkObstacle);
-  connect(m_model, &AppModel::obstacleUpdateUi, this, &RobotInterface::slot_obstacle);
-
-  // Robot battery
-  connect(&m_model->m_rosNode, &QNode::batteryState, this, &RobotInterface::slot_batteryState);
+  // connect(&m_model->m_rosNode, &QNode::obstacleUpdate, m_model, &AppModel::checkObstacle);
+  // connect(m_model, &AppModel::obstacleUpdateUi, this, &RobotInterface::slot_obstacle);
 
   // Battery percentage
-  connect(&m_model->m_rosNode, &QNode::updateBatteryPercentage, this, &RobotInterface::slot_batteryPercentage);
+  // connect(m_model, &AppModel::signalBatteryPercentage, this, &RobotInterface::slot_batteryPercentage);
 
   // Sensor State
   connect(&m_model->m_rosNode, &QNode::updateSensorStatus, m_model, &AppModel::sensorStatus);
 
   // Controlling State
-  connect(this, &RobotInterface::updateControllingStatus, m_model, &AppModel::controllingStatus);
+  // connect(this, &RobotInterface::updateControllingStatus, m_model, &AppModel::controllingStatus);
 
   // Having Mission State
-  connect(this, &RobotInterface::updateMissionStatus, m_model, &AppModel::havingMissionStatus);
+  // connect(this, &RobotInterface::updateMissionStatus, m_model, &AppModel::havingMissionStatus);
 
   //Battery Voltage
-  connect(&m_model->m_rosNode, &QNode::updateBatteryVoltage, this, &RobotInterface::slot_batteryVoltage);
+  // connect(&m_model->m_rosNode, &QNode::updateBatteryVoltage, this, &RobotInterface::slot_batteryVoltage);
+
   connect(m_model, &AppModel::signalNeedCharge, this, [=](){
     QMessageBox::information(this, "Notification", "Battery Low. Need Charge.", QMessageBox::Ok);
-}); 
+  }); 
 
   // Bind the speed control buttons
   connect(ui->back, SIGNAL(clicked()), this, SLOT(slot_cmd_control()));
@@ -520,117 +526,6 @@ void RobotInterface::connections()
   connect(ui->forward, SIGNAL(clicked()), this, SLOT(slot_cmd_control()));
   connect(ui->r_right, SIGNAL(clicked()), this, SLOT(slot_cmd_control()));
 
-}
-
-void RobotInterface::display_rviz()
-{
-  QSettings settings("junbot_gui", "Displays");
-  bool Grid_enable = settings.value("Grid/enable", bool(true)).toBool();
-  double Grid_count = settings.value("Grid/count", double(20)).toDouble();
-
-  bool Map_enable = settings.value("Map/enable", bool(true)).toBool();
-  QString Map_topic = settings.value("Map/topic", QString("/map")).toString();
-  double Map_alpha = settings.value("Map/alpha", double(0.7)).toDouble();
-  QString Map_scheme = settings.value("Map/scheme", QString("map")).toString();
-  bool Laser_enable = settings.value("Laser/enable", bool(true)).toBool();
-  QString Laser_topic =
-      settings.value("Laser/topic", QString("/scan")).toString();
-  bool Polygon_enable = settings.value("Polygon/enable", bool(true)).toBool();
-  QString Polygon_topic =
-      settings
-      .value("Polygon/topic", QString("/move_base/local_costmap/footprint"))
-      .toString();
-
-  bool RobotModel_enable =
-      settings.value("RobotModel/enable", bool(true)).toBool();
-  bool Navigation_enable =
-      settings.value("Navigation/enable", bool(true)).toBool();
-  QString GlobalMap_topic =
-      settings
-      .value("Navigation/GlobalMap/topic",
-             QString("/move_base/global_costmap/costmap"))
-      .toString();
-  QString GlobalMap_paln = settings
-      .value("Navigation/GlobalPlan/topic",
-             QString("/move_base/NavfnROS/plan"))
-      .toString();
-  QString LocalMap_topic =
-      settings
-      .value("Navigation/LocalMap/topic",
-             QString("/move_base/local_costmap/costmap"))
-      .toString();
-  QString LocalMap_plan =
-      settings
-      .value("Navigation/LocalPlan/topic",
-             QString("/move_base/DWAPlannerROS/local_plan"))
-      .toString();
-}
-
-void RobotInterface::keyPressEvent(QKeyEvent *event)
-{
-    qDebug() << event->key();
-
-    if(event->key() == Qt::Key_A)
-    {
-        emit signalKeyPressed(1);
-    }
-        if(event->key() == Qt::Key_S)
-    {
-        emit signalKeyPressed(2);
-    }
-        if(event->key() == Qt::Key_D)
-    {
-        emit signalKeyPressed(3);
-    }
-        if(event->key() == Qt::Key_Z)
-    {
-        emit signalKeyPressed(4);
-    }
-        if(event->key() == Qt::Key_X)
-    {
-        emit signalKeyPressed(5);
-    }
-
-        if(event->key() == Qt::Key_C)
-    {
-        emit signalKeyPressed(6);
-    }
-        if(event->key() == Qt::Key_V)
-    {
-        emit signalKeyPressed(7);
-    }
-        if(event->key() == Qt::Key_O)
-    {
-        emit signalKeyPressed(8);
-    }
-        if(event->key() == Qt::Key_P)
-    {
-        emit signalKeyPressed(9);
-    }
-        if(event->key() == Qt::Key_K)
-    {
-        emit signalKeyPressed(10);
-    }
-        if(event->key() == Qt::Key_L)
-    {
-        emit signalKeyPressed(11);
-    }
-        if(event->key() == Qt::Key_N)
-    {
-        emit signalKeyPressed(12);
-    }
-        if(event->key() == Qt::Key_M)
-    {
-        emit signalKeyPressed(13);
-    }
-      if(event->key() == Qt::Key_H)
-    {
-        emit signalKeyPressed(14);
-    }
-      if(event->key() == Qt::Key_G)
-    {
-        emit signalKeyPressed(15);
-    }
 }
 
 void RobotInterface::slot_settingTarget()

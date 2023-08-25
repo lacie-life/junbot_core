@@ -3,10 +3,18 @@
 
 #include <QObject>
 #include <QMutex>
+#include <QCoreApplication>
+
 #include <memory>
 
 #include "QUserDAO.h"
 #include "QDeliveryTargetDAO.h"
+
+#ifndef BUILD_DIR
+
+#define BUILD_DIR QCoreApplication::applicationDirPath()
+
+#endif
 
 class QSqlDatabase;
 class QSqlQuery;

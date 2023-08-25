@@ -12,7 +12,7 @@ AppModel::AppModel(int argc, char **argv, QObject *parent)
     m_currentUser = new QUser("defaut", "default", "default");
     m_targets = m_dbManager.deliveryTargetDao.targets();
 
-    readSettings();
+    // readSettings();
 
     m_handler = QMqttHandler::getInstance();
 
@@ -32,6 +32,7 @@ AppModel::AppModel(int argc, char **argv, QObject *parent)
 
     // m_handler->MQTT_Publish(m_handler->RobotNodes.at(0), jobj);
 
+    connect(&m_rosNode, &QNode::updateBatteryPercentage,  this, &AppModel::batteryStatus);
 }
 
 AppModel::~AppModel()
@@ -88,9 +89,10 @@ bool AppModel::connectMaster(QString master_ip, QString ros_ip)
         m_handler->RobotNodes.append(node);
 
         m_handler->connectMQTT("localhost", 1883);
-        
+
         // m_handler->MQTT_Subcrib(m_handler->RobotNodes.at(0));
     }
+
     return check;
 }
 
@@ -225,9 +227,9 @@ void AppModel::havingMissionStatus(int key)
     }
 }
 
-void AppModel::batteryStatus(int battery)
+void AppModel::batteryStatus(float battery)
 {
-    if(battery > 50){
+    if(battery > 50.0){
         battery_state = AppEnums::QRobotBattery::Normal;
         checkRobotState();
     }else{
@@ -235,8 +237,9 @@ void AppModel::batteryStatus(int battery)
         checkRobotState();
         emit signalNeedCharge();
     }
-
     m_currentBattery = battery;
+
+    emit signalBatteryPercentage(m_currentBattery);
 }
 
 void AppModel::checkObstacle(QString id)
@@ -255,6 +258,7 @@ void AppModel::checkObstacle(QString id)
 
 void AppModel::checkRobotState()
 {   
+    m_mutex.lock();
     if(AppEnums::QRobotBattery::Normal && AppEnums::QRobotMisson::NoMission 
         && AppEnums::QRobotControlling::NoControlling && AppEnums::QRobotSensor::SensorOk)
     {
@@ -287,9 +291,10 @@ void AppModel::checkRobotState()
 
     m_handler->MQTT_Publish(m_handler->RobotNodes.at(0), jobj);
 
-    m_rosNode. publishRobotStatus(jString);
+    m_rosNode.publishRobotStatus(jString);
 
     CONSOLE << "Checking"; 
+    m_mutex.unlock();
 }
 
 void AppModel::setRobotMess(QString msg)

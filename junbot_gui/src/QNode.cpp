@@ -21,6 +21,7 @@ QNode::QNode(int argc, char **argv)
     robotState_topic = "robot_status";
     targetId_topic = "robot_target_id";
     obstacles_topic = "object_detected";
+    mission_topic = "mission_started";
     
     initPose_topic =
             topic_setting.value("topic/topic_init_pose", "move_base_simple/goal")
@@ -45,7 +46,6 @@ QNode::QNode(int argc, char **argv)
             settings.value("GlobalPlan/topic", "/movebase").toString().toStdString();
 
     // Register MetaType for Qt signal and slot
-    qRegisterMetaType<sensor_msgs::BatteryState>("sensor_msgs::BatteryState");
     qRegisterMetaType<QRobotPose>("QRobotPose");
     qRegisterMetaType<AppEnums::QRobotStatus>("AppEnums::QRobotStatus");
     qRegisterMetaType<QVector<int>>("QVector<int>");
@@ -87,6 +87,7 @@ bool QNode::init(const std::string &master_url, const std::string &host_url) {
     // scope.
     SubAndPubTopic();
     start();
+    CONSOLE << "QNode Init done";
     return true;
 }
 
@@ -96,9 +97,6 @@ void QNode::SubAndPubTopic() {
     // Add your ros communications here.
     cmdVel_sub = n.subscribe<nav_msgs::Odometry>(odom_topic.toStdString(), 200,
                                                  &QNode::speedCallback, this);
-
-    battery_sub = n.subscribe(batteryState_topic.toStdString(), 1000,
-                              &QNode::batteryCallback, this);
 
     m_batteryVoltageSub = n.subscribe(batteryVoltage_topic.toStdString(), 1000,
                                       &QNode::batteryVoltageCallback, this);
@@ -117,6 +115,8 @@ void QNode::SubAndPubTopic() {
     goal_pub = n.advertise<move_base_msgs::MoveBaseActionGoal>(
             "/move_base/goal", 1000);
 
+    m_MissionStart = n.advertise<std_msgs::String>(mission_topic.toStdString(), 10);
+
     cmd_pub = n.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
 
     m_laserSub = n.subscribe(laser_topic.toStdString(), 1000,
@@ -130,7 +130,7 @@ void QNode::SubAndPubTopic() {
 
     image_transport::ImageTransport it(n);
 
-    m_imageMapPub = it.advertise("image/map", 10);
+    // m_imageMapPub = it.advertise("image/map", 10);
 
     m_robotStatePub = n.advertise<std_msgs::String>(robotState_topic.toStdString(), 10);
 
@@ -248,33 +248,33 @@ void QNode::publishRobotStatus(QString state)
     m_robotStatePub.publish(msg);
 }
 
-void QNode::batteryCallback(const sensor_msgs::BatteryState &message) {
-    emit batteryState(message);
-}
-
 void QNode::batteryVoltageCallback(const std_msgs::Float32 &message) {
-    emit updateBatteryVoltage(message.data);
+    // float tmp = (float)message.data;
+    // CONSOLE << tmp;
+    // emit updateBatteryVoltage(tmp);
 }
 
 void QNode::batteryPercentageCallback(const std_msgs::Float32 &message) {
-    emit updateBatteryPercentage(message.data);
+    // float tmp = (float)message.data;
+    // CONSOLE << tmp;
+    // emit updateBatteryPercentage(tmp);
 }
 
 void QNode::robotDiagnosticsCallback(const diagnostic_msgs::DiagnosticArray &message_holder) {
 
-    CONSOLE << "robot state callback";
+    // CONSOLE << "robot state callback";
     
-    for (int i = 0; i < message_holder.status.size(); i++) {
-        if (message_holder.status[i].name == "Teensy") {
-            CONSOLE << "Teesy : " << message_holder.status[i].message.c_str();
-        }
-        if(message_holder.status[i].name == "Lidar") {
-            CONSOLE << "Lidar : " << message_holder.status[i].message.c_str();
-        }
-        if(message_holder.status[i].name == "Camera") {
-            CONSOLE << "Camera : " << message_holder.status[i].message.c_str();
-        }
-    }
+    // for (int i = 0; i < message_holder.status.size(); i++) {
+    //     if (message_holder.status[i].name == "Teensy") {
+    //         CONSOLE << "Teesy : " << message_holder.status[i].message.c_str();
+    //     }
+    //     if(message_holder.status[i].name == "Lidar") {
+    //         CONSOLE << "Lidar : " << message_holder.status[i].message.c_str();
+    //     }
+    //     if(message_holder.status[i].name == "Camera") {
+    //         CONSOLE << "Camera : " << message_holder.status[i].message.c_str();
+    //     }
+    // }
     // TODO: Update status to UI
     emit updateSensorStatus(1);
 }
@@ -334,13 +334,15 @@ bool QNode::set_goal_once(QString frame, QRobotPose goal, int idx, int target_id
 
     move_base_msgs::MoveBaseGoal tempGoal;
     tempGoal.target_pose = _goal;
-    
-    movebase_client->sendGoal(tempGoal);
 
     // TODO: Publish goal marker information
     std_msgs::Int32 tmp;
     tmp.data = target_id;
     m_robotTargetIdPub.publish(tmp);
+
+    movebase_client->cancelAllGoals();
+
+    movebase_client->sendGoal(tempGoal);
     
     movebase_client->waitForResult();
     

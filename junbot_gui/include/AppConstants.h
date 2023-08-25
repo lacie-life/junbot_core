@@ -12,6 +12,8 @@
 
 #define CONFIG_PATH "./data/config.yaml"
 
+extern QString db_path;
+
 class AppEnums : public QObject {
 Q_OBJECT
     Q_ENUMS(QRobotStatus)

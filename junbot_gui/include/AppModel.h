@@ -8,6 +8,7 @@
 #include <QDateTime>
 
 #include <memory.h>
+#include <mutex>
 
 #include "AppConstants.h"
 #include "QDatabaseManager.h"
@@ -43,9 +44,6 @@ public:
     // ROS Connection
     bool connectMaster(QString master_ip, QString ros_ip);
 
-    // Battery Status
-    void batteryStatus(int battery);
-
     // Robot Status
     void sensorStatus(int key);
 
@@ -70,6 +68,9 @@ public slots:
     void setRobotMess(QString msg);
     void checkObstacle(QString id);
 
+    // Battery Status
+    void batteryStatus(float battery);
+
 signals:
     void signalSet2DPose();
     void signalSet2DGoal();
@@ -85,6 +86,7 @@ signals:
     void signalRobotStateUpdate(AppEnums::QRobotStatus status);
     void signalNeedCharge();
     void obstacleUpdateUi(AppEnums::QObstacle type);
+    void signalBatteryPercentage(float bt);
 
 public:
     // Ros interface
@@ -97,7 +99,7 @@ private:
 
     QDateTime m_dateTime;
 
-    int m_currentBattery;
+    float m_currentBattery = 0.0;
 
     QUser* m_currentUser;
     QDatabaseManager& m_dbManager;
@@ -115,10 +117,12 @@ private:
     AppEnums::QRobotBattery battery_state = AppEnums::QRobotBattery::Nothing;
     AppEnums::QRobotSensor sensor_state = AppEnums::QRobotSensor::NoSensor;
     AppEnums::QRobotControlling is_controlling_state = AppEnums::QRobotControlling::NoControlling;
-    AppEnums::QRobotMisson is_mission_state = AppEnums::QRobotMisson::NoMission;
+    AppEnums::QRobotMisson is_mission_state = AppEnums::QRobotMisson::HaveMission;
     AppEnums::QObstacle is_obstacle = AppEnums::QObstacle::NoObstacle;
 
     AppEnums::QRobotStatus m_robot_status = AppEnums::QRobotStatus::None;
+
+    std::mutex m_mutex;
 };
 
 #endif // APPMODEL_H

@@ -112,8 +112,6 @@ signals:
 
     void updateRobotSpeed(QRobotSpeed speed);
 
-    void batteryState(sensor_msgs::BatteryState);
-
     void Master_shutdown();
 
     void Show_image(int, QImage);
@@ -128,9 +126,9 @@ signals:
 
     void updateRobotStatus(AppEnums::QRobotStatus status);
 
-    void updateBatteryVoltage(double voltage);
+    void updateBatteryVoltage(float voltage);
 
-    void updateBatteryPercentage(double percentage);
+    void updateBatteryPercentage(float percentage);
 
     void updateGoalReached(int i);
 
@@ -162,6 +160,7 @@ private:
     ros::Publisher m_initialposePub;
     ros::Publisher m_robotStatePub;
     ros::Publisher m_robotTargetIdPub;
+    ros::Publisher m_MissionStart;
     image_transport::Publisher m_imageMapPub;
 
     MoveBaseClient *movebase_client;
@@ -185,6 +184,7 @@ private:
     QString robotState_topic;
     QString targetId_topic;
     QString obstacles_topic;
+    QString mission_topic;
 
     std::string path_topic;
     QPolygon mapPonits;
@@ -214,8 +214,6 @@ private:
 
 private:
     void speedCallback(const nav_msgs::Odometry::ConstPtr &msg);
-
-    void batteryCallback(const sensor_msgs::BatteryState &message);
 
     void imageCallback0(const sensor_msgs::CompressedImageConstPtr &msg);
 

@@ -76,16 +76,16 @@ signals:
   void acceptedTarget();
   void updateControllingStatus(int i);
   void updateMissionStatus(int i);
+  void checkBattery(float bt);
 
 private:
   void connections();
-  void display_rviz();
   void removeTarget(int i);
 
   void updateTagerSlotUI();
 
 protected:
-  void keyPressEvent(QKeyEvent *event) override;
+  // void keyPressEvent(QKeyEvent *event) override;
 
 private:
   Ui::RobotInterface *ui;
