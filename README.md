@@ -9,7 +9,9 @@ Main features:
 - [x] Relocalization (Using T265 and AMCL/Odometry fusion/junbot_relocalization)
 - [x] Planner's costmap_2d parameter custom (Using junbot_planner/planner_reconfigure)
 - [x] User interface (Using junbot_gui and junbot_mobile_app)
-- [x] Object mapping (Using junbot_object_mapping)
+- [x] Object mapping (Using object_mapping)
+- [x] Object map layer (Using costmap_objects_layer)
+- [x] Semantic Planner (Using junbot_adaptive)
 - [ ] SemanticMapping
 
 # Overview
