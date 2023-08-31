@@ -147,26 +147,54 @@ cv::Mat scale_mask(cv::Mat mask, cv::Mat img) {
     return res;
 }
 
+std::vector<cv::Mat> get_mask(cv::Mat& img, std::vector<Detection>& dets, std::vector<cv::Mat>& masks)
+{
+    if((dets.size() == 0) || (dets.size() != masks.size()))  
+    {
+        std::cout << "No detection" << std::endl;
+        std::cout << dets.size() << " " << masks.size() << std::endl;
+        return std::vector<cv::Mat>();
+    }
+
+    std::vector<cv::Mat> tmp_masks;
+
+    for(size_t i = 0; i < dets.size(); i++)
+    {
+        cv::Mat img_mask = scale_mask(masks[i], img);
+        tmp_masks.push_back(img_mask);
+    }
+    return tmp_masks;
+}
+
+
 void draw_mask_bbox(cv::Mat &img, std::vector<Detection> &dets, std::vector<cv::Mat> &masks) {
     static std::vector<uint32_t> colors = {0xFF3838, 0xFF9D97, 0xFF701F, 0xFFB21D, 0xCFD231, 0x48F90A,
                                            0x92CC17, 0x3DDB86, 0x1A9334, 0x00D4BB, 0x2C99A8, 0x00C2FF,
                                            0x344593, 0x6473FF, 0x0018EC, 0x8438FF, 0x520085, 0xCB38FF,
                                            0xFF95C8, 0xFF37C7};
+
+    if((dets.size() == 0) || (dets.size() != masks.size()))  
+    {
+        std::cout << "No detection" << std::endl;
+        return;
+    }
+
     for (size_t i = 0; i < dets.size(); i++) {
         cv::Mat img_mask = scale_mask(masks[i], img);
         auto color = colors[(int) dets[i].class_id % colors.size()];
         auto bgr = cv::Scalar(color & 0xFF, color >> 8 & 0xFF, color >> 16 & 0xFF);
 
         cv::Rect r = get_rect(img, dets[i].bbox);
-        for (int x = r.x; x < r.x + r.width; x++) {
-            for (int y = r.y; y < r.y + r.height; y++) {
-                float val = img_mask.at<float>(y, x);
-                if (val <= 0.5) continue;
-                img.at<cv::Vec3b>(y, x)[0] = img.at<cv::Vec3b>(y, x)[0] / 2 + bgr[0] / 2;
-                img.at<cv::Vec3b>(y, x)[1] = img.at<cv::Vec3b>(y, x)[1] / 2 + bgr[1] / 2;
-                img.at<cv::Vec3b>(y, x)[2] = img.at<cv::Vec3b>(y, x)[2] / 2 + bgr[2] / 2;
-            }
-        }
+        
+        // for (int x = r.x; x < r.x + r.width; x++) {
+        //     for (int y = r.y; y < r.y + r.height; y++) {
+        //         float val = img_mask.at<float>(y, x);
+        //         if (val <= 0.5) continue;
+        //         img.at<cv::Vec3b>(y, x)[0] = img.at<cv::Vec3b>(y, x)[0] / 2 + bgr[0] / 2;
+        //         img.at<cv::Vec3b>(y, x)[1] = img.at<cv::Vec3b>(y, x)[1] / 2 + bgr[1] / 2;
+        //         img.at<cv::Vec3b>(y, x)[2] = img.at<cv::Vec3b>(y, x)[2] / 2 + bgr[2] / 2;
+        //     }
+        // }
 
         cv::rectangle(img, r, bgr, 2);
     }

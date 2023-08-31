@@ -90,7 +90,7 @@ int main( int argc, char** argv ) try
     using namespace cv;
     const auto window_name = "Display Image";
     const auto window_name1 = "Display Image1";
-    std::string model= "/home/junbot/junbot_ws/src/JunBot/junbot_tools/junbot_camera/Model/yolov5s_orin.engine"; // orin
+    std::string model= "/home/junbot/junbot_ws/src/JunBot/junbot_tools/junbot_camera/Model/yolov5s_seg.engine"; // orin
     // std::string model= "/home/hn/junbot_ws/src/JunBot/junbot_tools/junbot_camera/Model/yolov5s_orin.engine"; //HN
 
     namedWindow(window_name, 1);

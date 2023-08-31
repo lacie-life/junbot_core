@@ -6,6 +6,7 @@
 #include <QKeyEvent>
 #include <QQueue>
 #include <QDateTime>
+#include <QTimer>
 
 #include <memory.h>
 #include <mutex>
@@ -60,8 +61,6 @@ public:
     void stopMission();
     void pauseMission();
 
-    void checkRobotState();
-
 public slots:
     void keyRecieved(int key);
     void keyMissonRecieved(int key);
@@ -70,6 +69,7 @@ public slots:
 
     // Battery Status
     void batteryStatus(float battery);
+    void checkRobotState();
 
 signals:
     void signalSet2DPose();
@@ -98,6 +98,7 @@ private:
     QString m_hostUrl;
 
     QDateTime m_dateTime;
+    QTimer m_timer;
 
     float m_currentBattery = 0.0;
 
@@ -122,7 +123,7 @@ private:
 
     AppEnums::QRobotStatus m_robot_status = AppEnums::QRobotStatus::None;
 
-    std::mutex m_mutex;
+    static std::mutex m_mutex;
 };
 
 #endif // APPMODEL_H

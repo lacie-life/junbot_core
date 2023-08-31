@@ -113,6 +113,7 @@ for(int i = 0; i < m_targetButton.size(); i++){
     ui->stackedWidget->setCurrentIndex(0);
     emit updateControllingStatus(1);
     emit updateMissionStatus(0);
+    m_model->m_rosNode.cancel_goal();
 
   });
 
@@ -507,10 +508,10 @@ void RobotInterface::connections()
   connect(&m_model->m_rosNode, &QNode::updateSensorStatus, m_model, &AppModel::sensorStatus);
 
   // Controlling State
-  // connect(this, &RobotInterface::updateControllingStatus, m_model, &AppModel::controllingStatus);
+  connect(this, &RobotInterface::updateControllingStatus, m_model, &AppModel::controllingStatus);
 
   // Having Mission State
-  // connect(this, &RobotInterface::updateMissionStatus, m_model, &AppModel::havingMissionStatus);
+  connect(this, &RobotInterface::updateMissionStatus, m_model, &AppModel::havingMissionStatus);
 
   //Battery Voltage
   // connect(&m_model->m_rosNode, &QNode::updateBatteryVoltage, this, &RobotInterface::slot_batteryVoltage);

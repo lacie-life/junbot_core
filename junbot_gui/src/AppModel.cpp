@@ -1,6 +1,8 @@
 #include "AppModel.h"
 #include <QWidget>
 
+std::mutex AppModel::m_mutex;
+
 AppModel::AppModel(int argc, char **argv, QObject *parent)
     : QObject(parent)
     , m_rosNode(argc, argv)
@@ -92,6 +94,10 @@ bool AppModel::connectMaster(QString master_ip, QString ros_ip)
 
         // m_handler->MQTT_Subcrib(m_handler->RobotNodes.at(0));
     }
+
+    m_timer.setInterval(1000);
+    connect(&m_timer, &QTimer::timeout, this, &AppModel::checkRobotState);
+    m_timer.start();
 
     return check;
 }
@@ -188,11 +194,11 @@ void AppModel::sensorStatus(int key)
     {
     case 0:
         sensor_state = AppEnums::QRobotSensor::NoSensor;
-        checkRobotState();
+        // checkRobotState();
         break;
     case 1:
         sensor_state = AppEnums::QRobotSensor::SensorOk;
-        checkRobotState();
+        // checkRobotState();
         break;
     }
 }
@@ -203,11 +209,11 @@ void AppModel::controllingStatus(int key)
     {
     case 0:
         is_controlling_state = AppEnums::QRobotControlling::NoControlling;
-        checkRobotState();
+        // checkRobotState();
         break;
     case 1:
         is_controlling_state = AppEnums::QRobotControlling::HaveControlling;
-        checkRobotState();
+        // checkRobotState();
         break;
     }
 }
@@ -218,11 +224,11 @@ void AppModel::havingMissionStatus(int key)
     {
     case 0:
         is_mission_state = AppEnums::QRobotMisson::NoMission;
-        checkRobotState();
+        // checkRobotState();
         break;
     case 1:
         is_mission_state = AppEnums::QRobotMisson::HaveMission;
-        checkRobotState();
+        // checkRobotState();
         break;
     }
 }
@@ -231,11 +237,11 @@ void AppModel::batteryStatus(float battery)
 {
     if(battery > 50.0){
         battery_state = AppEnums::QRobotBattery::Normal;
-        checkRobotState();
+        // checkRobotState();
     }else{
         battery_state = AppEnums::QRobotBattery::NeedCharge;
-        checkRobotState();
-        emit signalNeedCharge();
+        // checkRobotState();
+        // emit signalNeedCharge();
     }
     m_currentBattery = battery;
 

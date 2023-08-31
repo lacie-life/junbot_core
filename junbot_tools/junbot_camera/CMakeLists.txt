@@ -22,6 +22,10 @@ find_package(catkin REQUIRED COMPONENTS
         rospy
         std_msgs
         nav_msgs
+        cv_bridge
+        image_transport
+        tf
+        sensor_msgs
         )
 
 catkin_package(
@@ -104,12 +108,14 @@ target_link_libraries(yolov5-detector
                         ${OpenCV_LIBRARIES}
                         ${CUDA_CUDA_LIBRARY}
                         ${CUDA_CUDART_LIBRARY}
+                        -lopencv_dnn
         )
 
 add_executable(${PROJECT_NAME}_segmentation test/segmentation_node.cpp)
 add_executable(${PROJECT_NAME}_rgp2depth test/bbRGB2Depth.cpp)
-add_executable(${PROJECT_NAME}_cancel test/cancel_mission.cpp)
+add_executable(${PROJECT_NAME}_mission_control test/cancel_mission.cpp)
 add_executable(${PROJECT_NAME}_detector test/detector_test.cpp)
+add_executable(${PROJECT_NAME}_marker test/marker_detection.cpp)
 
 target_link_libraries(${PROJECT_NAME}_segmentation
    ${realsense2_LIBRARY}
@@ -127,7 +133,7 @@ target_link_libraries(${PROJECT_NAME}_rgp2depth
    yolov5-detector
 )
 
-target_link_libraries(${PROJECT_NAME}_cancel
+target_link_libraries(${PROJECT_NAME}_mission_control
    ${realsense2_LIBRARY}
    ${Boost_LIBRARIES}
    ${catkin_LIBRARIES}
@@ -143,11 +149,17 @@ target_link_libraries(${PROJECT_NAME}_detector
         yolov5-detector
 )
 
+target_link_libraries(${PROJECT_NAME}_marker
+        ${realsense2_LIBRARY}
+        ${OpenCV_LIBRARIES}
+        ${catkin_LIBRARIES})
+
+
 install(TARGETS ${PROJECT_NAME}_segmentation
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-install(TARGETS ${PROJECT_NAME}_cancel
+install(TARGETS ${PROJECT_NAME}_mission_control
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
@@ -160,12 +172,24 @@ install(TARGETS ${PROJECT_NAME}_rgp2depth
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+install(TARGETS ${PROJECT_NAME}_marker
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 catkin_install_python(PROGRAMS scripts/set_cams_transforms.py
                       DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 # Install launch files
 install(DIRECTORY launch/
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
-    )
+)
+
+install(DIRECTORY config/
+    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config
+)
+
+
 
 

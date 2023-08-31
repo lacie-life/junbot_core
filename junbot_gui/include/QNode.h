@@ -154,6 +154,7 @@ private:
     ros::Subscriber m_compressedImgSub1;
     ros::Subscriber m_robotDiagnosticsSub;
     ros::Subscriber m_obstaclesSub;
+    ros::Subscriber m_targetReachedSub;
 
     ros::Publisher goal_pub;
     ros::Publisher cmd_pub;
@@ -185,6 +186,7 @@ private:
     QString targetId_topic;
     QString obstacles_topic;
     QString mission_topic;
+    QString targetReach_topic;
 
     std::string path_topic;
     QPolygon mapPonits;
@@ -236,6 +238,8 @@ private:
     void robotDiagnosticsCallback(const diagnostic_msgs::DiagnosticArray &message);
 
     void obstacleCallback(const std_msgs::String &message);
+
+    void targetArrivedCallback(const std_msgs::String &message);
 };
 
 #endif // QNODE_H

@@ -13,5 +13,6 @@ struct alignas(float) Detection {
   float conf;  // bbox_conf * cls_conf
   float class_id;
   float mask[32];
+  float distance;
 };
 

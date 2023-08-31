@@ -22,6 +22,7 @@ QNode::QNode(int argc, char **argv)
     targetId_topic = "robot_target_id";
     obstacles_topic = "object_detected";
     mission_topic = "mission_started";
+    targetReach_topic = "goal_arrived";
     
     initPose_topic =
             topic_setting.value("topic/topic_init_pose", "move_base_simple/goal")
@@ -110,6 +111,9 @@ void QNode::SubAndPubTopic() {
     m_obstaclesSub = n.subscribe(obstacles_topic.toStdString(), 1000,
                                          &QNode::obstacleCallback, this);
 
+    m_targetReachedSub = n.subscribe(targetReach_topic.toStdString(), 1000,
+                                         &QNode::targetArrivedCallback, this);                                      
+
     map_sub = n.subscribe("map", 1000, &QNode::mapCallback, this);
 
     goal_pub = n.advertise<move_base_msgs::MoveBaseActionGoal>(
@@ -134,7 +138,7 @@ void QNode::SubAndPubTopic() {
 
     m_robotStatePub = n.advertise<std_msgs::String>(robotState_topic.toStdString(), 10);
 
-    m_robotTargetIdPub = n.advertise<std_msgs::Int32>(targetId_topic.toStdString(), 10);
+    m_robotTargetIdPub = n.advertise<std_msgs::String>(targetId_topic.toStdString(), 10);
 
     m_robotPoselistener = new tf::TransformListener;
     m_Laserlistener = new tf::TransformListener;
@@ -249,15 +253,15 @@ void QNode::publishRobotStatus(QString state)
 }
 
 void QNode::batteryVoltageCallback(const std_msgs::Float32 &message) {
-    // float tmp = (float)message.data;
-    // CONSOLE << tmp;
-    // emit updateBatteryVoltage(tmp);
+    float tmp = (float)message.data;
+    CONSOLE << tmp;
+    emit updateBatteryVoltage(tmp);
 }
 
 void QNode::batteryPercentageCallback(const std_msgs::Float32 &message) {
-    // float tmp = (float)message.data;
-    // CONSOLE << tmp;
-    // emit updateBatteryPercentage(tmp);
+    float tmp = (float)message.data;
+    CONSOLE << tmp;
+    emit updateBatteryPercentage(tmp);
 }
 
 void QNode::robotDiagnosticsCallback(const diagnostic_msgs::DiagnosticArray &message_holder) {
@@ -336,26 +340,51 @@ bool QNode::set_goal_once(QString frame, QRobotPose goal, int idx, int target_id
     tempGoal.target_pose = _goal;
 
     // TODO: Publish goal marker information
-    std_msgs::Int32 tmp;
-    tmp.data = target_id;
-    m_robotTargetIdPub.publish(tmp);
+    // std_msgs::Int32 tmp;
+    // tmp.data = target_id;
+    // m_robotTargetIdPub.publish(tmp);
+
+    // { id: ,
+    //   target_x: ,
+    //   target_y: ,
+    //   target_w: ,
+    //   ref_x: ,
+    //   ref_y: ,
+    //   ref_w: ,
+    //}
+
+    QJsonObject jobj;
+    
+    jobj["id"] = target_id;
+    jobj["target_x"] = goal.x;
+    jobj["target_y"] = goal.y;
+    jobj["target_w"] = goal.theta;
+    jobj["ref_x"] = goal.x;
+    jobj["ref_y"] = goal.y;
+    jobj["ref_w"] = goal.theta;
+
+    QString jString = QJsonDocument(jobj).toJson(QJsonDocument::Compact);
+
+    std_msgs::String tmp_msg;
+    tmp_msg.data = jString.toStdString();
+    m_robotTargetIdPub.publish(tmp_msg);
 
     movebase_client->cancelAllGoals();
-
     movebase_client->sendGoal(tempGoal);
+
+    // TODO: Crash here ...
+    // movebase_client->waitForResult();
     
-    movebase_client->waitForResult();
-    
-    if(movebase_client->getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
-    {
-        ROS_INFO("Goal %d reached", i);
-        emit updateGoalReached(i);
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    // if(movebase_client->getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+    // {
+    //     ROS_INFO("Goal %d reached", i);
+    //     emit updateGoalReached(i);
+    //     return true;
+    // }
+    // else
+    // {
+    //     return false;
+    // }
 }
 
 bool QNode::set_multi_goal(QString frame, std::vector<QRobotPose> goals, std::vector<int> target_id)
@@ -397,6 +426,28 @@ void QNode::sendNextTarget()
     else{
         bool check = set_goal_once(m_goal_frame, m_goals[m_current_goals_id], m_current_goals_id,  m_targetIds[m_current_goals_id]);
     }
+}
+
+void QNode::targetArrivedCallback(const std_msgs::String &message)
+{
+    CONSOLE << "target arrived callback";
+    CONSOLE << message.data.c_str();
+
+    QString tmp = QString::fromStdString(message.data.c_str());
+
+    QJsonDocument json_tmp = QJsonDocument::fromJson(tmp.toUtf8());
+
+    QString tmp_state = json_tmp["status"].toString();
+    QString tmp_id = json_tmp["id"].toString();
+
+    if(tmp_state == "done")
+    {
+        emit updateGoalReached(m_current_goals_id);
+    }
+    else
+    {
+        CONSOLE << "Target " << tmp_id << "failed"; 
+    }  
 }
 
 void QNode::cancel_goal() {

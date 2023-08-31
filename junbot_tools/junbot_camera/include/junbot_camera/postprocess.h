@@ -17,4 +17,6 @@ void draw_mask_bbox(cv::Mat& img, std::vector<Detection>& dets, std::vector<cv::
 
 cv::Mat getObjectMask(const float* proto, int proto_size, Detection& dets);
 
+std::vector<cv::Mat> get_mask(cv::Mat& img, std::vector<Detection>& dets, std::vector<cv::Mat>& masks);
+
 cv::Mat scale_mask(cv::Mat mask, cv::Mat img);

@@ -20,9 +20,9 @@ static std::vector<uint32_t> colors = {0xFF3838, 0xFF9D97, 0xFF701F, 0xFFB21D, 0
 
 int main( int argc, char** argv )
 {
-    cv::Mat input_image = cv::imread("/home/lacie/workspace/catkin_ws/src/JunBot/junbot_tools/junbot_camera/config/bus.jpg");
+    cv::Mat input_image = cv::imread(argv[1]);
 
-    std::string model= "/home/lacie/workspace/catkin_ws/src/JunBot/junbot_tools/junbot_camera/Model/yolov5s_seg.engine";
+    std::string model= argv[2];
 
     YoLoObjectDetection det(model);
 

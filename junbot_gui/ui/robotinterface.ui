@@ -33,7 +33,7 @@
      <number>0</number>
     </property>
     <widget class="QWidget" name="page_5">
-     <widget class="QPushButton" name="r_right">
+     <widget class="QPushButton" name="r_left">
       <property name="geometry">
        <rect>
         <x>460</x>
@@ -56,7 +56,7 @@
        </size>
       </property>
      </widget>
-     <widget class="QPushButton" name="r_left">
+     <widget class="QPushButton" name="r_right">
       <property name="geometry">
        <rect>
         <x>240</x>
