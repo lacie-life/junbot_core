@@ -1,56 +1,16 @@
-# junbot_core
+# JunBot Core
 
-# TODO List:
+A Simple ROS package for JunBot. This package is used for collecting data and mapping enviroment.
 
-- [x] Publish point cloud to ROS
-- [ ] Explore enviroment
-      
-   - [x] Yolov5 TensorRT support
-   - [x] ~~OctoMap support~~
-   - [x] Turning object database
-      - [x] Segment 3D bounding box [link](https://github.com/lacie-life/SemanticMapping)
-   	    - ~~[ ] Option 1: Segment point cloud by PointNet++ => get 3D bounding box of object (office enviroment) [[Ref](https://github.com/sc19aas/3D-object-detection)]~~
- 		    - [x] Option 2: detect 3d cuboid [[Ref](https://github.com/aibo-kit/new_3dbbox_generation_method.git)] [[Ref](https://wym.netlify.app/2019-02-22-cubeslam/)]
-   	    - ~~[ ] Darknet-ros-3d + ObjectDatabase test [[Link](https://github.com/IntelligentRoboticsLabs/gb_visual_detection_3d)]~~
-   	   
-   	 - [x] Object filter (sometime crashed)
-   	 - [x] Object Map
-   - [x] Add ZED example
-   - [x] Add D455 example 
+Main features:
 
-- [ ] Re-path planning?
-   - [x] Plan of re-path planning
-   - [x] How to represent map with object for navigation stack ? (Grid map / OctoMap) ? 
-      - [x] CostMap layer? ([Ref](http://wiki.ros.org/costmap_2d/Tutorials/Creating%20a%20New%20Layer))
-      - [x] Node Add Object
-      - [x] Get waypoint path
-      - [x] Node subcribe global costmap 
-   - [x] Planner? Which param need to change?
-      - [x] CostMap param => add object zone 
-      - ~~[x] Planner param (Only tuning)~~
-
-   - Adaptive Costmap layer
-      - [x] Create an new layer for optimize coner
-      - [ ] Algorithm
-        - Input: 
-            - [x] Sub Map topic => global costmap 
-            - [x] Sub object in object layer from orb (temp: init object layer)
-            - [x] Sub trajectory in path planner
-        - Processing:
-          - Custom theshold for coner 
-        - Output:
-          - List coner need to change in coner layer => update costmap => update path planner
-   
- - [ ] Evaluate results (MavelMind)
-   - [x] <b> Trajectory collection by MavelMind </b>
-   - [ ] Improve GUI
-   - [ ] Re-path planning
-
-- [ ] Hardware
-   - [x] Assembly
-   - [ ] System calibration
-      - [ ] Multi-odometry fusion [link](https://github.com/lacie-life/junbot_odometry_fusion)
-      - [x] Robot TF
+- [x] Mapping with T265 and 2D Lidar (Sick Tim751)
+- [x] Navigation 
+- [x] Relocalization (Using T265 and AMCL/Odometry fusion/junbot_relocalization)
+- [x] Planner's costmap_2d parameter custom (Using junbot_planner/planner_reconfigure)
+- [x] User interface (Using junbot_gui and junbot_mobile_app)
+- [x] Object mapping (Using junbot_object_mapping)
+- [ ] SemanticMapping
 
 # Overview
 
@@ -61,9 +21,51 @@
    </tr> 
 </table>
 
+## Hardware
+- Custom platform
+- Sick Tim751
+- Jetson AGX Orin (32GB RAM)
+- Realsense T265
+- Realsense D455 (x2)
+- ZED 2 (Option for object mapping package) 
+ 
+## Software
+- Ubuntu 20.04
+- Jetpack 5.1
+- CUDA 11.4
+- Realsense SDK (2.43.0)
+- Realsense ROS (2.2.23)
+- ROS Noetic
+- OpenCV 4.5.0
+- Qt 5
+
 # Install 
 
 Follow this [link](https://github.com/lacie-life/junbot_core/blob/main/docs/install.md)
+
+# Usage
+
+```
+# Build map
+roslaunch junbot_slam junbot_slam.launch
+roslaunch cartographer_junbot t265_camera.launch
+roslaunch junbot_bringup sick_tim_781.launch
+
+# Navigation 
+roslaunch junbot_bringup junbot_core.launch
+roslaunch junbot_navigation junbot_navigation.launch 
+
+# User interface
+rosrun junbot_gui junbot_gui
+
+# Relocalization by using T265 and AMCL
+rosrun amcl_relocalization amcl_relocalization 
+
+# Planner's costmap_2d parameter custom 
+rosrun planner_reconfigure planner_reconfigure_node
+```
+
+# Test
 
 # Related Project
 

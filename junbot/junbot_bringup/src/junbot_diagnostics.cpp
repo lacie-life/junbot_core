@@ -6,8 +6,11 @@
 #include <diagnostic_msgs/DiagnosticArray.h>
 #include <junbot_msgs/SensorState.h>
 #include <junbot_msgs/VersionInfo.h>
+#include <std_msgs/Float32.h>
 #include <string>
-#include <librealsense2/rs.hpp>
+#include <nlohmann/json.hpp>
+#include <std_msgs/String.h>
+
 
 ros::Publisher jun_diagnostics_pub;
 
@@ -15,10 +18,11 @@ diagnostic_msgs::DiagnosticStatus camera_state;
 diagnostic_msgs::DiagnosticStatus teensy_state;
 diagnostic_msgs::DiagnosticStatus lidar_state;
 
-rs2::context ctx;
-
 bool isTeensyConnected = false;
 bool isLidarConnected = false;
+bool isCamreraConnected = false;
+bool isT265Connected = false;
+bool isD455Connected = false;
 
 std::string t265_serial_number = "908412110411";
 std::string d455_1_serial_number = "117122250794";
@@ -64,39 +68,49 @@ void sensorStateMsgCallback(const std_msgs::Float32::ConstPtr &msg)
   }
 }
 
+void T265StateCallback(const std_msgs::String::ConstPtr &msg)
+{
+    using json = nlohmann::json;
+    std::string tmp = msg->data.c_str();
+    
+    json parsedJson = json::parse(tmp);
+    
+    if(parsedJson["t265_state"] == "1")
+    {
+        isT265Connected = true;
+    }
+    else {
+        isT265Connected = false;
+    }
+}
+
+void D455StateCallback(const std_msgs::String::ConstPtr &msg)
+{
+
+    using json = nlohmann::json;
+    std::string tmp = msg->data.c_str();
+    
+    json parsedJson = json::parse(tmp);
+    
+    if(parsedJson["d455_state"] != 0)
+    {
+        isD455Connected = true;
+    }
+    else {
+        isD455Connected = false;
+    }
+}
+
 void checkCameraConnection()
 {
-  rs2::device_list devices = ctx.query_devices();
 
-  bool isD455_1_Connected = false;
-  bool isD455_2_Connected = false;
-  bool isT265Connected = false;
+  isCamreraConnected = isT265Connected && isD455Connected;
 
-  for (rs2::device device : devices)
-  {
-    std::string serial_number = device.get_info(RS2_CAMERA_INFO_SERIAL_NUMBER);
-    
-    if (serial_number == t265_serial_number)
-    {
-      isT265Connected = true;
-    }
-    else if (serial_number == d455_1_serial_number)
-    {
-      isD455_1_Connected = true;
-    }
-    else if (serial_number == d455_2_serial_number)
-    {
-      isD455_2_Connected = true;
-    }
-  }
-
-  bool isCameraConnected = isT265Connected && isD455_1_Connected && isD455_2_Connected;
-
-  if(isCameraConnected)
+  if(isCamreraConnected)
   {
     setCameraDiagnosis(diagnostic_msgs::DiagnosticStatus::OK, "Good Condition");
   }
-  else if(!isCameraConnected)
+  else if(!isCamreraConnected)
   {
     setCameraDiagnosis(diagnostic_msgs::DiagnosticStatus::ERROR, "Bad Condition");
   }
@@ -116,23 +130,26 @@ void msgPub()
   jun_diagnostics_pub.publish(j_diagnostics);
 }
 
-int main(int argc, char **argv)
+int main(int argc, char **argv) 
 {
   ros::init(argc, argv, "junbot_diagnostic");
   ros::NodeHandle nh;
 
   jun_diagnostics_pub  = nh.advertise<diagnostic_msgs::DiagnosticArray>("/junbot_diagnostics", 10);
-  jun_version_info_pub = nh.advertise<junbot_msgs::VersionInfo>("version_info", 10);
 
   ros::Subscriber lidar         = nh.subscribe("scan", 10, LidarMsgCallback);
   ros::Subscriber teensy  = nh.subscribe("/cmd_vol_fb", 10, sensorStateMsgCallback);
+  ros::Subscriber t265_camera  = nh.subscribe("/t265_state", 10, T265StateCallback);
+  ros::Subscriber d455_camera  = nh.subscribe("/d455_state", 10, D455StateCallback);
 
   ros::Rate loop_rate(1);
 
   while (ros::ok())
   {
-    checkCameraConnection();
-
+    if(!isCamreraConnected)
+    {
+        checkCameraConnection();
+    }
     msgPub();
     ros::spinOnce();
     loop_rate.sleep();

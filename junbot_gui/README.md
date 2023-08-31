@@ -11,8 +11,8 @@
         - [x] Delivery Target 
         
    - [x] Mission Module
-   - [ ] Robot State Module
-   - [ ] User permission
+   - [x] Robot State Module
+   - [x] User permission
    - [ ] Total test
 
 ## Install QtMqtt

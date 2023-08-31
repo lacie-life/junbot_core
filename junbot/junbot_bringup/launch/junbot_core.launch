@@ -1,9 +1,26 @@
 <launch>
   <arg name="multi_robot_name" default=""/>
+  <arg name="t265_param_file_path" default="$(find junbot_camera)/config/t265.yaml"/>
 
   <node pkg="rosserial_python" type="serial_node.py" name="junbot_core" output="screen">
     <param name="port" value="/dev/ttyACM0"/>
-    <param name="baud" value="115200"/>
+    <param name="baud" value="57600"/>
     <param name="tf_prefix" value="$(arg multi_robot_name)"/>
   </node>
+
+  <include file="$(find junbot_camera)/launch/t265_camera.launch"/>
+
+  <include file="$(find junbot_bringup)/launch/sick_tim_781.launch"/>
+
+  <node pkg="junbot_camera" type="junbot_camera_marker" name="junbot_camera_marker">
+    <param name="t265_param_file_path" value="$(arg t265_param_file_path)"/>
+  </node>
+
+  <node pkg="junbot_camera" type="junbot_camera_segmentation" name="junbot_camera_segmentation"/>
+
+  <node pkg="junbot_camera" type="junbot_camera_mission_control" name="junbot_camera_mission_control"/>
+
+  <node pkg="junbot_bringup" type="junbot_diagnostics" name="junbot_diagnostics" output="screen"/>
+
+  <node pkg="junbot_gui" type="junbot_gui" name="junbot_gui" output="screen"/>?\
 </launch>
