@@ -1,17 +1,17 @@
 # JunBot Core
 
-A Simple ROS package for JunBot. This package is used for collecting data and mapping enviroment.
+A Simple ROS package for JunBot. This package is used for collecting data and mapping the environment.
 
 Main features:
 
 - [x] Mapping with T265 and 2D Lidar (Sick Tim751)
 - [x] Navigation 
 - [x] Relocalization (Using T265 and AMCL/Odometry fusion/junbot_relocalization)
-- [x] Planner's costmap_2d parameter custom (Using junbot_planner/planner_reconfigure)
+- [x] Planner's costmap_2d parameter custom (Using junbot_adaptive_planner/planner_reconfigure)
 - [x] User interface (Using junbot_gui and junbot_mobile_app)
-- [x] Object mapping (Using object_mapping)
-- [x] Object map layer (Using costmap_objects_layer)
-- [x] Semantic Planner (Using junbot_adaptive)
+- [x] Object mapping (Using junbot_adaptive_planner/object_mapping)
+- [x] Object map layer (Using junbot_adaptive_planner/costmap_objects_layer)
+- [x] Semantic Planner (Using junbot_adaptive_planner/Semantic Planner)
 - [ ] SemanticMapping
 
 # Overview
@@ -75,6 +75,7 @@ rosrun planner_reconfigure planner_reconfigure_node
 - [junbot_relocalization](https://github.com/lacie-life/junbot_localization)
 - [junbot_odometry_fusion](https://github.com/lacie-life/junbot_odometry_fusion)
 - [junbot_mobile_app](https://github.com/lacie-life/junbot_app)
+- [junbot_adaptive_planner](https://github.com/lacie-life/junbot_adaptive_planner)
 
 
 # Acknowledgement
