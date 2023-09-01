@@ -69,6 +69,8 @@ rosrun planner_reconfigure planner_reconfigure_node
 
 # Test
 
+Pending for demo
+
 # Related Project
 
 - [SemanticMapping](https://github.com/lacie-life/SemanticMapping)
@@ -81,6 +83,8 @@ rosrun planner_reconfigure planner_reconfigure_node
 # Acknowledgement
 
 - [Turtlebot3](https://github.com/ROBOTIS-GIT/turtlebot3)
+- [Cartographer](https://google-cartographer-ros.readthedocs.io/en/latest/)
+- [t265 robot navigation](https://github.com/chrissunny94/t265_robot_navigation)
 
 
  
