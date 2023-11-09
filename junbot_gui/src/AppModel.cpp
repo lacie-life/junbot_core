@@ -32,6 +32,11 @@ AppModel::AppModel(int argc, char **argv, QObject *parent)
 
     connect(m_handler, &QMqttHandler::MQTT_Received, this, &AppModel::setRobotMess);
 
+    connect(m_handler, &QMqttHandler::mqttSubControl, this, &AppModel::slotMqttSubControl);
+    connect(m_handler, &QMqttHandler::mqttSubTarget, this, &AppModel::slotMqttSubTarget);
+    connect(m_handler, &QMqttHandler::mqttSubLogin, this, &AppModel::slotMqttSubLogin);
+    connect(m_handler, &QMqttHandler::MQTTConnected, this, &AppModel::initMQTTSub);
+
     // m_handler->MQTT_Publish(m_handler->RobotNodes.at(0), jobj);
 
     connect(&m_rosNode, &QNode::updateBatteryPercentage,  this, &AppModel::batteryStatus);
@@ -40,6 +45,98 @@ AppModel::AppModel(int argc, char **argv, QObject *parent)
 AppModel::~AppModel()
 {
     writeSettings();
+}
+
+void AppModel::slotMqttSubControl(QString msg)
+{
+  float liner = 0.5;
+  float turn = 0.5;
+  bool is_all = false;
+
+if(msg == "forward"){
+  CONSOLE << "hihi";
+    // forward
+    m_rosNode.move_base(is_all ? 'I' : 'i', liner, turn);
+    CONSOLE << "my forward: " << liner;
+  } else if(msg == "back"){
+    // backward
+    m_rosNode.move_base(is_all ? '<' : ',', liner, turn);
+    CONSOLE << "my backward: " << liner;
+  } else if (msg == "turn left") {
+    // rotate left
+    m_rosNode.move_base(is_all ? 'J' : 'j', liner, turn);
+    CONSOLE << "left_value: ";
+  } else if (msg == "turn right") {
+    // rotate right
+    m_rosNode.move_base(is_all ? 'L' : 'l', liner, turn);
+    CONSOLE << "right_value: ";
+  } else {
+    // stop
+    m_rosNode.move_base(is_all ? 'K' : 'k', liner, turn);
+  }
+}
+
+void AppModel::slotMqttSubTarget(const QList<QString>& names, const QList<int>& x, 
+                            const QList<int>& y, const QList<int>& z)
+{
+
+  std::vector<QRobotPose> goals;
+  std::vector<int> goals_Id;
+  for(int i = 0; i < names.size(); i++){
+
+    QRobotPose goal = {(double)x[i],
+      (double)y[i],
+      (double)z[i],
+      1
+      };
+    goals.push_back(goal);
+
+    // TODO: add id to goals
+    goals_Id.push_back(i + 1);
+  }
+
+  CONSOLE << goals.size();
+
+  bool check;
+
+  check = false;
+  check = m_rosNode.set_multi_goal("Frame", goals, goals_Id);
+
+  connect(&m_rosNode, &QNode::updateGoalReached, this, [=](){
+    QMessageBox::information(NULL, "Notification",
+                                 "Robot has arrived the target!",
+                                 QMessageBox::Ok);
+
+    emit acceptedTarget();  
+  });
+
+  connect(this, &AppModel::acceptedTarget, this, [=](){
+    m_rosNode.sendNextTarget();
+  });
+}
+
+bool AppModel::slotMqttSubLogin(QString username, QString password)
+{
+    m_mobileUser = new QUser(username, password, "customer");
+
+    bool checkdone = m_dbManager.userDao.isloginUserExits(*m_mobileUser);
+
+    if(checkdone){
+        CONSOLE << "Login Success";
+        QJsonObject jobj;
+        jobj["response"] = "success";
+        m_handler->MQTT_Publish("robot1/login_userInforesponse", jobj);
+
+        return true;
+    }
+    else {
+        CONSOLE << "Login Fail";
+        QJsonObject jobj;
+        jobj["response"] = "fail";
+        m_handler->MQTT_Publish("robot1/login_userInforesponse", jobj);
+        CONSOLE << "haha";
+        return false;           
+    }
 }
 
 void AppModel::readSettings() {
@@ -56,24 +153,6 @@ void AppModel::writeSettings() {
 }
 
 void AppModel::initVideos() {
-    // pending
-    QSettings video_topic_setting("junbot_gui", "settings");
-    QStringList names = video_topic_setting.value("video/names").toStringList();
-    QStringList topics = video_topic_setting.value("video/topics").toStringList();
-    if (topics.size() == 4) {
-        if (topics[0] != "") {
-            m_rosNode.Sub_Image(topics[0], 0);
-        }
-        if (topics[1] != "") {
-            m_rosNode.Sub_Image(topics[1], 1);
-        }
-        if (topics[2] != "") {
-            m_rosNode.Sub_Image(topics[2], 2);
-        }
-        if (topics[3] != "") {
-            m_rosNode.Sub_Image(topics[3], 3);
-        }
-    }
 }
 
 bool AppModel::connectMaster(QString master_ip, QString ros_ip)
@@ -92,7 +171,7 @@ bool AppModel::connectMaster(QString master_ip, QString ros_ip)
 
         m_handler->connectMQTT("localhost", 1883);
 
-        // m_handler->MQTT_Subcrib(m_handler->RobotNodes.at(0));
+        m_handler->MQTT_Subcrib(m_handler->RobotNodes.at(0));
     }
 
     m_timer.setInterval(1000);
@@ -130,6 +209,12 @@ void AppModel::signOut()
     m_currentUser = nullptr;
 
     emit signalSignOut();
+}
+
+void AppModel::initMQTTSub()
+{
+    m_handler->MQTT_Subcrib("robot1/login_request");
+    m_handler->MQTT_Subcrib("robot1/deliver");
 }
 
 bool AppModel::addUser(QUser &user)
@@ -264,18 +349,21 @@ void AppModel::checkObstacle(QString id)
 
 void AppModel::checkRobotState()
 {   
-    m_mutex.lock();
+    // CONSOLE << "Checking 1 !!!!!";
+    // m_mutex.lock();
     if(AppEnums::QRobotBattery::Normal && AppEnums::QRobotMisson::NoMission 
         && AppEnums::QRobotControlling::NoControlling && AppEnums::QRobotSensor::SensorOk)
     {
         m_robot_status = AppEnums::QRobotStatus::Ready;
-        CONSOLE << is_mission_state;
+        // CONSOLE << is_mission_state;
         emit signalRobotStateUpdate(m_robot_status);
     }else{
         m_robot_status = AppEnums::QRobotStatus::NotReady;
-        CONSOLE << is_mission_state;
+        // CONSOLE << is_mission_state;
         emit signalRobotStateUpdate(m_robot_status);
     } 
+
+    // CONSOLE << "Checking 2 !!!!!";
 
     QJsonObject jobj;
     m_dateTime = QDateTime::currentDateTime();
@@ -293,14 +381,21 @@ void AppModel::checkRobotState()
 
     bool result = m_dbManager.deliveryTargetDao.addJsonString(jString);
 
-    CONSOLE << jSub;
+    // CONSOLE << jSub;
+
+    // CONSOLE << "Checking 3 !!!!!";
 
     m_handler->MQTT_Publish(m_handler->RobotNodes.at(0), jobj);
 
     m_rosNode.publishRobotStatus(jString);
 
-    CONSOLE << "Checking"; 
+
+    // CONSOLE << "Checking"; 
     m_mutex.unlock();
+
+    // CONSOLE << "Checking 4"; 
+    // m_mutex.unlock();
+
 }
 
 void AppModel::setRobotMess(QString msg)

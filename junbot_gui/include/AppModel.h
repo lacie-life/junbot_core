@@ -7,6 +7,7 @@
 #include <QQueue>
 #include <QDateTime>
 #include <QTimer>
+#include <QMessageBox>
 
 #include <memory.h>
 #include <mutex>
@@ -71,6 +72,13 @@ public slots:
     void batteryStatus(float battery);
     void checkRobotState();
 
+    void slotMqttSubControl(QString msg);
+    void slotMqttSubTarget(const QList<QString>& names, const QList<int>& x, 
+                            const QList<int>& y, const QList<int>& z);
+    bool slotMqttSubLogin(QString username, QString password);
+
+    void initMQTTSub();
+
 signals:
     void signalSet2DPose();
     void signalSet2DGoal();
@@ -87,6 +95,7 @@ signals:
     void signalNeedCharge();
     void obstacleUpdateUi(AppEnums::QObstacle type);
     void signalBatteryPercentage(float bt);
+    void acceptedTarget();
 
 public:
     // Ros interface
@@ -103,6 +112,7 @@ private:
     float m_currentBattery = 0.0;
 
     QUser* m_currentUser;
+    QUser* m_mobileUser;
     QDatabaseManager& m_dbManager;
 
     QMqttHandler* m_handler; 

@@ -14,8 +14,8 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/Twist.h>
 #include <image_transport/image_transport.h>
-#include <move_base_msgs/MoveBaseAction.h>
-#include <move_base_msgs/MoveBaseActionFeedback.h>
+// #include <move_base_msgs/MoveBaseAction.h>
+// #include <move_base_msgs/MoveBaseActionFeedback.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/Odometry.h>
 #include <nav_msgs/Path.h>
@@ -42,7 +42,7 @@
 #include "QRobotUltis.h"
 #include "AppConstants.h"
 
-typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
+// typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
 
 class QNode : public QThread {
@@ -65,40 +65,17 @@ public:
 
     bool set_multi_goal(QString frame, std::vector<QRobotPose> goals, std::vector<int> targetId);
 
-    void Sub_Image(QString topic, int frame_id);
-
-    void pub_imageMap(QImage map);
-
     void cancel_goal();
-
-    double getRealTheta(QPointF start, QPointF end);
-
-    QPointF transScenePoint2Word(QPointF pos);
-
-    QPointF transWordPoint2Scene(QPointF pos);
 
     QMap<QString, QString> get_topic_list();
 
-    int mapWidth{0};
-    int mapHeight{0};
-
     void run();
-
-    QImage Mat2QImage(cv::Mat const &src);
-
-    cv::Mat QImage2Mat(QImage &image);
-
-    QImage rotateMapWithY(QImage map);
 
     QStringListModel *loggingModel();
 
     void log(const AppEnums::QLogLevel &level, const std::string &msg);
 
 public slots:
-
-    void slot_pub2DPos(QRobotPose pose);
-
-    void slot_pub2DGoal(QRobotPose pose);
 
     void sendNextTarget();
 
@@ -114,15 +91,7 @@ signals:
 
     void Master_shutdown();
 
-    void Show_image(int, QImage);
-
     void updateRoboPose(QRobotPose pos);
-
-    void updateMap(QImage map);
-
-    void plannerPath(QPolygonF path);
-
-    void updateLaserScan(QPolygonF points);
 
     void updateRobotStatus(AppEnums::QRobotStatus status);
 
@@ -164,7 +133,7 @@ private:
     ros::Publisher m_MissionStart;
     image_transport::Publisher m_imageMapPub;
 
-    MoveBaseClient *movebase_client;
+    // MoveBaseClient *movebase_client;
     QStringListModel logging_model;
     QString show_mode = "control";
 
@@ -217,19 +186,7 @@ private:
 private:
     void speedCallback(const nav_msgs::Odometry::ConstPtr &msg);
 
-    void imageCallback0(const sensor_msgs::CompressedImageConstPtr &msg);
-
-    void imageCallback1(const sensor_msgs::CompressedImageConstPtr &msg);
-
-    void mapCallback(nav_msgs::OccupancyGrid::ConstPtr map);
-
-    void laserScanCallback(sensor_msgs::LaserScanConstPtr scan);
-
-    void plannerPathCallback(nav_msgs::Path::ConstPtr path);
-
     void SubAndPubTopic();
-
-    void updateRobotPose();
 
     void batteryVoltageCallback(const std_msgs::Float32 &message);
 

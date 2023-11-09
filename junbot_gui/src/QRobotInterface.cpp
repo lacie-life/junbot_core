@@ -140,7 +140,8 @@ void RobotInterface::slotRun()
     QRobotPose goal = {slot_target[i].x_axis().toDouble(),
       slot_target[i].y_axis().toDouble(),
       slot_target[i].z_axis().toDouble(),
-      0};
+      1
+      };
     goals.push_back(goal);
 
     // TODO: add id to goals
@@ -149,22 +150,9 @@ void RobotInterface::slotRun()
 
   CONSOLE << goals.size();
 
-  bool check;
+  bool check = false;
 
-  check = true;
   check = m_model->m_rosNode.set_multi_goal("Frame", goals, goals_Id);
-
-  connect(&m_model->m_rosNode, &QNode::updateGoalReached, this, [=](){
-    QMessageBox::information(NULL, "Notification",
-                                 "Robot has arrived the target!",
-                                 QMessageBox::Ok);
-
-    emit acceptedTarget();  
-  });
-
-  connect(this, &RobotInterface::acceptedTarget, this, [=](){
-    runNextTarget();
-  });
 }
 
 void RobotInterface::runNextTarget()
@@ -484,6 +472,18 @@ void RobotInterface::connections()
   connect(m_timerCurrentTime, &QTimer::timeout, [=]() {
     ui->label_time->setText(
           QDateTime::currentDateTime().toString("  hh:mm:ss  "));
+  });
+
+  connect(&m_model->m_rosNode, &QNode::updateGoalReached, this, [=](){
+    QMessageBox::information(NULL, "Notification",
+                                 "Robot has arrived the target!",
+                                 QMessageBox::Ok);
+
+    emit acceptedTarget();  
+  });
+
+  connect(this, &RobotInterface::acceptedTarget, this, [=](){
+    runNextTarget();
   });
 
   // Robot status

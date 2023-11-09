@@ -13,7 +13,7 @@ QSqlDatabase* QDatabaseManager::m_database = new QSqlDatabase(QSqlDatabase::addD
 void QDatabaseManager::debugQuery(const QSqlQuery& query)
 {
     if (query.lastError().type() == QSqlError::ErrorType::NoError) {
-        CONSOLE << "Query OK:"  << query.lastQuery();
+        // CONSOLE << "Query OK:"  << query.lastQuery();
     } else {
         CONSOLE << "Query KO:" << query.lastError().text();
         CONSOLE << "Query text:" << query.lastQuery();
@@ -32,7 +32,7 @@ QDatabaseManager::QDatabaseManager(const QString& path)
       deliveryTargetDao(*m_database)
 
 {
-    m_database->setDatabaseName("/home/junbot/junbot_ws/src/JunBot/junbot_gui/data/user.db");
+    m_database->setDatabaseName("/home/onbat2/junbot_gui_ws/src/JunBot/junbot_gui/data/user.db");
 
     bool openStatus = m_database->open();
     CONSOLE << "Database connection: " << (openStatus ? "OK" : "Error");

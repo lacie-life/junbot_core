@@ -59,6 +59,8 @@ void QMqttHandler::onMQTT_Connected()
     CONSOLE << "Connected to MQTT Broker";
 
     MQTT_Subcrib(RobotNodes.at(0));
+
+    emit MQTTConnected();
 }
 
 void QMqttHandler::onMQTT_disconnected()
@@ -71,6 +73,50 @@ void QMqttHandler::onMQTT_Received(const QByteArray &message, const QMqttTopicNa
     CONSOLE << "Received message: " << message << " from topic: " << topic.name();
 
     QJsonObject msg = QJsonDocument::fromJson(message).object();
+    QString m_key = msg.keys().join(", ");
+    CONSOLE << m_key;
+
+    if(m_key == "nodes")
+    {
+    QJsonArray nodesArray = msg["nodes"].toArray();
+    QList<QString> names;
+    QList<int> xValues;
+    QList<int> yValues;
+    QList<int> zValues;
+
+    for (const QJsonValue &nodeValue : nodesArray) {
+        QJsonObject nodeObject = nodeValue.toObject();
+        QString name = nodeObject["name"].toString();
+        int x = nodeObject["x"].toInt();
+        int y = nodeObject["y"].toInt();
+        int z = nodeObject["z"].toInt();
+
+        CONSOLE << "Name:" << name;
+        CONSOLE << "X:" << x;
+        CONSOLE << "Y:" << y;
+        CONSOLE << "Z:" << z;
+
+        names.append(name);
+        xValues.append(x);
+        yValues.append(y);
+        zValues.append(z);
+    }
+        emit mqttSubTarget(names, xValues, yValues, zValues);
+    }
+    else if(m_key == "password, username")
+    {
+        QString username = msg.value("username").toString();
+        QString password = msg.value("password").toString();
+
+        CONSOLE << username << password;
+        emit mqttSubLogin(username, password);
+
+    }
+    else
+    {
+        CONSOLE << msg.value(m_key).toString();
+        emit mqttSubControl(msg.value(m_key).toString());
+    }
 
     setMqttMessage(msg);
 
@@ -86,12 +132,39 @@ void QMqttHandler::MQTT_Publish(RobotNode node, QJsonObject message)
     m_client->publish(topic, QJsonDocument(message).toJson());
 }
 
+void QMqttHandler::MQTT_Publish(QString _topic, QJsonObject message)
+{
+    QMqttTopicName topic(_topic);
+
+    CONSOLE << _topic << " " << message;
+
+    m_client->publish(topic, QJsonDocument(message).toJson());
+}
+
+void QMqttHandler::MQTT_PublishLogin(RobotNode node, QJsonObject message)
+{
+    QMqttTopicName topic(node.topic_login_userInforesponse);
+
+    // this->RobotNodes.at(0).current_state_message = message;
+
+    CONSOLE << topic;
+
+    m_client->publish(topic, QJsonDocument(message).toJson());
+}
+
 void QMqttHandler::MQTT_Subcrib(RobotNode node)
 {
     CONSOLE << node.control_topic;
     
     QMqttTopicFilter filter(node.control_topic);
 
+    m_client->subscribe(filter);
+}
+
+void QMqttHandler::MQTT_Subcrib(QString _topic)
+{
+    CONSOLE << "Sub: " << _topic;
+    QMqttTopicFilter filter(_topic);
     m_client->subscribe(filter);
 }
 

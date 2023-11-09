@@ -24,6 +24,7 @@
 #include "QRobotItem.h"
 #include "QAddTargetDialog.h"
 #include "AppModel.h"
+#include "QMqttHandler.h"
 
 namespace Ui {
 class RobotInterface;
@@ -93,6 +94,8 @@ private:
 
   AppModel* m_model;
   QAddNewTarget* m_addNewTarget;
+
+  QMqttHandler* m_handler; 
 
   QVector<QPushButton*> m_targetButton;
 
