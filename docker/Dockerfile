@@ -102,11 +102,6 @@ RUN --mount=type=bind,source=nv-tensorrt-local-repo-${TARGETARCH}.deb,target=/nv
     apt-get install -y \
         libnvinfer${TENSORRT_MAJOR_VERSION}=8.5.3-1+cuda11.8 \
         libnvinfer-plugin${TENSORRT_MAJOR_VERSION}=8.5.3-1+cuda11.8 libnvinfer-dev=8.5.3-1+cuda11.8 libnvinfer-plugin-dev=8.5.3-1+cuda11.8 && \
-    if [[ "$INSTALL_AS_DEV" == "1" ]]; then \
-        apt-get install -y \
-        libnvinfer-dev=${TENSORRT_VERSION}+cuda${CUDA_VERSION} \
-        libnvinfer-plugin-dev=${TENSORRT_VERSION}+cuda${CUDA_VERSION}; \
-    fi && \
     rm -rf /var/lib/apt/lists/*
 
 # container startup setup

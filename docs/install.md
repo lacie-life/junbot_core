@@ -1,5 +1,22 @@
 # Install 
 
+
+0. Docker build
+
+Download a cuDNN 8.6.0 installer deb-package from NVIDIA's download page (login required).
+
+Place the cuDNN installer deb-package in this directory and rename it to cudnn-local-repo-$(dpkg --print-architecture).deb.
+
+Download a TensorRT 8.5.3 installer deb-package from NVIDIA's download page (login required).
+
+Place the TensorRT installer deb-package in this directory and rename it to nv-tensorrt-local-repo-$(dpkg --print-architecture).deb.
+
+Build the Docker image with below command.
+
+```bash
+sh ./docker/setup_env.sh
+```
+
 1. ROS Noetic
 
 - vision_msgs 
